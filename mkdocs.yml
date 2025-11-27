@@ -1,0 +1,108 @@
+site_name: "AI Agents: Patterns, Principles & Practices"
+site_description: An interactive, live-updating book on Agentic Design Patterns.
+site_author: George Kour
+site_url: https://georgekour.github.io/ai-patterns/
+
+repo_name: georgekour/ai-patterns
+repo_url: https://github.com/georgekour/ai-patterns
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search:
+      lang: en
+
+nav:
+  - Home: index.md
+  - Introduction & Foundations:
+    - About: about.md
+    - Preface: preface.md
+    - Introduction - Foundations of Agentic Systems: introduction---foundations-of-agentic-systems.md
+    - What is an Agentic Design Pattern?: what-is-an-agentic-design-pattern.md
+  - Core Workflow Patterns:
+    - "Pattern: Prompt Chaining (Pipeline Pattern)": pattern-prompt-chaining-pipeline-pattern.md
+    - "Pattern: Routing": pattern-routing.md
+    - "Pattern: Parallelization": pattern-parallelization.md
+    - "Pattern: Reflection": pattern-reflection.md
+  - Tool Use & Execution:
+    - "Pattern: Tool Use & Execution": pattern-tool-use--execution.md
+    - "Pattern: Constrained Tool Use (Mask, Don't Remove)": pattern-constrained-tool-use-mask-dont-remove.md
+  - Reasoning & Planning:
+    - Reasoning Techniques: reasoning-techniques.md
+    - "Pattern: Planning": pattern-planning.md
+    - "Pattern: Prioritization": pattern-prioritization.md
+  - Memory & Context Management:
+    - Memory Management: memory-management.md
+    - "Pattern: Persistent Task List (Recitation)": pattern-persistent-task-list-recitation.md
+    - "Pattern: Leverage External Memory (Filesystem as Context)": pattern-leverage-external-memory-filesystem-as-context.md
+    - "Context Compression: Managing the Finite Window": context-compression-managing-the-finite-window.md
+  - Multi-Agent Systems:
+    - Multi-Agent Architectures: multi-agent-architectures.md
+    - "Pattern: Orchestrator-Worker (Coordinator)": pattern-orchestrator-worker-coordinator.md
+  - Advanced Capabilities:
+    - Learning and Adaptation: learning-and-adaptation.md
+    - Model Context Protocol (MCP): model-context-protocol-mcp.md
+    - Goal Setting and Monitoring: goal-setting-and-monitoring.md
+    - "Pattern: Exception Handling and Recovery": pattern-exception-handling-and-recovery.md
+    - "Pattern: Human-in-the-Loop": pattern-human-in-the-loop.md
+  - Knowledge & Communication:
+    - "Pattern: Knowledge Retrieval (RAG)": pattern-knowledge-retrieval-rag.md
+    - "Pattern: Inter-Agent Communication (A2A)": pattern-inter-agent-communication-a2a.md
+  - Optimization & Safety:
+    - Resource-Aware Optimization: resource-aware-optimization.md
+    - Guardrails/Safety Patterns: guardrailssafety-patterns.md
+    - Evaluation and Monitoring: evaluation-and-monitoring.md
+    - Exploration and Discovery: exploration-and-discovery.md
+
+
