@@ -65,7 +65,6 @@ plugins:
       lang: en
 
 nav:
-- Home: index.md
 - Introduction & Foundations:
     - About: about.md
     - Preface: preface.md
