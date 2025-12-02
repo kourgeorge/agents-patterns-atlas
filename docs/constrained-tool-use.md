@@ -208,7 +208,7 @@ class ToolConstraintManager:
             # This constrains to specific tools
             tool_names = [tool for tool in allowed_tools]
             # In practice, you'd prefill the JSON structure
-            return f"{base_prefix}<tool_call>{{{{\"name\": \""
+            return f"{base_prefix}<tool_call>{{\"name\": \""
         
         else:
             return base_prefix
