@@ -164,6 +164,7 @@ This example demonstrates the prefix-based strategy where tools are named with c
 
 This example shows how to use response prefilling to constrain the action space:
 
+{% raw %}
 ```python
 from typing import Optional, List
 import json
@@ -264,6 +265,7 @@ config = manager.apply_constraint("must_respond", "User asked a question")
 config = manager.apply_constraint("can_use_browser", "Need to search web")
 # Framework uses config["prefix"] and config["allowed_tools"] to constrain selection
 ```
+{% endraw %}
 
 **Explanation:**
 This advanced example demonstrates response prefilling using the Hermes format. The framework prefills response tokens to constrain the action space without modifying tool definitions. Three modes are shown: Auto (may or may not call tools), Required (must call a tool), and Specified (must call from a subset).
