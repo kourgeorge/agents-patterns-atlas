@@ -32,6 +32,8 @@ theme:
     - content.code.copy
   icon:
     repo: fontawesome/brands/github
+  extra_css:
+    - assets/css/custom.css
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -63,45 +65,45 @@ plugins:
       lang: en
 
 nav:
-  - Home: index.md
-  - Introduction & Foundations:
+- Home: index.md
+- Introduction & Foundations:
     - About: about.md
     - Preface: preface.md
-    - Introduction - Foundations of Agentic Systems: introduction---foundations-of-agentic-systems.md
-    - What is an Agentic Design Pattern?: what-is-an-agentic-design-pattern.md
-  - Core Workflow Patterns:
-    - "Pattern: Prompt Chaining (Pipeline Pattern)": pattern-prompt-chaining-pipeline-pattern.md
-    - "Pattern: Routing": pattern-routing.md
-    - "Pattern: Parallelization": pattern-parallelization.md
-    - "Pattern: Reflection": pattern-reflection.md
-  - Tool Use & Execution:
-    - "Pattern: Tool Use & Execution": pattern-tool-use--execution.md
-    - "Pattern: Constrained Tool Use (Mask, Don't Remove)": pattern-constrained-tool-use-mask-dont-remove.md
-  - Reasoning & Planning:
+    - Introduction: introduction.md
+    - What is an Agentic Design Pattern?: what-is-a-design-pattern.md
+- Core Workflow:
+    - "Pattern: Prompt Chaining (Pipeline Pattern)": prompt-chaining.md
+    - "Pattern: Routing": routing.md
+    - "Pattern: Parallelization": parallelization.md
+    - "Pattern: Reflection": reflection.md
+- Tool Use:
+    - "Pattern: Tool Use": tool-use.md
+    - "Pattern: Constrained Tool Use": constrained-tool-use.md
+    - "Pattern: The SKILL.md Pattern": agent-skills.md
+- Reasoning & Planning:
     - Reasoning Techniques: reasoning-techniques.md
-    - "Pattern: Planning": pattern-planning.md
-    - "Pattern: Prioritization": pattern-prioritization.md
-  - Memory & Context Management:
+    - "Pattern: Planning": planning.md
+    - "Pattern: Prioritization": prioritization.md
+- Memory & Context Management:
     - Memory Management: memory-management.md
-    - "Pattern: Persistent Task List (Recitation)": pattern-persistent-task-list-recitation.md
-    - "Pattern: Leverage External Memory (Filesystem as Context)": pattern-leverage-external-memory-filesystem-as-context.md
-    - "Context Compression: Managing the Finite Window": context-compression-managing-the-finite-window.md
-  - Multi-Agent Systems:
-    - Multi-Agent Architectures: multi-agent-architectures.md
-    - "Pattern: Orchestrator-Worker (Coordinator)": pattern-orchestrator-worker-coordinator.md
-  - Advanced Capabilities:
-    - Learning and Adaptation: learning-and-adaptation.md
-    - Model Context Protocol (MCP): model-context-protocol-mcp.md
-    - Goal Setting and Monitoring: goal-setting-and-monitoring.md
-    - "Pattern: Exception Handling and Recovery": pattern-exception-handling-and-recovery.md
-    - "Pattern: Human-in-the-Loop": pattern-human-in-the-loop.md
-  - Knowledge & Communication:
-    - "Pattern: Knowledge Retrieval (RAG)": pattern-knowledge-retrieval-rag.md
-    - "Pattern: Inter-Agent Communication (A2A)": pattern-inter-agent-communication-a2a.md
-  - Optimization & Safety:
-    - Resource-Aware Optimization: resource-aware-optimization.md
-    - Guardrails/Safety Patterns: guardrailssafety-patterns.md
-    - Evaluation and Monitoring: evaluation-and-monitoring.md
-    - Exploration and Discovery: exploration-and-discovery.md
-
-
+    - "Pattern: Recitation": recitation.md
+    - "Pattern: Filesystem as Context": external-memory.md
+    - "Pattern: Context Compression": context-compression.md
+    - "Pattern: Variable Manager": variable-manager.md
+- Multi-Agent Systems:
+    - Multi-Agent Architectures: multi-agent.md
+    - "Pattern: Orchestrator-Worker (Coordinator)": orchestrator-worker.md
+- Advanced Capabilities:
+    - Learning and Adaptation: learning-adaptation.md
+    - "Model Context Protocol (MCP)": model-context-protocol.md
+    - Goal Setting and Monitoring: goal-setting-monitoring.md
+    - "Pattern: Exception Handling and Recovery": exception-handling.md
+    - "Pattern: Human-in-the-Loop": human-in-the-loop.md
+- Knowledge & Communication:
+    - "Pattern: Knowledge Retrieval (RAG)": knowledge-retrieval.md
+    - "Pattern: Inter-Agent Communication (A2A)": inter-agent-communication.md
+- Optimization & Safety:
+    - Resource-Aware Optimization: resource-optimization.md
+    - "Guardrails/Safety Patterns": guardrails-safety.md
+    - Evaluation and Monitoring: evaluation-monitoring.md
+    - Exploration and Discovery: exploration-discovery.md
