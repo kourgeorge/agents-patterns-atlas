@@ -4,7 +4,7 @@
 
 Memory is what transforms agents from stateless responders into intelligent systems capable of learning, adapting, and maintaining context across interactions. Without memory, agents cannot remember past conversations, learn from experience, or build upon previous work. Effective memory management is one of the most critical aspects of building production-ready agentic systems.
 
-This chapter provides an overview of memory management strategies for agentic systems. We'll explore the different types of memory, the challenges of managing finite context windows, and the techniques used to extend memory beyond immediate context. For specific implementation patterns, see the pattern modules referenced throughout this chapter.
+This chapter provides an overview of memory management strategies for agentic systems. We'll explore the different types of memory, the distinction between short-term and long-term memory, and the techniques used to extend memory beyond immediate context through persistent storage. For specific implementation patterns, see the pattern modules referenced throughout this chapter.
 
 ## The Two Types of Agent Memory
 
@@ -44,44 +44,34 @@ Long-term memory acts as a repository for information agents need to retain acro
 
 ## Key Memory Management Challenges
 
-### The Context Window Problem
+### The Persistence Challenge
 
-The most fundamental challenge in memory management is the finite context window. As agents operate over longer periods or handle larger tasks, they must:
+The most fundamental challenge in memory management is ensuring agents can retain and access information across time, sessions, and tasks. Agents must:
 
-1. **Manage Token Limits:** Prevent exceeding context window capacity
-2. **Maintain Relevance:** Keep the most important information accessible
-3. **Preserve Context:** Retain critical information even as context fills
-4. **Optimize Performance:** Maximize KV-Cache efficiency to reduce latency
+1. **Persist Information:** Save important data beyond the current session
+2. **Retrieve Efficiently:** Access stored information quickly when needed
+3. **Maintain Relevance:** Keep stored information accurate and up-to-date
+4. **Scale Storage:** Handle large amounts of data that exceed context limits
 
 ### The "Lost in the Middle" Problem
 
 Research shows that LLMs have reduced attention to information in the middle of long contexts. Important information placed at the beginning or end receives more attention than information in the middle. This creates challenges for:
 
 - **Long Conversations:** Critical early context may be "lost" as conversations extend
-- **Large Documents:** Key information in the middle of documents may be overlooked
 - **Complex Plans:** High-level goals defined early may be forgotten during execution
+- **Multi-Step Tasks:** Intermediate results may be forgotten in later steps
 
-### Cost and Performance Optimization
+Memory patterns like Recitation address this by maintaining persistent plans that are actively brought back into context.
 
-Memory management directly impacts cost and performance:
+### Storage and Retrieval Optimization
 
-- **KV-Cache Efficiency:** Stable prompt prefixes enable cache reuse, reducing latency by up to 10×
-- **Token Consumption:** Large contexts consume more tokens, increasing costs
-- **Retrieval Overhead:** External memory queries add latency but reduce context size
+Memory management directly impacts performance and capability:
+
+- **Storage Efficiency:** External memory enables handling datasets far exceeding context limits
+- **Retrieval Overhead:** Querying external memory adds latency but enables unlimited scale
+- **Just-in-Time Access:** Retrieve only what's needed when needed, keeping context focused
 
 ## Memory Management Strategies
-
-### Context Window Management
-
-Effective context window management involves:
-
-**Stable Prefixes:** Keep system prompts and tool definitions stable to maximize KV-Cache efficiency. A single token change in the prefix can invalidate the entire cache.
-
-**Append-Only History:** Use append-only message structures rather than modifying previous messages. This maintains cache efficiency while allowing context to grow.
-
-**Context Compression:** When approaching token limits, summarize old messages into compact blocks, maintaining the gist while preserving space for active reasoning.
-
-**Selective Inclusion:** Only include the most relevant information in context, using external memory for less critical data.
 
 ### External Memory Systems
 
@@ -93,22 +83,17 @@ For data too large for context windows, external memory systems use an **Offload
 
 This pattern, detailed in the **Pattern: Leverage External Memory (Filesystem as Context)** module, enables agents to handle datasets far exceeding context limits.
 
-### The Recitation Pattern
+### Persistent Planning and Recitation
 
-The Recitation Pattern addresses the "Lost in the Middle" problem by maintaining persistent plan files (like `todo.md`) that agents read at every step. This brings high-level goals from the distant past to the immediate present, ensuring agents remain focused on macro-objectives while executing micro-tasks.
+For long-horizon tasks, agents need to maintain awareness of their high-level goals and overall progress. This is achieved through persistent planning:
+
+- **Persistent Plan Files:** Maintaining plans in external storage (like `todo.md`) that survive across steps
+- **Active Recitation:** Reading plans back into context at each step to maintain goal alignment
+- **Progress Tracking:** Updating plans as tasks are completed while preserving overall objectives
+
+The Recitation Pattern addresses the "Lost in the Middle" problem by maintaining persistent plan files that agents read at every step. This brings high-level goals from the distant past to the immediate present, ensuring agents remain focused on macro-objectives while executing micro-tasks.
 
 This pattern is covered in detail in the **Pattern: Persistent Task List (Recitation)** module.
-
-### Context Compression Techniques
-
-When context approaches limits, several compression techniques are available:
-
-- **Summarization:** Condense old messages into summaries
-- **Pruning:** Remove less relevant information
-- **Chunking:** Break large content into manageable pieces
-- **Attention Manipulation:** Use techniques to improve attention to critical information
-
-These techniques are explored in the **Context Compression: Managing the Finite Window** module.
 
 ## Memory in Different Frameworks
 
@@ -134,13 +119,13 @@ The choice of memory strategy depends on several factors:
 
 **Data Volume:** Small data fits in context; large data requires external memory
 
-**Persistence Requirements:** Session-only data uses State management; cross-session data requires MemoryService or databases
+**Persistence Requirements:** Session-only data uses State management; cross-session data requires MemoryService, databases, or filesystem storage
 
 **Query Patterns:** Exact matches work with filesystem storage; semantic queries require vector databases (RAG)
 
-**Performance Needs:** High-performance systems must optimize KV-Cache efficiency through stable prefixes
+**Access Patterns:** Frequently accessed data benefits from faster storage; archival data can use slower, cheaper storage
 
-**Cost Constraints:** Large contexts are expensive; external memory with selective retrieval can reduce costs
+**Retrieval Needs:** Targeted retrieval (specific files, line ranges) works with filesystem tools; semantic search requires vector databases
 
 ## Integration with Other Capabilities
 
@@ -154,23 +139,24 @@ Memory management integrates with other agent capabilities:
 
 ## Key Insights
 
-1. **Memory is not optional:** Agents operating over time or handling complex tasks require sophisticated memory management. Without it, they cannot learn, adapt, or maintain context.
+1. **Memory is not optional:** Agents operating over time or handling complex tasks require sophisticated memory management. Without it, they cannot learn, adapt, or maintain context across interactions.
 
-2. **KV-Cache optimization is critical:** Stable prompt prefixes and append-only history can reduce latency by up to 10×. This is one of the most impactful performance optimizations.
+2. **External memory enables scale:** The Offload/Query pattern allows agents to handle datasets far exceeding context limits, essential for production systems. The filesystem acts as unlimited persistent storage.
 
-3. **Context compression is essential:** Long-running agents must compress context to manage costs and prevent token limit errors. Summarization and pruning are critical techniques.
+3. **Restorable compression is key:** When offloading data to external memory, always maintain references (paths, URLs, keys) that enable precise retrieval when needed. This enables just-in-time access.
 
-4. **External memory enables scale:** The Offload/Query pattern allows agents to handle datasets far exceeding context limits, essential for production systems.
+4. **The Recitation Pattern prevents goal drift:** Maintaining persistent plans that are actively read at every step ensures agents stay focused on high-level objectives in long-horizon tasks, addressing the "lost in the middle" problem.
 
-5. **The Recitation Pattern prevents goal drift:** Maintaining persistent plans that are read at every step ensures agents stay focused on high-level objectives in long-horizon tasks.
+5. **Memory types serve different purposes:** Short-term memory (context) is for immediate working memory; long-term memory (external storage) is for persistence and scale. Both are essential for production systems.
 
 ## Next Steps
 
-This chapter provided an overview of memory management concepts. For detailed implementation guidance, see:
+This chapter provided an overview of memory management concepts focused on persistence and external storage. For detailed implementation guidance, see:
 
-- **Pattern: Persistent Task List (Recitation)** - Maintaining persistent plans to prevent goal drift
-- **Pattern: Leverage External Memory (Filesystem as Context)** - Offloading and retrieving large data
-- **Context Compression: Managing the Finite Window** - Techniques for fitting information into finite contexts
-- **Pattern: Knowledge Retrieval (RAG)** - Using vector databases for semantic long-term memory
+- **Pattern: Persistent Task List (Recitation)** - Maintaining persistent plans to prevent goal drift in long-horizon tasks
+- **Pattern: Filesystem as Context** - Offloading and retrieving large data using external persistent storage
+- **Pattern: Knowledge Retrieval (RAG)** - Using vector databases for semantic long-term memory and search
 
-Effective memory management is essential for building production-ready agentic systems. Understanding these concepts and patterns will enable you to build agents that can operate effectively over time and handle complex, long-horizon tasks.
+For techniques related to managing the finite context window itself (compression, editing, optimization), see the **Context Management** part which covers strategies for optimizing what goes into the context window.
+
+Effective memory management is essential for building production-ready agentic systems. Understanding these concepts and patterns will enable you to build agents that can operate effectively over time, retain information across sessions, and handle complex, long-horizon tasks.

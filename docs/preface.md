@@ -8,7 +8,7 @@ The advent of powerful large language models (LLMs) has provided unprecedented c
 
 We are at an inflection point. If the last few years were about the engine—the breathtaking ascent of Large Language Models—the next era is about the frameworks we build around them. It's about transforming these generators of plausible text into true agents of action. This transformation is happening at an extraordinary pace: AI agent startups raised over $2 billion by the end of 2024, with the market valued at $5.2 billion and projected to reach nearly $200 billion by 2034. According to recent studies, a majority of large IT companies are actively using agents, with a fifth of them starting within just the past year.
 
-This book is designed to be your practical guide through this transformation. It presents 25+ essential design patterns organized into 9 comprehensive parts, covering everything from foundational workflow patterns to advanced multi-agent architectures, memory management, and production-ready safety mechanisms. Each pattern is battle-tested, clearly explained, and accompanied by practical code examples you can run, modify, and learn from.
+This book is designed to be your practical guide through this transformation. It presents 30+ essential design patterns organized into 10 comprehensive parts, covering everything from foundational workflow patterns to advanced multi-agent architectures, memory management, and production-ready safety mechanisms. Each pattern is battle-tested, clearly explained, and accompanied by practical code examples you can run, modify, and learn from.
 
 ## The Canvas of Agentic Systems
 
@@ -36,17 +36,18 @@ A great question we often hear is: "With AI changing so fast, why write a book t
 
 ## How This Book Is Organized
 
-This book is structured to take you from foundational concepts to advanced production systems. It's organized into 9 parts:
+This book is structured to take you from foundational concepts to advanced production systems. It's organized into 10 parts:
 
 - **Part 1: Introduction & Foundations** - Establishes the core concepts and context for understanding agentic systems
 - **Part 2: Core Workflow Patterns** - Fundamental patterns for building reliable agent workflows
 - **Part 3: Tool Use & Execution** - Designing the critical interface between agents and their environment
 - **Part 4: Reasoning & Planning** - Enabling agents to think strategically and plan effectively
-- **Part 5: Memory & Context Management** - Managing the finite context window and externalizing memory
-- **Part 6: Multi-Agent Systems** - Scaling up with multiple agents working in coordination
-- **Part 7: Advanced Capabilities** - Learning, protocols, goal management, and human interaction
-- **Part 8: Knowledge & Communication** - Retrieving external knowledge and enabling agent-to-agent communication
-- **Part 9: Optimization & Safety** - Production-ready patterns for performance, safety, and monitoring
+- **Part 5: Memory** - Managing persistent and external memory for agents
+- **Part 6: Context Management** - Managing the finite context window and optimizing context usage
+- **Part 7: Multi-Agent Systems** - Scaling up with multiple agents working in coordination
+- **Part 8: Advanced Capabilities** - Learning, protocols, goal management, and human interaction
+- **Part 9: Knowledge & Communication** - Retrieving external knowledge and enabling agent-to-agent communication
+- **Part 10: Optimization & Safety** - Production-ready patterns for performance, safety, and monitoring
 
 Each part builds upon previous concepts while remaining accessible as a reference. Whether you're building your first agent or architecting complex multi-agent systems, you'll find patterns that address your specific challenges.
 

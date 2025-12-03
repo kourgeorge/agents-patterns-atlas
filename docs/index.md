@@ -6,17 +6,18 @@ Each pattern is presented with clear explanations, practical guidelines for when
 
 ## Book Structure
 
-The book is organized into **9 parts** containing **34 modules**:
+The book is organized into **10 parts** containing **34 modules**:
 
 1. **Introduction & Foundations** (4 modules) - Core concepts, context, and design pattern fundamentals
 2. **Core Workflow** (4 modules) - Fundamental patterns for building agent workflows
 3. **Tool Use** (4 modules) - Designing the Agent-Computer Interface
 4. **Reasoning & Planning** (3 modules) - Enabling agents to plan and reason effectively
-5. **Memory & Context Management** (6 modules) - Managing context windows and externalizing memory
-6. **Multi-Agent Systems** (2 modules) - Scaling up with multiple agents working together
-7. **Advanced Capabilities** (5 modules) - Learning, protocols, goal management, and human interaction
-8. **Knowledge & Communication** (2 modules) - Retrieving knowledge and enabling agent communication
-9. **Optimization & Safety** (4 modules) - Optimizing performance and ensuring safe operation
+5. **Memory** (3 modules) - Managing persistent and external memory for agents
+6. **Context Management** (3 modules) - Managing the finite context window and optimizing context usage
+7. **Multi-Agent Systems** (2 modules) - Scaling up with multiple agents working together
+8. **Advanced Capabilities** (5 modules) - Learning, protocols, goal management, and human interaction
+9. **Knowledge & Communication** (2 modules) - Retrieving knowledge and enabling agent communication
+10. **Optimization & Safety** (4 modules) - Optimizing performance and ensuring safe operation
 
 The patterns are organized to build concepts progressively, but you can also use this book as a reference, jumping to patterns that address specific challenges you face in your agent development projects.
 
@@ -45,30 +46,32 @@ The patterns are organized to build concepts progressively, but you can also use
 - Pattern: Planning - Strategic goal decomposition and structured planning
 - Pattern: Prioritization - Task assessment and ranking
 
-**Part 5: Memory & Context Management**
-- Memory Management - Context window management and externalization
-- Pattern: Recitation - Maintaining goal alignment in long-horizon tasks
+**Part 5: Memory**
+- Memory Management - Overview of memory types and strategies for agents, including persistent memory and external storage
+- Pattern: Recitation - Maintaining goal alignment in long-horizon tasks through persistent plans
 - Pattern: Filesystem as Context - Treating external persistent storage as unlimited extension of working memory
-- Pattern: Context Compression - Techniques for managing the finite context window
+
+**Part 6: Context Management**
+- Pattern: Context Compression - Techniques for fitting information into the finite context window
 - Pattern: Context Editing - Automatically managing conversation context as it grows
 - Pattern: Variables Manager - Centralized registry for tracking execution variables with rich metadata
 
-**Part 6: Multi-Agent Systems**
+**Part 7: Multi-Agent Systems**
 - Multi-Agent Architectures - Orchestrator-Workers, Evaluator-Optimizers, and Swarm patterns
 - Pattern: Orchestrator-Worker (Coordinator) - Central coordination of specialized workers
 
-**Part 7: Advanced Capabilities**
+**Part 8: Advanced Capabilities**
 - Learning and Adaptation - Continuous improvement through experience
 - Model Context Protocol (MCP) - Standardized protocol for tool and data access
 - Goal Setting and Monitoring - Establishing objectives and tracking progress
 - Pattern: Exception Handling and Recovery - Robust error handling mechanisms
 - Pattern: Human-in-the-Loop - Integrating human oversight and feedback
 
-**Part 8: Knowledge & Communication**
+**Part 9: Knowledge & Communication**
 - Pattern: Knowledge Retrieval (RAG) - Accessing external knowledge bases
 - Pattern: Inter-Agent Communication (A2A) - Agent-to-agent coordination protocols
 
-**Part 9: Optimization & Safety**
+**Part 10: Optimization & Safety**
 - Resource-Aware Optimization - Efficiency and cost management
 - Guardrails/Safety Patterns - Safety mechanisms and compliance
 - Evaluation and Monitoring - Performance assessment and anomaly detection
