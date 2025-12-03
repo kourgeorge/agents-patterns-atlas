@@ -28,6 +28,8 @@ However, it is crucial to recognize the trade-off between flexibility and predic
 ### How It Works
 Planning works through a structured process: (1) Goal Analysis—the agent understands the desired outcome and constraints, (2) State Assessment—it evaluates the current state and available resources, (3) Plan Generation—it formulates a sequence of actions to bridge the gap between current and goal states, (4) Plan Execution—it executes the plan step by step, and (5) Monitoring and Adaptation—it monitors progress and adapts the plan when obstacles arise or conditions change.
 
+Effective planning requires gathering all relevant information before plan generation, but not more than necessary. The State Assessment phase should include targeted information-seeking operations to discover available resources, tools, APIs, and constraints that will inform the plan. For instance, a code-writing agent should first discover what tools and APIs are available before planning how to write code, ensuring the plan is grounded in actual capabilities rather than assumptions. This information-seeking phase enables the agent to create realistic, executable plans that leverage available resources effectively.
+
 The planning process can be explicit, where the agent generates a detailed plan document before execution, or implicit, where planning happens dynamically during execution. Explicit planning is useful for complex, multi-step tasks where the full sequence needs to be understood upfront. Implicit planning is more reactive, generating the next step based on current state without a full plan document.
 
 Frameworks support planning through various mechanisms. CrewAI enables agents to create plans as part of their task execution. Google DeepResearch demonstrates planning through multi-step research plans that are generated, reviewed, and executed iteratively. LangGraph and LangChain support planning through state management and conditional workflows that can represent planned sequences.
@@ -217,6 +219,7 @@ result = crew.kickoff(inputs={"goal": "Launch new product"})
 
 - **Core Concept:** Planning enables agents to formulate sequences of actions to achieve goals, breaking complex tasks into manageable steps.
 - **Best Practice:** Use explicit planning for complex, long-horizon tasks; use implicit planning for reactive, adaptive scenarios.
+- **Information Gathering:** Planning should be informed by relevant context gathered through targeted information-seeking operations (e.g., discovering available tools, APIs, constraints) before plan generation, but should avoid over-gathering unnecessary information.
 - **Common Pitfall:** Over-planning simple tasks adds unnecessary complexity; use fixed workflows when the solution path is known.
 - **Performance Note:** Planning adds latency and cost but improves outcomes for complex, multi-step tasks requiring coordination.
 

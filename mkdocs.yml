@@ -1,10 +1,10 @@
 site_name: "AI Agents: Patterns, Principles & Practices"
 site_description: An interactive, live-updating book on Agentic Design Patterns.
 site_author: George Kour
-site_url: https://georgekour.github.io/ai-patterns/
+site_url: https://kourgeorge.github.io/agents-patterns-atlas/
 
-repo_name: georgekour/ai-patterns
-repo_url: https://github.com/georgekour/ai-patterns
+repo_name: kourgeorge/agents-patterns-atlas
+repo_url: https://github.com/kourgeorge/agents-patterns-atlas
 edit_uri: edit/main/docs/
 
 theme:
@@ -79,6 +79,7 @@ nav:
     - "Pattern: Tool Use": tool-use.md
     - "Pattern: Constrained Tool Use": constrained-tool-use.md
     - "Pattern: The SKILL.md Pattern": agent-skills.md
+    - "Pattern: Shortlisting": shortlisting.md
 - Reasoning & Planning:
     - Reasoning Techniques: reasoning-techniques.md
     - "Pattern: Planning": planning.md
@@ -88,7 +89,8 @@ nav:
     - "Pattern: Recitation": recitation.md
     - "Pattern: Filesystem as Context": external-memory.md
     - "Pattern: Context Compression": context-compression.md
-    - "Pattern: Variable Manager": variable-manager.md
+    - "Pattern: Context Editing": context-editing.md
+    - "Pattern: Variables Manager": variables-manager.md
 - Multi-Agent Systems:
     - Multi-Agent Architectures: multi-agent.md
     - "Pattern: Orchestrator-Worker (Coordinator)": orchestrator-worker.md
