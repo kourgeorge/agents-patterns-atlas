@@ -65,8 +65,8 @@ plugins:
       lang: en
 
 nav:
+- About: index.md
 - Introduction & Foundations:
-    - About: about.md
     - Preface: preface.md
     - Introduction: introduction.md
     - What is an Agentic Design Pattern?: what-is-a-design-pattern.md
@@ -84,13 +84,14 @@ nav:
     - Reasoning Techniques: reasoning-techniques.md
     - "Pattern: Planning": planning.md
     - "Pattern: Prioritization": prioritization.md
-- Memory & Context Management:
-    - Memory Management: memory-management.md
-    - "Pattern: Recitation": recitation.md
-    - "Pattern: Filesystem as Context": external-memory.md
+- Context Management:
     - "Pattern: Context Compression": context-compression.md
     - "Pattern: Context Editing": context-editing.md
     - "Pattern: Variables Manager": variables-manager.md
+- Memory:
+    - Memory Management: memory-management.md
+    - "Pattern: Recitation": recitation.md
+    - "Pattern: Filesystem as Context": external-memory.md
 - Multi-Agent Systems:
     - Multi-Agent Architectures: multi-agent.md
     - "Pattern: Orchestrator-Worker (Coordinator)": orchestrator-worker.md

@@ -12,8 +12,8 @@ The book is organized into **10 parts** containing **34 modules**:
 2. **Core Workflow** (4 modules) - Fundamental patterns for building agent workflows
 3. **Tool Use** (4 modules) - Designing the Agent-Computer Interface
 4. **Reasoning & Planning** (3 modules) - Enabling agents to plan and reason effectively
-5. **Memory** (3 modules) - Managing persistent and external memory for agents
-6. **Context Management** (3 modules) - Managing the finite context window and optimizing context usage
+5. **Context Management** (3 modules) - Managing the finite context window and optimizing context usage
+6. **Memory** (3 modules) - Managing persistent and external memory for agents
 7. **Multi-Agent Systems** (2 modules) - Scaling up with multiple agents working together
 8. **Advanced Capabilities** (5 modules) - Learning, protocols, goal management, and human interaction
 9. **Knowledge & Communication** (2 modules) - Retrieving knowledge and enabling agent communication
@@ -46,15 +46,15 @@ The patterns are organized to build concepts progressively, but you can also use
 - Pattern: Planning - Strategic goal decomposition and structured planning
 - Pattern: Prioritization - Task assessment and ranking
 
-**Part 5: Memory**
-- Memory Management - Overview of memory types and strategies for agents, including persistent memory and external storage
-- Pattern: Recitation - Maintaining goal alignment in long-horizon tasks through persistent plans
-- Pattern: Filesystem as Context - Treating external persistent storage as unlimited extension of working memory
-
-**Part 6: Context Management**
+**Part 5: Context Management**
 - Pattern: Context Compression - Techniques for fitting information into the finite context window
 - Pattern: Context Editing - Automatically managing conversation context as it grows
 - Pattern: Variables Manager - Centralized registry for tracking execution variables with rich metadata
+
+**Part 6: Memory**
+- Memory Management - Overview of memory types and strategies for agents, including persistent memory and external storage
+- Pattern: Recitation - Maintaining goal alignment in long-horizon tasks through persistent plans
+- Pattern: Filesystem as Context - Treating external persistent storage as unlimited extension of working memory
 
 **Part 7: Multi-Agent Systems**
 - Multi-Agent Architectures - Orchestrator-Workers, Evaluator-Optimizers, and Swarm patterns
