@@ -157,6 +157,6 @@ This chapter provided an overview of memory management concepts focused on persi
 - **Pattern: Filesystem as Context** - Offloading and retrieving large data using external persistent storage
 - **Pattern: Knowledge Retrieval (RAG)** - Using vector databases for semantic long-term memory and search
 
-For techniques related to managing the finite context window itself (compression, editing, optimization), see the **Context Management** part which covers strategies for optimizing what goes into the context window.
+For techniques related to managing the finite context window itself (compression, editing, optimization), see the **Context** part which covers strategies for optimizing what goes into the context window.
 
 Effective memory management is essential for building production-ready agentic systems. Understanding these concepts and patterns will enable you to build agents that can operate effectively over time, retain information across sessions, and handle complex, long-horizon tasks.

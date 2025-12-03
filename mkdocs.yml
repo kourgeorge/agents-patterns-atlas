@@ -75,7 +75,7 @@ nav:
     - "Pattern: Routing": routing.md
     - "Pattern: Parallelization": parallelization.md
     - "Pattern: Reflection": reflection.md
-- Tool Use:
+- Tools:
     - "Pattern: Tool Use": tool-use.md
     - "Pattern: Constrained Tool Use": constrained-tool-use.md
     - "Pattern: The SKILL.md Pattern": agent-skills.md
@@ -84,7 +84,7 @@ nav:
     - Reasoning Techniques: reasoning-techniques.md
     - "Pattern: Planning": planning.md
     - "Pattern: Prioritization": prioritization.md
-- Context Management:
+- Context:
     - "Pattern: Context Compression": context-compression.md
     - "Pattern: Context Editing": context-editing.md
     - "Pattern: Variables Manager": variables-manager.md

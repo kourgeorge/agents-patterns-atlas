@@ -40,9 +40,9 @@ This book is structured to take you from foundational concepts to advanced produ
 
 - **Part 1: Introduction & Foundations** - Establishes the core concepts and context for understanding agentic systems
 - **Part 2: Core Workflow Patterns** - Fundamental patterns for building reliable agent workflows
-- **Part 3: Tool Use & Execution** - Designing the critical interface between agents and their environment
+- **Part 3: Tools** - Designing the critical interface between agents and their environment
 - **Part 4: Reasoning & Planning** - Enabling agents to think strategically and plan effectively
-- **Part 5: Context Management** - Managing the finite context window and optimizing context usage
+- **Part 5: Context** - Managing the finite context window and optimizing context usage
 - **Part 6: Memory** - Managing persistent and external memory for agents
 - **Part 7: Multi-Agent Systems** - Scaling up with multiple agents working in coordination
 - **Part 8: Advanced Capabilities** - Learning, protocols, goal management, and human interaction

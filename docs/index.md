@@ -10,9 +10,9 @@ The book is organized into **10 parts** containing **34 modules**:
 
 1. **Introduction & Foundations** (4 modules) - Core concepts, context, and design pattern fundamentals
 2. **Core Workflow** (4 modules) - Fundamental patterns for building agent workflows
-3. **Tool Use** (4 modules) - Designing the Agent-Computer Interface
+3. **Tools** (4 modules) - Designing the Agent-Computer Interface
 4. **Reasoning & Planning** (3 modules) - Enabling agents to plan and reason effectively
-5. **Context Management** (3 modules) - Managing the finite context window and optimizing context usage
+5. **Context** (3 modules) - Managing the finite context window and optimizing context usage
 6. **Memory** (3 modules) - Managing persistent and external memory for agents
 7. **Multi-Agent Systems** (2 modules) - Scaling up with multiple agents working together
 8. **Advanced Capabilities** (5 modules) - Learning, protocols, goal management, and human interaction
@@ -35,7 +35,7 @@ The patterns are organized to build concepts progressively, but you can also use
 - Pattern: Parallelization - Concurrent execution for efficiency
 - Pattern: Reflection - Self-evaluation and iterative improvement
 
-**Part 3: Tool Use**
+**Part 3: Tools**
 - Pattern: Tool Use - Designing the Agent-Computer Interface (ACI)
 - Pattern: Constrained Tool Use - Managing tool availability through programmatic constraints
 - Pattern: The SKILL.md Pattern - Organizing specialized agent capabilities using SKILL.md files
@@ -46,7 +46,7 @@ The patterns are organized to build concepts progressively, but you can also use
 - Pattern: Planning - Strategic goal decomposition and structured planning
 - Pattern: Prioritization - Task assessment and ranking
 
-**Part 5: Context Management**
+**Part 5: Context**
 - Pattern: Context Compression - Techniques for fitting information into the finite context window
 - Pattern: Context Editing - Automatically managing conversation context as it grows
 - Pattern: Variables Manager - Centralized registry for tracking execution variables with rich metadata
@@ -103,7 +103,7 @@ This book is crafted to be a practical and accessible resource. Its primary focu
 
 ### For Beginners
 
-Start with **Part 1: Introduction & Foundations** to understand the core concepts and context. Then work through **Part 2: Core Workflow** in order. These build upon each other and establish fundamental concepts. Practice with the code examples to build understanding. Don't rush—take time to experiment with each pattern before moving to the next. As you progress, explore **Part 3: Tool Use** and **Part 4: Reasoning & Planning** to build more sophisticated capabilities.
+Start with **Part 1: Introduction & Foundations** to understand the core concepts and context. Then work through **Part 2: Core Workflow** in order. These build upon each other and establish fundamental concepts. Practice with the code examples to build understanding. Don't rush—take time to experiment with each pattern before moving to the next. As you progress, explore **Part 3: Tools** and **Part 4: Reasoning & Planning** to build more sophisticated capabilities.
 
 ### For Experienced Developers
 
