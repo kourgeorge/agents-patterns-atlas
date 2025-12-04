@@ -687,6 +687,10 @@ This pattern works well with:
 This pattern is often combined with:
 - **Multi-Agent Architectures:** This is the most common pattern within multi-agent systems.
 
+- **Pattern: Swarm/Consensus Architecture:** Hybrid systems can combine centralized orchestration with decentralized consensus for specific subtasks.
+
+- **Pattern: Evaluator-Optimizer:** Orchestrators can coordinate Generator-Evaluator pairs, where workers generate outputs and specialized evaluator workers review them.
+
 - **Tool Use:** Each worker may have specialized tools for their domain (research tools, coding tools, writing tools).
 
 - **Memory Management:** Shared state and context enable orchestrator-worker coordination.

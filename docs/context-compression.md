@@ -188,7 +188,7 @@ A pattern focused specifically on **optimizing context window usage** could cove
 
 ### Attention Engineering
 
-While attention manipulation is discussed, a dedicated **Attention Engineering** pattern could provide:
+**Attention Engineering** is now a dedicated pattern in this part, providing:
 - Systematic approaches to information positioning
 - Recency bias exploitation techniques
 - Attention scoring and prioritization

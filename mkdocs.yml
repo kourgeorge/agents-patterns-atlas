@@ -97,6 +97,8 @@ nav:
 - Multi-Agent Systems:
     - Multi-Agent Architectures: multi-agent.md
     - "Pattern: Orchestrator-Worker": orchestrator-worker.md
+    - "Pattern: Swarm/Consensus Architecture": swarm-consensus.md
+    - "Pattern: Evaluator-Optimizer": evaluator-optimizer.md
 - Human input and Recovery:
     - Learning and Adaptation: learning-adaptation.md
     - "Pattern: Exception Handling and Recovery": exception-handling.md
