@@ -1,11 +1,14 @@
 # About This Book
 
-This interactive book is a comprehensive guide to building intelligent, goal-oriented AI agnts. 
+
+This book is a comprehensive guide to building intelligent, goal-oriented AI agents. 
 As we transition from the era of Generative AI—where models simply respond to prompts—to the era of Agentic AI—where systems actively pursue objectives and interact with their environment—developers need practical patterns and principles to construct reliable, scalable agentic systems. This book provides exactly that: a hands-on collection of **essential design patterns** that cover everything from foundational workflow patterns like prompt chaining and routing, to advanced capabilities such as multi-agent collaboration, memory management, and safety mechanisms.
 
 These design patterns were extracted through careful analysis and dissection of real-world agent implementations, including systems like IBM's CUGA (Configurable Generalist Agent) and LangChain's Deep Agents. By examining how successful agent architectures are constructed, we've identified reusable patterns, design components, and principles that can be applied across different agentic systems. This pattern extraction approach allows us to learn from the best practices of existing systems and codify them into transferable knowledge that can accelerate the development of new agentic applications.
 
 Each pattern is presented with clear explanations, practical guidelines for when to use it, and real-world examples that demonstrate how to implement these concepts in production systems. Whether you're building simple single-agent workflows or complex multi-agent architectures, this book serves as both a reference guide and a practical handbook for navigating the rapidly evolving landscape of agentic AI development.
+
+**George Kour** 
 
 ## Book Structure
 
@@ -133,7 +136,7 @@ Let's begin this hands-on journey into building intelligent, agentic systems!
 
 In a fitting demonstration of the book's subject matter, much of this adaptation was created with the assistance of AI writing agents. This approach reflects the very principles and patterns discussed throughout the book—using intelligent agents to structure, organize, and present complex information.
 
-The content has been carefully reviewed and validated by the authors to ensure accuracy and quality. However, given the collaborative nature of AI-assisted content creation, there may occasionally be errors, inconsistencies, or areas that could benefit from improvement.
+The content has been carefully reviewed and validated by the author to ensure accuracy and quality. However, given the collaborative nature of AI-assisted content creation, there may occasionally be errors, inconsistencies, or areas that could benefit from improvement.
 
 If you encounter any issues, have suggestions for improvement, or notice any errors, we would greatly appreciate your feedback. Please contact the author at **kourgeorge@gmail.com**. Your input helps us maintain and improve the quality of this resource for the entire community.
 
