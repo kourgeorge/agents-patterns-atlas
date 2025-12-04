@@ -92,10 +92,10 @@ nav:
     - Memory Management: memory-management.md
     - "Pattern: Recitation": recitation.md
     - "Pattern: Filesystem as Context": external-memory.md
-    - "Pattern: Knowledge Retrieval (RAG)": knowledge-retrieval.md
+    - "Pattern: RAG": knowledge-retrieval.md
 - Multi-Agent Systems:
     - Multi-Agent Architectures: multi-agent.md
-    - "Pattern: Orchestrator-Worker (Coordinator)": orchestrator-worker.md
+    - "Pattern: Orchestrator-Worker": orchestrator-worker.md
 - Human input and Recovery:
     - Learning and Adaptation: learning-adaptation.md
     - "Pattern: Exception Handling and Recovery": exception-handling.md
