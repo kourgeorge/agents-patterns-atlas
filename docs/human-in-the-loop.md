@@ -18,16 +18,84 @@ HITL acknowledges that even with rapidly advancing AI technologies, human oversi
 HITL encompasses several key aspects: Human Oversight (monitoring AI performance and output), Intervention and Correction (humans rectifying errors or guiding agents), Human Feedback for Learning (collecting feedback to refine models), Decision Augmentation (AI provides analysis, humans make final decisions), Human-Agent Collaboration (cooperative interaction leveraging respective strengths), and Escalation Policies (protocols for when agents should escalate to humans).
 
 ### Key Concepts
+- **Interruptible Workflow:** The agent workflow can be paused at specific nodes to request human input, approval, or guidance.
 - **Human Oversight:** Monitoring AI agent performance and output to ensure adherence to guidelines and prevent undesirable outcomes.
 - **Intervention and Correction:** Human operators rectifying errors, supplying missing data, or guiding agents when they encounter problems.
+- **Action Handlers:** Different types of human interactions (confirmations, text input, selections) with corresponding handlers that process responses and route workflow accordingly.
+- **State Preservation:** Agent state is preserved during workflow pauses, enabling seamless resumption after human response.
+- **Configurable Approval Points:** Workflow can be configured to interrupt at specific nodes (after tool calls, before critical actions, etc.) for human approval.
 - **Human Feedback for Learning:** Collecting and using human feedback to refine AI models, prominently in reinforcement learning with human feedback.
 - **Decision Augmentation:** AI provides analyses and recommendations, humans make final decisions, enhancing decision-making through AI-generated insights.
 - **Escalation Policies:** Established protocols dictating when and how agents should escalate tasks to human operators.
 
 ### How It Works
-HITL works through structured interaction patterns. Agents operate autonomously for routine tasks but identify scenarios requiring human review. When such scenarios are detected, agents initiate escalation processes, transferring control or requesting input from human operators. Human operators provide validation, correction, guidance, or make final decisions. This feedback is then incorporated into the agent's context, potentially informing future behavior through learning mechanisms.
 
-The pattern can be implemented in diverse ways: humans acting as validators reviewing AI outputs, humans actively guiding AI behavior in real-time, or humans collaborating with AI as partners through interactive dialog. Regardless of implementation, HITL maintains human control and oversight, ensuring AI systems remain aligned with human ethics, values, goals, and societal expectations.
+HITL works through an **interruptible workflow pattern** that strategically pauses agent execution at configurable approval points:
+
+**1. Workflow Interruption**
+When an agent determines human input is needed, it creates a `FollowUpAction` specifying:
+- **Action Type:** The type of interaction needed (confirmation, text input, selection, etc.)
+- **Action Description:** What the human needs to do or decide
+- **Return Point:** Which node to return to after human response
+
+**2. Suggest Human Actions**
+The `SuggestHumanActions` node:
+- Receives the action request from the agent
+- Adds it to the conversation history
+- Routes to `WaitForResponse` node
+
+**3. Wait for Response**
+The `WaitForResponse` node:
+- Uses graph interrupts to pause workflow execution
+- Preserves complete agent state (variables, history, context)
+- Waits for human response via the interrupt mechanism
+- Captures the human's response in `ActionResponse` format
+
+**4. Resume with Response**
+After receiving human response:
+- State is restored with the human's input
+- Action handlers process the response based on `action_id`
+- Workflow resumes at the appropriate node (typically the node that requested the interruption)
+
+**5. Action Handlers**
+Different action types have corresponding handlers:
+- **Confirmation Actions:** Approve/reject decisions (e.g., tool execution, flow approval)
+- **Text Input Actions:** Natural language responses, additional information
+- **Selection Actions:** Choose from predefined options
+- **Custom Actions:** Domain-specific handlers for specialized workflows
+
+**Implementation Components:**
+
+- **SuggestHumanActions Node:** Initiates human interaction, routes to wait node
+- **WaitForResponse Node:** Pauses workflow using graph interrupts, preserves state
+- **InterruptToolNode:** Special interrupt point after tool calls for approval
+- **Action Handlers:** Process human responses and route workflow accordingly
+
+**State Preservation:**
+The complete agent state (messages, variables, execution history, context) is preserved during the pause, ensuring seamless resumption. The workflow can resume exactly where it left off, with the human's response incorporated into the state.
+
+**Configurable Approval Points:**
+Approval points can be configured at:
+- After tool/API calls (via `InterruptToolNode`)
+- Before critical actions (via agent decision to escalate)
+- At specific workflow nodes (via conditional routing)
+- Based on confidence thresholds or policy violations
+
+## Benefits
+
+The interruptible workflow pattern provides several key benefits:
+
+- **Safety and Compliance:** Human approval at critical points ensures compliance with regulations, safety protocols, and ethical guidelines. Critical actions (e.g., financial transactions, medical decisions) can be reviewed before execution.
+
+- **User Control:** Users maintain control over agent behavior, approving or rejecting actions, providing guidance, and making final decisions. This builds trust and ensures alignment with user intent.
+
+- **Error Recovery:** When agents encounter errors or ambiguous situations, human intervention can provide correction, additional context, or alternative approaches, enabling graceful error recovery.
+
+- **Policy Enforcement:** Approval points can enforce organizational policies, ensuring agents don't violate constraints or exceed authority. Policy violations trigger human review automatically.
+
+- **Quality Assurance:** Human review of outputs ensures quality standards are met, especially for high-stakes or public-facing content. Review workflows can catch errors before they impact users.
+
+- **Learning and Adaptation:** Human feedback collected during HITL interactions can be used to improve agent behavior, refine policies, and enhance future autonomous performance.
 
 ## When to Use This Pattern
 
@@ -62,265 +130,587 @@ The Human-in-the-Loop pattern is vital across a wide range of industries and app
 
 ## Implementation
 
-### Prerequisites
-```bash
-pip install langchain langchain-openai
-# or
-pip install google-adk
-```
+### Core Components
 
-### Basic Example
+**Interruptible Workflow Pattern:**
+
 ```python
-from langchain_openai import ChatOpenAI
-from typing import Dict, Optional
-import json
-
-class HITLAgent:
-    def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
-        self.escalation_threshold = 0.7
-    
-    def should_escalate(self, task: str, confidence: float, context: Dict) -> bool:
-        """Determine if task should be escalated to human."""
-        # Check confidence threshold
-        if confidence < self.escalation_threshold:
-            return True
-        
-        # Check for sensitive keywords
-        sensitive_keywords = ["refund", "legal", "medical", "financial"]
-        if any(keyword in task.lower() for keyword in sensitive_keywords):
-            return True
-        
-        # Check for ambiguity indicators
-        if context.get("ambiguity_score", 0) > 0.8:
-            return True
-        
-        return False
-    
-    def process_with_hitl(self, task: str, context: Dict) -> Dict:
-        """Process task with human-in-the-loop when needed."""
-        # AI processes task
-        ai_response = self.llm.invoke(f"Process: {task}").content
-        confidence = self._assess_confidence(ai_response, task)
-        
-        # Check if escalation needed
-        if self.should_escalate(task, confidence, context):
-            return {
-                "status": "escalated",
-                "ai_suggestion": ai_response,
-                "requires_human_review": True
-            }
-        
-        return {
-            "status": "completed",
-            "response": ai_response,
-            "confidence": confidence
-        }
-    
-    def _assess_confidence(self, response: str, task: str) -> float:
-        """Assess AI response confidence."""
-        # Simplified confidence assessment
-        prompt = f"""Rate your confidence (0.0-1.0) in this response:
-        Task: {task}
-        Response: {response}
-        Return only the confidence score."""
-        
-        result = self.llm.invoke(prompt).content
-        try:
-            return float(result.strip())
-        except:
-            return 0.5
-
-# Usage
-agent = HITLAgent()
-result = agent.process_with_hitl(
-    "Process customer refund request",
-    {"ambiguity_score": 0.9}
-)
-
-if result["status"] == "escalated":
-    print("Escalated to human for review")
-    # Human reviews and provides final decision
-```
-
-**Explanation:**
-This example demonstrates basic HITL implementation with escalation logic. The agent processes tasks autonomously but escalates to humans when confidence is low, sensitive topics are involved, or ambiguity is high. This ensures human oversight for critical or uncertain scenarios.
-
-### Advanced Example
-```python
-from langchain_openai import ChatOpenAI
-from typing import Dict, List, Optional, Callable
-import json
+from typing import Literal, Optional, List, TypedDict, Any
 from enum import Enum
+from pydantic import BaseModel, Field
+from langgraph.types import Command, interrupt
+from langchain_core.messages import AIMessage
 
-class EscalationLevel(Enum):
-    NONE = "none"
-    REVIEW = "review"
-    APPROVAL = "approval"
-    FULL_CONTROL = "full_control"
+class ActionType(str, Enum):
+    """Types of human interactions."""
+    CONFIRMATION = "confirmation"
+    NATURAL_LANGUAGE = "natural_language"
+    TEXT_INPUT = "text_input"
+    SELECT = "select"
+    MULTI_SELECT = "multi_select"
 
-class AdvancedHITLSystem:
-    def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
-        self.escalation_policies = {}
-        self.human_feedback_log = []
-    
-    def set_escalation_policy(self, domain: str, policy: Dict):
-        """Set escalation policy for a domain."""
-        self.escalation_policies[domain] = policy
-    
-    def determine_escalation(self, task: str, domain: str, context: Dict) -> EscalationLevel:
-        """Determine escalation level based on policies."""
-        policy = self.escalation_policies.get(domain, {})
-        
-        # Check risk level
-        risk_level = context.get("risk_level", "low")
-        if risk_level == "high":
-            return EscalationLevel.FULL_CONTROL
-        elif risk_level == "medium":
-            return EscalationLevel.APPROVAL
-        
-        # Check confidence
-        confidence = context.get("confidence", 1.0)
-        if confidence < policy.get("confidence_threshold", 0.7):
-            return EscalationLevel.REVIEW
-        
-        # Check for policy violations
-        if self._check_policy_violations(task, policy):
-            return EscalationLevel.APPROVAL
-        
-        return EscalationLevel.NONE
-    
-    def _check_policy_violations(self, task: str, policy: Dict) -> bool:
-        """Check if task violates policies."""
-        restricted_keywords = policy.get("restricted_keywords", [])
-        return any(keyword in task.lower() for keyword in restricted_keywords)
-    
-    def process_with_escalation(self, task: str, domain: str, context: Dict) -> Dict:
-        """Process task with appropriate escalation level."""
-        escalation_level = self.determine_escalation(task, domain, context)
-        
-        if escalation_level == EscalationLevel.NONE:
-            # Autonomous processing
-            response = self.llm.invoke(f"Process: {task}").content
-            return {"status": "autonomous", "response": response}
-        
-        elif escalation_level == EscalationLevel.REVIEW:
-            # AI processes, human reviews
-            ai_response = self.llm.invoke(f"Process: {task}").content
-            return {
-                "status": "pending_review",
-                "ai_response": ai_response,
-                "requires_human_review": True
-            }
-        
-        elif escalation_level == EscalationLevel.APPROVAL:
-            # AI suggests, human approves
-            ai_suggestion = self.llm.invoke(f"Suggest approach for: {task}").content
-            return {
-                "status": "pending_approval",
-                "ai_suggestion": ai_suggestion,
-                "requires_human_approval": True
-            }
-        
-        else:  # FULL_CONTROL
-            # Human handles entirely
-            return {
-                "status": "human_control",
-                "message": "Task requires human handling",
-                "requires_human_action": True
-            }
-    
-    def incorporate_feedback(self, task_id: str, human_feedback: Dict):
-        """Incorporate human feedback for learning."""
-        feedback_entry = {
-            "task_id": task_id,
-            "feedback": human_feedback,
-            "timestamp": time.time()
-        }
-        self.human_feedback_log.append(feedback_entry)
-        
-        # Use feedback to improve future responses
-        # In production, this could update model weights or prompt templates
+class SelectOption(BaseModel):
+    """Option for select actions."""
+    value: str
+    label: str
+
+class FollowUpAction(BaseModel):
+    """Action request for human input."""
+    action_id: str
+    action_name: str
+    description: str
+    type: ActionType
+    options: Optional[List[SelectOption]] = None
+    placeholder: Optional[str] = None
+    button_text: Optional[str] = None
+
+class ActionResponse(BaseModel):
+    """Human response to action request."""
+    action_id: str
+    response_type: ActionType
+    text_response: Optional[str] = None
+    confirmed: Optional[bool] = None
+    selected_values: Optional[List[str]] = None
+
+class AgentState(TypedDict, total=False):
+    """Agent state with HITL support."""
+    messages: List[AIMessage]
+    hitl_action: Optional[FollowUpAction]
+    hitl_response: Optional[ActionResponse]
+    sender: str
+    tool_call: Optional[dict]
+    next_action: Optional[dict]
+    context: Dict[str, Any]
 
 # Usage
-hitl_system = AdvancedHITLSystem()
-
-# Set escalation policy
-hitl_system.set_escalation_policy("finance", {
-    "confidence_threshold": 0.9,
-    "restricted_keywords": ["refund", "chargeback", "dispute"]
-})
-
-# Process with escalation
-result = hitl_system.process_with_escalation(
-    "Process refund request for order #12345",
-    "finance",
-    {"risk_level": "high", "confidence": 0.6}
+action = FollowUpAction(
+    action_id="approve_tool",
+    action_name="Approve Tool",
+    description="Approve execution?",
+    type=ActionType.CONFIRMATION,
+    button_text="Approve"
 )
+print(f"Created action: {action.action_name}")
+```
 
-if result["status"] == "pending_approval":
-    # Human reviews and approves
-    human_decision = "approved"  # or "rejected"
-    hitl_system.incorporate_feedback("task_123", {
-        "decision": human_decision,
-        "notes": "Approved after verification"
-    })
+**SuggestHumanActions Node:**
+
+```python
+from langgraph.types import Command
+from langchain_core.messages import AIMessage
+
+class SuggestHumanActions:
+    """Node that initiates human interaction."""
+    
+    @staticmethod
+    async def node_handler(state: AgentState) -> Command:
+        """Handle suggest human actions node."""
+        if not state.get("hitl_action"):
+            raise ValueError("hitl_action must be set before SuggestHumanActions")
+        
+        # Add action to conversation history
+        state["messages"].append(AIMessage(
+            content=state["hitl_action"].model_dump_json()
+        ))
+        
+        # Route to wait node
+        return Command(update=state, goto="WaitForResponse")
+
+# Usage
+state: AgentState = {
+    "messages": [],
+    "hitl_action": FollowUpAction(
+        action_id="approve",
+        action_name="Approve",
+        description="Approve this action?",
+        type=ActionType.CONFIRMATION
+    ),
+    "hitl_response": None,
+    "sender": "PlannerAgent",
+    "tool_call": None
+}
+command = await SuggestHumanActions.node_handler(state)
+```
+
+**WaitForResponse Node:**
+
+```python
+from langgraph.types import Command, interrupt
+
+class WaitForResponse:
+    """Node that pauses workflow for human response."""
+    
+    @staticmethod
+    async def node_handler(state: AgentState) -> Command:
+        """Handle wait for response node."""
+        if not state.get("hitl_action"):
+            raise ValueError("hitl_action must be set before WaitForResponse")
+        
+        # Interrupt workflow - preserves state automatically
+        # In real implementation, this pauses and waits for human input
+        response_data = interrupt(state["hitl_action"].model_dump())
+        
+        # Parse human response
+        state["hitl_response"] = ActionResponse(**response_data)
+        
+        # Clear action (response is now in hitl_response)
+        prev_sender = state.get("sender", "PlannerAgent")
+        state["sender"] = "WaitForResponse"
+        
+        # Return to previous node that requested interruption
+        return Command(update=state, goto=prev_sender)
+
+# Usage (in real workflow, interrupt() would pause and wait)
+# state["hitl_action"] = action
+# command = await WaitForResponse.node_handler(state)
+```
+
+**InterruptToolNode:**
+
+```python
+from langchain_core.messages import AIMessage
+
+class InterruptToolNode:
+    """Special interrupt point after tool calls."""
+    
+    @staticmethod
+    async def node_handler(state: AgentState) -> AgentState:
+        """Handle interrupt tool node."""
+        # Tool call was interrupted, restore it
+        if state.get("tool_call"):
+            msg = AIMessage(content="", tool_calls=[state["tool_call"]])
+            state["messages"].append(msg)
+            state["tool_call"] = None
+        return state
+
+# Usage
+state: AgentState = {
+    "messages": [],
+    "hitl_action": None,
+    "hitl_response": None,
+    "sender": "ActionAgent",
+    "tool_call": {"name": "execute_task", "args": {"task": "process"}}
+}
+state = await InterruptToolNode.node_handler(state)
+```
+
+**Action Handlers:**
+
+```python
+from typing import Callable
+from langgraph.types import Command
+
+class ActionHandler:
+    """Processes human responses and routes workflow."""
+    
+    def __init__(self):
+        self.handlers: dict[str, Callable] = {
+            "approve_tool": self._handle_approval,
+            "consult_human": self._handle_consultation,
+            "save_reuse": self._handle_save_reuse,
+        }
+    
+    def handle(self, state: AgentState, node_name: str) -> Command:
+        """Route based on action_id."""
+        if not state.get("hitl_response"):
+            raise ValueError("hitl_response must be set")
+        
+        action_id = state["hitl_response"].action_id
+        
+        if action_id in self.handlers:
+            return self.handlers[action_id](state, node_name)
+        
+        # Default: return to previous node
+        return Command(update=state, goto=state.get("sender", "PlannerAgent"))
+    
+    def _handle_approval(self, state: AgentState, node_name: str) -> Command:
+        """Handle tool execution approval."""
+        if state["hitl_response"].confirmed:
+            # Execute approved tool
+            return Command(update=state, goto="ExecuteTool")
+        else:
+            # Reject, return to planner
+            return Command(update=state, goto="PlannerAgent")
+    
+    def _handle_consultation(self, state: AgentState, node_name: str) -> Command:
+        """Handle human consultation response."""
+        # Use human's guidance
+        guidance = state["hitl_response"].text_response
+        # Store guidance in state for use by planner
+        return Command(update=state, goto="PlannerAgent")
+    
+    def _handle_save_reuse(self, state: AgentState, node_name: str) -> Command:
+        """Handle save/reuse action."""
+        return Command(update=state, goto="ReuseAgent")
+
+# Usage
+handler = ActionHandler()
+state["hitl_response"] = ActionResponse(
+    action_id="approve_tool",
+    response_type=ActionType.CONFIRMATION,
+    confirmed=True
+)
+command = handler.handle(state, "PlannerAgent")
+```
+
+### Basic Example: Interruptible Workflow
+
+```python
+import asyncio
+from langgraph.types import Command
+from langchain_core.messages import AIMessage
+
+def requires_approval(action: dict) -> bool:
+    """Determine if action requires human approval."""
+    # Example: require approval for critical actions
+    critical_actions = ["delete", "transfer", "purchase"]
+    return any(critical in action.get("name", "").lower() for critical in critical_actions)
+
+# Agent determines human approval needed
+async def planner_node(state: AgentState) -> Command:
+    """Planner node that may request human approval."""
+    next_action = state.get("next_action", {})
+    
+    # Check if tool execution needs approval
+    if requires_approval(next_action):
+        # Create action request
+        state["hitl_action"] = FollowUpAction(
+            action_id="approve_tool",
+            action_name="Approve Tool Execution",
+            description="Approve execution of this tool?",
+            type=ActionType.CONFIRMATION,
+            button_text="Approve"
+        )
+        state["sender"] = "PlannerAgent"
+        return Command(update=state, goto="SuggestHumanActions")
+    
+    # Continue autonomously
+    return Command(update=state, goto="ExecuteTool")
+
+# SuggestHumanActions node
+async def suggest_actions_node(state: AgentState) -> Command:
+    """Node that suggests human actions."""
+    if not state.get("hitl_action"):
+        raise ValueError("hitl_action must be set")
+    
+    # Add action to history
+    state["messages"].append(AIMessage(
+        content=state["hitl_action"].model_dump_json()
+    ))
+    return Command(update=state, goto="WaitForResponse")
+
+# WaitForResponse node - pauses workflow
+async def wait_for_response_node(state: AgentState) -> Command:
+    """Node that waits for human response."""
+    if not state.get("hitl_action"):
+        raise ValueError("hitl_action must be set")
+    
+    # Interrupt preserves state automatically
+    # In real implementation, this pauses and waits
+    response_data = interrupt(state["hitl_action"].model_dump())
+    state["hitl_response"] = ActionResponse(**response_data)
+    
+    # Return to node that requested interruption
+    prev_sender = state.get("sender", "PlannerAgent")
+    return Command(update=state, goto=prev_sender)
+
+# Action handler processes response
+async def handle_response(state: AgentState) -> Command:
+    """Handle human response and route workflow."""
+    handler = ActionHandler()
+    return handler.handle(state, "PlannerAgent")
+
+# Usage example
+async def example_workflow():
+    state: AgentState = {
+        "messages": [],
+        "hitl_action": None,
+        "hitl_response": None,
+        "sender": "PlannerAgent",
+        "tool_call": None,
+        "next_action": {"name": "delete_file"}  # Critical action
+    }
+    
+    # Planner determines approval needed
+    command = await planner_node(state)
+    print(f"Planner routed to: {command.goto}")
+    
+    # Suggest actions
+    if command.goto == "SuggestHumanActions":
+        command = await suggest_actions_node(state)
+        print(f"Suggested actions, routing to: {command.goto}")
+
+# Run: asyncio.run(example_workflow())
 ```
 
 **Explanation:**
-This advanced example implements a comprehensive HITL system with multiple escalation levels, domain-specific policies, and feedback incorporation. It demonstrates production-ready HITL with autonomous processing, review workflows, approval processes, and learning from human feedback.
+This demonstrates the interruptible workflow pattern. The planner creates an action request, SuggestHumanActions routes to WaitForResponse, which pauses the workflow. After human response, the handler processes it and routes back to the appropriate node.
 
-### Framework-Specific Examples
+### Advanced Example: Multiple Action Types
 
-#### Google ADK with Escalation
 ```python
-from google.adk.agents import Agent
-from google.adk.tools.tool_context import ToolContext
+from typing import Dict, Any, Callable
+from langgraph.types import Command
 
-def escalate_to_human(issue_type: str) -> dict:
-    """Escalate issue to human operator."""
-    return {
-        "status": "escalated",
-        "message": f"Escalated {issue_type} to human specialist"
-    }
+# Confirmation action (approve/reject)
+async def request_approval(state: AgentState) -> Command:
+    """Request approval for an action."""
+    state["hitl_action"] = FollowUpAction(
+        action_id="approve_tool",
+        action_name="Approve Tool",
+        description="Approve execution?",
+        type=ActionType.CONFIRMATION,
+        button_text="Approve"
+    )
+    state["sender"] = "PlannerAgent"
+    return Command(update=state, goto="SuggestHumanActions")
 
-technical_support_agent = Agent(
-    name="technical_support_specialist",
-    model="gemini-2.0-flash",
-    instruction="""You are a technical support specialist.
-    For complex issues beyond basic troubleshooting:
-    1. Use escalate_to_human to transfer to a human specialist.
-    Maintain professional, empathetic tone.""",
-    tools=[troubleshoot_issue, create_ticket, escalate_to_human]
-)
+# Natural language consultation
+async def consult_human(state: AgentState) -> Command:
+    """Request human consultation."""
+    state["hitl_action"] = FollowUpAction(
+        action_id="consult_human",
+        action_name="Human Consultation",
+        description="How should I proceed?",
+        type=ActionType.NATURAL_LANGUAGE,
+        placeholder="Provide guidance..."
+    )
+    state["sender"] = "PlannerAgent"
+    return Command(update=state, goto="SuggestHumanActions")
+
+# Selection action (choose from options)
+async def request_selection(state: AgentState) -> Command:
+    """Request selection from options."""
+    state["hitl_action"] = FollowUpAction(
+        action_id="select_option",
+        action_name="Choose Approach",
+        description="Which approach should I use?",
+        type=ActionType.SELECT,
+        options=[
+            SelectOption(value="approach_a", label="Approach A"),
+            SelectOption(value="approach_b", label="Approach B")
+        ]
+    )
+    state["sender"] = "PlannerAgent"
+    return Command(update=state, goto="SuggestHumanActions")
+
+# Action handler with multiple handlers
+class AdvancedActionHandler:
+    """Advanced handler supporting multiple action types."""
+    
+    def __init__(self):
+        self.handlers: Dict[str, Callable[[AgentState], Command]] = {
+            "approve_tool": self._handle_approval,
+            "consult_human": self._handle_consultation,
+            "select_option": self._handle_selection,
+        }
+    
+    def handle(self, state: AgentState) -> Command:
+        """Route based on action_id."""
+        if not state.get("hitl_response"):
+            raise ValueError("hitl_response must be set")
+        
+        action_id = state["hitl_response"].action_id
+        
+        if action_id not in self.handlers:
+            # Default: return to sender
+            return Command(update=state, goto=state.get("sender", "PlannerAgent"))
+        
+        return self.handlers[action_id](state)
+    
+    def _handle_approval(self, state: AgentState) -> Command:
+        """Handle approval response."""
+        if state["hitl_response"].confirmed:
+            return Command(update=state, goto="ExecuteTool")
+        return Command(update=state, goto="PlannerAgent")
+    
+    def _handle_consultation(self, state: AgentState) -> Command:
+        """Handle consultation response."""
+        # Use human's text response
+        guidance = state["hitl_response"].text_response
+        
+        # Store guidance in state (would need to extend AgentState)
+        if "context" not in state:
+            state["context"] = {}
+        state["context"]["human_guidance"] = guidance
+        
+        return Command(update=state, goto="PlannerAgent")
+    
+    def _handle_selection(self, state: AgentState) -> Command:
+        """Handle selection response."""
+        # Use selected option
+        if not state["hitl_response"].selected_values:
+            raise ValueError("No selection made")
+        
+        selected = state["hitl_response"].selected_values[0]
+        
+        # Store selection in state
+        if "context" not in state:
+            state["context"] = {}
+        state["context"]["selected_approach"] = selected
+        
+        return Command(update=state, goto="PlannerAgent")
+
+# Usage
+handler = AdvancedActionHandler()
+
+# Example: Handle approval response
+state: AgentState = {
+    "messages": [],
+    "hitl_action": None,
+    "hitl_response": ActionResponse(
+        action_id="approve_tool",
+        response_type=ActionType.CONFIRMATION,
+        confirmed=True
+    ),
+    "sender": "PlannerAgent",
+    "tool_call": None,
+    "context": {}
+}
+command = handler.handle(state)
+print(f"Routed to: {command.goto}")
 ```
 
-#### LangChain with Human Review
+### Example: Interrupt After Tool Call
+
 ```python
-from langchain.agents import AgentExecutor
-from langchain.callbacks import HumanApprovalCallbackHandler
+from langgraph.graph import StateGraph
+from langchain_core.messages import AIMessage
 
-# Agent with human approval callback
-callback = HumanApprovalCallbackHandler()
+def needs_approval(state: AgentState) -> bool:
+    """Check if current state needs approval."""
+    # Example: require approval for tool calls
+    return state.get("tool_call") is not None
 
-executor = AgentExecutor(
-    agent=agent,
-    tools=tools,
-    callbacks=[callback],
-    verbose=True
-)
+# InterruptToolNode - special interrupt point
+async def interrupt_tool_node(state: AgentState) -> AgentState:
+    """Handle interrupt after tool call."""
+    # Tool call was interrupted, restore it
+    if state.get("tool_call"):
+        msg = AIMessage(content="", tool_calls=[state["tool_call"]])
+        state["messages"].append(msg)
+        state["tool_call"] = None
+    return state
 
-# Agent will request human approval for certain actions
-result = executor.invoke({"input": "Send email to customer"})
+async def action_node(state: AgentState) -> AgentState:
+    """Example action node that may create tool calls."""
+    # Simulate creating a tool call
+    state["tool_call"] = {"name": "execute_task", "args": {"task": "process"}}
+    return state
+
+# Configure graph to interrupt after tool calls
+def create_graph_with_interrupts():
+    """Create graph with interrupt points."""
+    graph = StateGraph(AgentState)
+    graph.add_node("action_agent", action_node)
+    graph.add_node("interrupt_tool", interrupt_tool_node)
+    
+    # Interrupt after action agent
+    graph.add_edge("action_agent", "interrupt_tool")
+    graph.add_conditional_edges(
+        "interrupt_tool",
+        lambda s: "suggest_actions" if needs_approval(s) else "continue"
+    )
+    return graph
+
+# Usage
+# graph = create_graph_with_interrupts()
+# compiled = graph.compile()
 ```
+
+### Workflow Integration
+
+```python
+from langgraph.graph import StateGraph, END
+from typing import Callable
+
+def requires_approval(state: AgentState) -> bool:
+    """Check if approval is required."""
+    return state.get("hitl_action") is not None
+
+async def executor_node(state: AgentState) -> AgentState:
+    """Example executor node."""
+    # Execute action
+    return state
+
+async def handle_response_node(state: AgentState) -> AgentState:
+    """Handle human response."""
+    handler = ActionHandler()
+    command = handler.handle(state, "PlannerAgent")
+    # In real implementation, would route based on command
+    return state
+
+# Complete HITL workflow
+def create_hitl_workflow():
+    """Create complete HITL workflow graph."""
+    graph = StateGraph(AgentState)
+    
+    # Add HITL nodes
+    graph.add_node("suggest_actions", suggest_actions_node)
+    graph.add_node("wait_response", wait_for_response_node)
+    graph.add_node("interrupt_tool", interrupt_tool_node)
+    graph.add_node("handle_response", handle_response_node)
+    
+    # Regular workflow nodes
+    graph.add_node("planner", planner_node)
+    graph.add_node("executor", executor_node)
+    
+    # Conditional routing with HITL
+    graph.add_conditional_edges(
+        "planner",
+        lambda s: "suggest_actions" if requires_approval(s) else "executor"
+    )
+    
+    # HITL flow
+    graph.add_edge("suggest_actions", "wait_response")
+    graph.add_edge("wait_response", "handle_response")
+    graph.add_edge("handle_response", "planner")  # Return to planner after handling
+    
+    # Interrupt after tool calls
+    graph.add_edge("executor", "interrupt_tool")
+    graph.add_conditional_edges(
+        "interrupt_tool",
+        lambda s: "suggest_actions" if requires_approval(s) else "planner"
+    )
+    
+    # Set entry point
+    graph.set_entry_point("planner")
+    
+    return graph
+
+# Usage
+# graph = create_hitl_workflow()
+# compiled = graph.compile()
+# result = await compiled.ainvoke(initial_state)
+```
+
+**Key Integration Points:**
+- **Configurable Interrupts:** Set approval points at specific nodes
+- **State Preservation:** Complete state preserved during pause
+- **Action Handlers:** Route workflow based on human response type
+- **Resume Logic:** Return to appropriate node after human input
 
 ## Key Takeaways
 
-- **Core Concept:** Human-in-the-Loop integrates human intelligence and judgment into AI workflows, ensuring safety, ethics, and effectiveness in complex scenarios.
-- **Best Practice:** Implement clear escalation policies, confidence thresholds, and feedback mechanisms for effective HITL.
-- **Common Pitfall:** HITL lacks scalability and depends on skilled operators; use hybrid approaches combining automation with selective human oversight.
-- **Performance Note:** HITL adds latency and cost but is essential for high-stakes applications requiring human judgment and oversight.
+- **Interruptible Workflow Pattern:** HITL uses an interruptible workflow that pauses execution at configurable approval points, preserving complete agent state during the pause for seamless resumption.
+
+- **Core Components:**
+  - **SuggestHumanActions:** Initiates human interaction, routes to wait node
+  - **WaitForResponse:** Pauses workflow using graph interrupts, preserves state
+  - **InterruptToolNode:** Special interrupt point after tool calls for approval
+  - **Action Handlers:** Process human responses and route workflow based on action type
+
+- **Action Types:** Support multiple interaction types (confirmation, text input, selection) with corresponding handlers that process responses and route workflow accordingly.
+
+- **State Preservation:** Complete agent state (messages, variables, execution history, context) is preserved during workflow pauses, enabling seamless resumption after human response.
+
+- **Configurable Approval Points:** Approval points can be configured at specific nodes (after tool calls, before critical actions, based on confidence thresholds) to balance automation with human oversight.
+
+- **Best Practice:** Implement clear escalation policies, confidence thresholds, and action handlers for effective HITL. Use different action types based on the type of human input needed.
+
+- **Common Pitfall:** HITL lacks scalability and depends on skilled operators; use hybrid approaches combining automation with selective human oversight at critical decision points.
+
+- **Performance Note:** HITL adds latency and cost but is essential for high-stakes applications requiring human judgment, safety compliance, and error recovery. The interruptible pattern ensures minimal overhead when human input isn't needed.
 
 ## Related Patterns
 

@@ -18,16 +18,336 @@ The Exception Handling and Recovery pattern provides a standardized solution for
 This pattern may sometimes be used with reflection. For example, if an initial attempt fails and raises an exception, a reflective process can analyze the failure and reattempt the task with a refined approach, such as an improved prompt, to resolve the error.
 
 ### Key Concepts
-- **Error Detection:** Meticulously identifying operational issues as they arise, including invalid tool outputs, API errors, timeouts, or incoherent responses.
-- **Error Handling:** Response plans including logging, retries, fallbacks, graceful degradation, and notifications.
-- **Recovery:** Restoring the agent to stable operation through state rollback, diagnosis, self-correction, or escalation.
-- **Proactive Preparation:** Anticipating potential issues and developing strategies to mitigate them before they occur.
-- **Reactive Strategies:** Responding to errors as they occur with appropriate handling mechanisms.
+- **Error Detection:** Meticulously identifying operational issues as they arise, including invalid tool outputs, API errors, timeouts, or incoherent responses. Detection can occur at multiple levels: tool execution, code execution, API responses, and output validation.
+- **Error Classification:** Categorizing errors by type (syntax errors, runtime exceptions, connection errors, validation errors) and severity (low, medium, high, critical) to determine appropriate handling strategies.
+- **Error Handling:** Response plans including logging, retries with exponential backoff, fallbacks, graceful degradation, and notifications. Different error types require different handling strategies.
+- **Retry Logic:** Automatic retry mechanisms for transient errors (connection failures, timeouts) with configurable retry counts and backoff strategies. Retries can be applied at tool execution, API calls, and structured output validation levels.
+- **Error Propagation:** Routing errors to appropriate handlers (plan controller for replanning, human-in-the-loop for escalation, error logging for diagnostics) based on error severity and context.
+- **Recovery:** Restoring the agent to stable operation through state rollback, diagnosis, self-correction, replanning, or escalation. Recovery strategies adapt based on error type and workflow context.
+- **Proactive Preparation:** Anticipating potential issues and developing strategies to mitigate them before they occur, such as session validation before tool execution.
+- **Reactive Strategies:** Responding to errors as they occur with appropriate handling mechanisms, including error detection in output content and automatic error routing.
 
 ### How It Works
-Exception Handling and Recovery operates through a three-stage process: (1) Error Detection—the system identifies operational issues through validation, monitoring, or anomaly detection, (2) Error Handling—once detected, errors are handled through logging, retries, fallbacks, graceful degradation, or notifications, (3) Recovery—the system restores stable operation through state rollback, diagnosis, self-correction, replanning, or escalation to human operators.
 
-Error detection involves validating tool outputs, checking API error codes, monitoring response times, and identifying incoherent responses. Monitoring by other agents or specialized monitoring systems enables proactive anomaly detection. Error handling strategies include logging for debugging, retrying with adjusted parameters for transient errors, using alternative strategies (fallbacks), maintaining partial functionality (graceful degradation), and alerting human operators (notifications). Recovery mechanisms include state rollback to undo error effects, diagnosis to investigate causes, self-correction through plan adjustment, and escalation for complex or severe cases.
+Exception Handling and Recovery operates through a multi-layered process that detects, classifies, handles, and recovers from errors at different stages of agent execution:
+
+**1. Error Detection (Multi-Level)**
+
+**Tool Execution Level:**
+- Catch exceptions during tool invocation
+- Detect connection errors (e.g., closed sessions, network failures)
+- Validate tool outputs before use
+- Check for invalid responses or missing data
+
+**Code Execution Level:**
+- Catch syntax errors during code generation/execution
+- Detect runtime exceptions (TypeError, ValueError, etc.)
+- Monitor execution timeouts
+- Identify error indicators in output content (e.g., "Error:", "Exception:", "Traceback")
+
+**API Response Level:**
+- Check for error status codes in API responses
+- Validate response schemas
+- Detect exception status in response payloads
+- Monitor for timeout or connection errors
+
+**Output Validation Level:**
+- Validate structured outputs against schemas
+- Detect missing required fields
+- Identify format mismatches
+- Retry validation failures automatically
+
+**2. Error Classification**
+
+Errors are classified by:
+- **Type:** Syntax errors, runtime exceptions, connection errors, validation errors, timeout errors
+- **Severity:** Low (recoverable), Medium (requires attention), High (significant impact), Critical (system failure)
+- **Transience:** Transient (retryable) vs. Permanent (requires different strategy)
+
+**3. Error Handling Strategies**
+
+**Retry Logic:**
+- Automatic retries for transient errors (connection failures, timeouts)
+- Exponential backoff between retry attempts
+- Configurable retry counts (typically 3 attempts)
+- Session reconnection for connection errors
+
+**Fallback Mechanisms:**
+- Alternative tool or API when primary fails
+- Simplified operations when complex ones fail
+- Default values when data retrieval fails
+
+**Error Propagation:**
+- Route errors to appropriate handlers based on context
+- For sub-tasks: propagate to plan controller for replanning
+- For critical errors: escalate to human-in-the-loop
+- For validation errors: retry with corrected inputs
+
+**Logging and Diagnostics:**
+- Comprehensive error logging with context
+- Error tracking in execution history
+- State updates with error information
+- Diagnostic information for debugging
+
+**4. Recovery Mechanisms**
+
+**State Management:**
+- Update execution history with error information
+- Preserve partial results when possible
+- Mark failed subtasks in plan progress
+- Store error messages for context
+
+**Replanning:**
+- Return to plan controller with error context
+- Allow plan controller to adjust strategy
+- Retry with modified approach or different tools
+- Skip failed subtasks if alternative path exists
+
+**Self-Correction:**
+- Analyze error to identify root cause
+- Adjust parameters or approach based on error
+- Retry with corrected inputs
+- Use alternative methods when available
+
+**Escalation:**
+- Escalate critical errors to human operators
+- Request human guidance for ambiguous errors
+- Provide error context for human review
+
+**5. Error Recovery Flow**
+
+```
+Error Detected → Classify Error → Select Strategy → Execute Recovery
+     ↓                ↓                ↓                  ↓
+  Log Error    Transient?      Retry/Fallback      Success?
+     ↓            ↓                ↓                  ↓
+  Update State  Permanent?     Replan/Escalate    Continue/Abort
+```
+
+**Implementation Patterns:**
+
+- **Try-Except Blocks:** Wrap risky operations (tool calls, code execution, API calls)
+- **Error Indicators:** Check output content for error patterns
+- **Session Validation:** Validate sessions before operations, reconnect if needed
+- **Structured Output Retry:** Automatic retry for validation failures
+- **Error Routing:** Route errors to appropriate nodes (plan controller, human-in-the-loop, error handler)
+
+## Error Handling Patterns
+
+### Pattern 1: Try-Except with Retry
+
+Wrap risky operations in try-except blocks with automatic retry for transient errors:
+
+```python
+import asyncio
+from typing import Callable, Any, TypeVar
+
+T = TypeVar('T')
+
+class TransientError(Exception):
+    """Error that can be retried."""
+    pass
+
+async def execute_with_retry(
+    operation: Callable[[], Any],
+    max_retries: int = 3
+) -> Any:
+    """Execute operation with automatic retry for transient errors."""
+    for attempt in range(max_retries):
+        try:
+            if asyncio.iscoroutinefunction(operation):
+                return await operation()
+            else:
+                return operation()
+        except TransientError as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # Exponential backoff
+                await asyncio.sleep(wait_time)
+                continue
+            raise
+        except Exception as e:
+            # Non-transient errors are re-raised immediately
+            raise
+
+# Usage
+async def risky_operation():
+    # Simulated operation that might fail
+    import random
+    if random.random() < 0.5:
+        raise TransientError("Temporary failure")
+    return "Success"
+
+result = await execute_with_retry(risky_operation, max_retries=3)
+```
+
+### Pattern 2: Error Detection in Output
+
+Check output content for error indicators, not just exceptions:
+
+```python
+def detect_error_in_output(output: str) -> bool:
+    """Detect error indicators in output content."""
+    if not output:
+        return False
+    
+    error_indicators = [
+        'Error:',
+        'Exception:',
+        'Traceback',
+        'Failed to',
+        'Error during execution:'
+    ]
+    return any(indicator in output for indicator in error_indicators)
+
+# Usage
+output = "Error: Invalid input parameter"
+if detect_error_in_output(output):
+    print("Error detected in output")
+```
+
+### Pattern 3: Error Propagation for Replanning
+
+Route sub-task errors back to plan controller for adaptive replanning:
+
+```python
+from typing import TypedDict, List
+from langgraph.types import Command
+
+class SubTaskHistory(TypedDict):
+    sub_task: str
+    steps: List[str]
+    final_answer: str
+
+class AgentState(TypedDict):
+    sub_task: str
+    stm_all_history: List[SubTaskHistory]
+
+def handle_subtask_error(state: AgentState, error: Exception) -> Command:
+    """Handle sub-task errors by returning to plan controller."""
+    error_msg = f"Error: {error}"
+    
+    # Update history with error
+    state["stm_all_history"].append(
+        SubTaskHistory(
+            sub_task=state.get("sub_task", ""),
+            steps=[],
+            final_answer=error_msg
+        )
+    )
+    
+    # Return to planner for replanning
+    return Command(update=state, goto="PlanControllerAgent")
+
+# Usage
+state: AgentState = {
+    "sub_task": "Process data",
+    "stm_all_history": [],
+    "last_planner_answer": ""
+}
+try:
+    # Some operation that fails
+    raise ValueError("Invalid data format")
+except Exception as e:
+    command = handle_subtask_error(state, e)
+    print(f"Command: {command}")
+```
+
+### Pattern 4: Session Reconnection
+
+Detect connection errors and attempt reconnection before retrying:
+
+```python
+import asyncio
+from typing import Any, Dict
+
+class ConnectionError(Exception):
+    """Connection-related error."""
+    pass
+
+class Tool:
+    """Example tool class."""
+    def __init__(self, name: str):
+        self.name = name
+        self.session = None
+    
+    async def setup(self):
+        """Initialize session."""
+        self.session = {"connected": True}
+    
+    async def ainvoke(self, args: Dict[str, Any]) -> Any:
+        """Execute tool with args."""
+        if not self.session:
+            raise ConnectionError("Session not initialized")
+        return {"result": "success", "args": args}
+
+async def reconnect_session(tool: Tool):
+    """Reconnect tool session."""
+    await tool.setup()
+
+async def execute_tool_with_reconnect(
+    tool: Tool,
+    tool_call: Dict[str, Any]
+) -> Any:
+    """Execute tool with automatic reconnection on connection errors."""
+    try:
+        return await tool.ainvoke(tool_call.get("args", {}))
+    except ConnectionError:
+        print("Connection error detected, reconnecting...")
+        await reconnect_session(tool)
+        return await tool.ainvoke(tool_call.get("args", {}))  # Retry
+
+# Usage
+tool = Tool("example_tool")
+await tool.setup()
+tool.session = None  # Simulate connection loss
+
+result = await execute_tool_with_reconnect(
+    tool,
+    {"args": {"param": "value"}}
+)
+```
+
+### Pattern 5: Structured Output Validation with Retry
+
+Automatically retry on validation failures:
+
+```python
+from pydantic import BaseModel, ValidationError
+from langchain_core.runnables import RunnableLambda
+from langchain_core.prompts import ChatPromptTemplate
+from typing import Any
+
+class OutputSchema(BaseModel):
+    """Example output schema."""
+    result: str
+    confidence: float
+
+def validate_output(output: Any, schema: type[BaseModel]) -> BaseModel:
+    """Validate output against schema."""
+    try:
+        if isinstance(output, dict):
+            return schema(**output)
+        return output
+    except ValidationError as e:
+        raise  # Will trigger retry
+
+# Create validated chain with retry
+def create_validated_chain(llm, schema: type[BaseModel], prompt_template: ChatPromptTemplate):
+    """Create chain with validation and automatic retry."""
+    base_chain = prompt_template | llm.with_structured_output(schema)
+    
+    # Add validation
+    validated = base_chain | RunnableLambda(
+        lambda output: validate_output(output, schema)
+    )
+    
+    # Add retry on validation failure
+    return validated.with_retry(stop_after_attempt=3)
+
+# Usage (requires LLM and prompt_template)
+# chain = create_validated_chain(llm, OutputSchema, prompt_template)
+# result = await chain.ainvoke({"input": "process this"})
+```
 
 ## When to Use This Pattern
 
@@ -60,76 +380,424 @@ Exception Handling and Recovery is critical for any agent deployed in a real-wor
 
 ## Implementation
 
-### Prerequisites
-```bash
-pip install langchain langchain-openai
-# or
-pip install google-adk
-```
+### Core Components
 
-### Basic Example
+**Error Detection:**
+
 ```python
-from langchain_openai import ChatOpenAI
-from typing import Dict, Optional
-import time
+from typing import Optional, Dict, Any
 import logging
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class RobustAgent:
-    def __init__(self, max_retries: int = 3):
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
-        self.max_retries = max_retries
+class ErrorDetector:
+    """Detects errors at multiple levels."""
     
-    def execute_with_retry(self, tool_call: str, params: Dict) -> Optional[Dict]:
-        """Execute tool call with retry logic."""
-        for attempt in range(self.max_retries):
-            try:
-                result = self._execute_tool(tool_call, params)
-                if self._validate_result(result):
-                    return result
-                else:
-                    logger.warning(f"Invalid result on attempt {attempt + 1}")
-            except Exception as e:
-                logger.error(f"Error on attempt {attempt + 1}: {e}")
-                if attempt < self.max_retries - 1:
-                    time.sleep(2 ** attempt)  # Exponential backoff
-                else:
-                    return self._fallback_operation(tool_call, params)
-        return None
+    @staticmethod
+    def detect_in_output(output: str) -> bool:
+        """Detect error indicators in output content."""
+        if not output:
+            return False
+        
+        error_indicators = [
+            'Error during execution:',
+            'Error:',
+            'Exception:',
+            'Traceback',
+            'Failed to'
+        ]
+        return any(indicator in output for indicator in error_indicators)
     
-    def _execute_tool(self, tool_call: str, params: Dict) -> Dict:
-        """Execute tool (simulated)."""
-        # In production, actual tool execution
-        if "error" in params.get("simulate", ""):
-            raise Exception("Simulated error")
-        return {"status": "success", "data": "result"}
+    @staticmethod
+    def detect_in_api_response(response: Dict[str, Any]) -> bool:
+        """Detect errors in API responses."""
+        return (
+            response.get("status") == "exception" or
+            "error" in response or
+            response.get("status_code", 200) >= 400
+        )
     
-    def _validate_result(self, result: Dict) -> bool:
-        """Validate tool result."""
-        return result.get("status") == "success" and "data" in result
-    
-    def _fallback_operation(self, tool_call: str, params: Dict) -> Dict:
-        """Fallback operation when primary fails."""
-        logger.info(f"Using fallback for {tool_call}")
-        return {"status": "fallback", "message": "Used alternative method"}
+    @staticmethod
+    def detect_connection_error(error: Exception) -> bool:
+        """Detect connection-related errors."""
+        error_str = str(type(error))
+        error_msg = str(error)
+        return (
+            "ClosedResourceError" in error_str or
+            "Connection" in error_msg or
+            "ConnectionError" in error_str
+        )
 
 # Usage
-agent = RobustAgent()
-result = agent.execute_with_retry("database_query", {"query": "SELECT * FROM users"})
+detector = ErrorDetector()
+
+# Detect errors in output
+output = "Error during execution: Invalid syntax"
+if detector.detect_in_output(output):
+    print("Error detected in output")
+
+# Detect errors in API response
+api_response = {"status": "exception", "message": "API error"}
+if detector.detect_in_api_response(api_response):
+    print("Error detected in API response")
+
+# Detect connection errors
+try:
+    raise ConnectionError("Connection lost")
+except Exception as e:
+    if detector.detect_connection_error(e):
+        print("Connection error detected")
 ```
 
-**Explanation:**
-This example demonstrates basic exception handling with retry logic, validation, and fallback mechanisms. The agent retries failed operations with exponential backoff, validates results, and falls back to alternative operations when primary methods fail. This ensures robust operation despite transient failures.
+**Retry Logic:**
 
-### Advanced Example
 ```python
-from langchain_openai import ChatOpenAI
-from typing import Dict, List, Optional, Callable
-import json
+from typing import Callable, Any, Optional
+import asyncio
 import logging
+
+logger = logging.getLogger(__name__)
+
+class RetryHandler:
+    """Handles retries with exponential backoff."""
+    
+    def __init__(self, max_retries: int = 3):
+        self.max_retries = max_retries
+    
+    async def execute_with_retry(
+        self,
+        operation: Callable[[], Any],
+        is_transient: Optional[Callable[[Exception], bool]] = None
+    ) -> Any:
+        """Execute operation with retry logic."""
+        for attempt in range(self.max_retries):
+            try:
+                if asyncio.iscoroutinefunction(operation):
+                    return await operation()
+                else:
+                    return operation()
+            except Exception as e:
+                # Check if error is transient
+                if is_transient and not is_transient(e):
+                    raise  # Don't retry non-transient errors
+                
+                if attempt < self.max_retries - 1:
+                    wait_time = 2 ** attempt  # Exponential backoff
+                    logger.warning(f"Retry {attempt + 1}/{self.max_retries} after {wait_time}s")
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise  # Re-raise after all retries exhausted
+
+# Usage
+async def example_operation():
+    import random
+    if random.random() < 0.7:
+        raise ConnectionError("Temporary connection failure")
+    return "Success"
+
+def is_transient_error(error: Exception) -> bool:
+    """Check if error is transient."""
+    return isinstance(error, (ConnectionError, TimeoutError))
+
+handler = RetryHandler(max_retries=3)
+result = await handler.execute_with_retry(example_operation, is_transient_error)
+```
+
+**Error Recovery:**
+
+```python
+from typing import TypedDict, List, Optional
+from langgraph.types import Command
+import logging
+
+logger = logging.getLogger(__name__)
+
+class SubTaskHistory(TypedDict):
+    sub_task: str
+    steps: List[str]
+    final_answer: str
+
+class AgentState(TypedDict):
+    sub_task: Optional[str]
+    stm_all_history: List[SubTaskHistory]
+    final_answer: Optional[str]
+
+class ErrorRecovery:
+    """Routes errors to appropriate recovery mechanisms."""
+    
+    @staticmethod
+    def handle_execution_error(
+        state: AgentState,
+        error: Exception,
+        context: str
+    ) -> Command:
+        """Handle code execution errors."""
+        error_msg = f"Error during execution: {error}"
+        logger.error(error_msg)
+        
+        # Update state with error information
+        if state.get("sub_task"):
+            # For sub-tasks, return to plan controller for replanning
+            state["stm_all_history"].append(
+                SubTaskHistory(
+                    sub_task=state["sub_task"],
+                    steps=[],
+                    final_answer=error_msg
+                )
+            )
+            return Command(update=state, goto="PlanControllerAgent")
+        else:
+            # For main task, set final answer with error
+            state["final_answer"] = error_msg
+            return Command(update=state, goto="FinalAnswerAgent")
+    
+    @staticmethod
+    def handle_tool_error(
+        state: AgentState,
+        error: Exception,
+        tool_name: str
+    ) -> Command:
+        """Handle tool execution errors."""
+        if ErrorDetector.detect_connection_error(error):
+            # Try to reconnect and retry
+            logger.info("Connection error detected, attempting reconnection...")
+            return Command(update=state, goto="RetryTool")
+        else:
+            # Log and propagate
+            logger.error(f"Tool {tool_name} failed: {error}")
+            return Command(update=state, goto="PlanControllerAgent")
+
+# Usage
+state: AgentState = {
+    "sub_task": "Process data",
+    "stm_all_history": [],
+    "final_answer": None
+}
+
+try:
+    # Some operation that fails
+    raise ValueError("Invalid data format")
+except Exception as e:
+    command = ErrorRecovery.handle_execution_error(state, e, "data_processing")
+```
+
+**Structured Output Validation with Retry:**
+
+```python
+from pydantic import BaseModel, ValidationError
+from langchain_core.runnables import RunnableLambda
+from langchain_core.prompts import ChatPromptTemplate
+from typing import Any, Type
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ValidatedChain:
+    """Chain with automatic retry on validation failures."""
+    
+    @staticmethod
+    def create_validated_chain(
+        llm: Any,
+        schema: Type[BaseModel],
+        prompt_template: ChatPromptTemplate
+    ):
+        """Create chain with validation and retry."""
+        base_chain = prompt_template | llm.with_structured_output(schema)
+        
+        # Add validation
+        validated_chain = base_chain | RunnableLambda(
+            lambda output: ValidatedChain._validate_output(output, schema)
+        )
+        
+        # Add retry on validation failure
+        return validated_chain.with_retry(stop_after_attempt=3)
+    
+    @staticmethod
+    def _validate_output(output: Any, schema: Type[BaseModel]) -> BaseModel:
+        """Validate output against schema."""
+        try:
+            if isinstance(output, dict):
+                return schema(**output)
+            elif isinstance(output, schema):
+                return output
+            else:
+                raise ValidationError(f"Invalid output type: {type(output)}")
+        except ValidationError as e:
+            logger.error(f"Validation error: {e}")
+            raise  # Will trigger retry
+
+# Usage example (requires LLM and prompt_template)
+# class ResultSchema(BaseModel):
+#     result: str
+#     confidence: float
+# 
+# chain = ValidatedChain.create_validated_chain(llm, ResultSchema, prompt_template)
+# result = await chain.ainvoke({"input": "process this"})
+```
+
+### Basic Example: Tool Execution with Retry
+
+```python
+import asyncio
+import logging
+from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
+
+class Tool:
+    """Example tool class."""
+    def __init__(self, name: str):
+        self.name = name
+        self.session = None
+    
+    async def setup(self):
+        """Initialize session."""
+        self.session = {"connected": True}
+        logger.info(f"Tool {self.name} session initialized")
+    
+    async def ainvoke(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute tool with args."""
+        if not self.session:
+            raise ConnectionError("Session not initialized")
+        return {"status": "success", "result": f"Processed {args}"}
+
+async def reconnect_session(tool: Tool):
+    """Reconnect tool session."""
+    await tool.setup()
+
+async def execute_tool_with_retry(
+    tool: Tool,
+    tool_call: Dict[str, Any],
+    max_retries: int = 3
+) -> Optional[Dict[str, Any]]:
+    """Execute tool with automatic retry on connection errors."""
+    for attempt in range(max_retries):
+        try:
+            return await tool.ainvoke(tool_call.get("args", {}))
+        except Exception as e:
+            logger.error(f"Tool execution failed (attempt {attempt + 1}): {e}")
+            
+            # Check if it's a connection error
+            if "ConnectionError" in str(type(e)) or "ClosedResourceError" in str(type(e)):
+                if attempt < max_retries - 1:
+                    # Reconnect and retry
+                    logger.info("Reconnecting session...")
+                    await reconnect_session(tool)
+                    await asyncio.sleep(1)  # Brief delay before retry
+                    continue
+            raise  # Re-raise if not retryable or retries exhausted
+    
+    return None
+
+# Usage
+async def main():
+    tool = Tool("database_query")
+    await tool.setup()
+    
+    # Simulate connection loss
+    tool.session = None
+    
+    result = await execute_tool_with_retry(
+        tool,
+        {"args": {"query": "SELECT * FROM users"}},
+        max_retries=3
+    )
+    print(f"Result: {result}")
+
+# Run: asyncio.run(main())
+```
+
+### Example: Error Detection in Output
+
+```python
+from typing import Dict, Optional
+
+def detect_execution_error(
+    output: str,
+    metrics: Optional[Dict[str, Any]] = None
+) -> bool:
+    """Detect errors in code execution output."""
+    # Check metrics for errors
+    if metrics and metrics.get('error'):
+        return True
+    
+    # Check output content for error indicators
+    if not output:
+        return False
+    
+    error_indicators = [
+        'Error during execution:',
+        'Error:',
+        'Exception:',
+        'Traceback',
+        'Failed to'
+    ]
+    return any(indicator in output for indicator in error_indicators)
+
+# Usage
+output = "Error during execution: Invalid syntax"
+metrics = None
+
+if detect_execution_error(output, metrics):
+    print("Error detected in execution output")
+    # Route to error recovery
+    # return handle_execution_error(state, error_msg)
+```
+
+### Example: Error Propagation to Plan Controller
+
+```python
+from typing import TypedDict, List
+from langgraph.types import Command
+
+class SubTaskHistory(TypedDict):
+    sub_task: str
+    steps: List[str]
+    final_answer: str
+
+class AgentState(TypedDict):
+    sub_task: str
+    stm_all_history: List[SubTaskHistory]
+    last_planner_answer: str
+
+async def handle_subtask_error(
+    state: AgentState,
+    error: str
+) -> Command:
+    """Handle errors in sub-tasks by returning to plan controller."""
+    # Update history with error
+    state["stm_all_history"].append(
+        SubTaskHistory(
+            sub_task=state.get("sub_task", ""),
+            steps=[],
+            final_answer=error  # Error message
+        )
+    )
+    
+    # Return to plan controller for replanning
+    state["last_planner_answer"] = error
+    return Command(update=state, goto="PlanControllerAgent")
+
+# Usage
+state: AgentState = {
+    "sub_task": "Process data",
+    "stm_all_history": [],
+    "last_planner_answer": ""
+}
+
+error_msg = "Error: Invalid data format"
+command = await handle_subtask_error(state, error_msg)
+```
+
+### Advanced Example: Comprehensive Error Handling
+
+```python
 from enum import Enum
+from typing import Literal, TypedDict, List
+from langgraph.types import Command
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ErrorSeverity(Enum):
     LOW = "low"
@@ -137,200 +805,254 @@ class ErrorSeverity(Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
+class SubTaskHistory(TypedDict):
+    sub_task: str
+    steps: List[str]
+    final_answer: str
+
+class AgentState(TypedDict):
+    sub_task: str
+    stm_all_history: List[SubTaskHistory]
+    last_planner_answer: str
+
 class ExceptionHandler:
-    def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
-        self.error_log = []
-        self.recovery_strategies = {}
+    """Comprehensive exception handler with multiple recovery strategies."""
     
-    def handle_exception(self, error: Exception, context: Dict) -> Dict:
-        """Comprehensive exception handling."""
-        # Log error
-        error_entry = {
-            "error": str(error),
-            "type": type(error).__name__,
-            "context": context,
-            "timestamp": time.time(),
-            "severity": self._assess_severity(error, context)
-        }
-        self.error_log.append(error_entry)
-        logger.error(f"Exception: {error_entry}")
+    def handle_exception(
+        self,
+        error: Exception,
+        context: dict,
+        state: AgentState
+    ) -> Command:
+        """Handle exception with appropriate recovery strategy."""
+        # Classify error
+        severity = self._assess_severity(error, context)
+        strategy = self._determine_strategy(error, severity)
         
-        # Determine recovery strategy
-        strategy = self._determine_recovery_strategy(error, context)
+        # Log error
+        logger.error(f"{severity.value} error: {error} in {context}")
         
         # Execute recovery
-        recovery_result = self._execute_recovery(strategy, error, context)
-        
-        return {
-            "error": error_entry,
-            "strategy": strategy,
-            "recovery": recovery_result
-        }
+        if strategy == "retry":
+            return self._retry_with_backoff(context)
+        elif strategy == "replan":
+            return self._return_to_planner(state, error)
+        elif strategy == "escalate":
+            return self._escalate_to_human(state, error)
+        else:
+            return self._log_and_continue(state, error)
     
-    def _assess_severity(self, error: Exception, context: Dict) -> ErrorSeverity:
+    def _assess_severity(self, error: Exception, context: dict) -> ErrorSeverity:
         """Assess error severity."""
         error_str = str(error).lower()
         if "critical" in error_str or "fatal" in error_str:
             return ErrorSeverity.CRITICAL
         elif "timeout" in error_str or "connection" in error_str:
             return ErrorSeverity.HIGH
-        elif "validation" in error_str or "format" in error_str:
+        elif "validation" in error_str:
             return ErrorSeverity.MEDIUM
-        else:
-            return ErrorSeverity.LOW
+        return ErrorSeverity.LOW
     
-    def _determine_recovery_strategy(self, error: Exception, context: Dict) -> str:
-        """Determine appropriate recovery strategy."""
-        error_type = type(error).__name__
+    def _determine_strategy(
+        self,
+        error: Exception,
+        severity: ErrorSeverity
+    ) -> Literal["retry", "replan", "escalate", "log"]:
+        """Determine recovery strategy."""
         error_str = str(error).lower()
         
         # Retry for transient errors
         if "timeout" in error_str or "connection" in error_str:
             return "retry"
         
-        # Fallback for service errors
-        if "service" in error_str or "api" in error_str:
-            return "fallback"
+        # Replan for execution errors in sub-tasks
+        if "execution" in error_str or "syntax" in error_str:
+            return "replan"
         
-        # Self-correction for logic errors
-        if "validation" in error_str or "invalid" in error_str:
-            return "self_correct"
-        
-        # Escalation for critical errors
-        if self._assess_severity(error, context) == ErrorSeverity.CRITICAL:
+        # Escalate critical errors
+        if severity == ErrorSeverity.CRITICAL:
             return "escalate"
         
-        return "log_and_continue"
+        return "log"
     
-    def _execute_recovery(self, strategy: str, error: Exception, context: Dict) -> Dict:
-        """Execute recovery strategy."""
-        if strategy == "retry":
-            return self._retry_operation(context)
-        elif strategy == "fallback":
-            return self._fallback_operation(context)
-        elif strategy == "self_correct":
-            return self._self_correct(context)
-        elif strategy == "escalate":
-            return self._escalate_to_human(error, context)
-        else:
-            return {"status": "logged", "action": "continue"}
+    def _return_to_planner(self, state: AgentState, error: Exception) -> Command:
+        """Return to plan controller for replanning."""
+        error_msg = f"Error: {error}"
+        state["stm_all_history"].append(
+            SubTaskHistory(
+                sub_task=state.get("sub_task", ""),
+                steps=[],
+                final_answer=error_msg
+            )
+        )
+        state["last_planner_answer"] = error_msg
+        return Command(update=state, goto="PlanControllerAgent")
     
-    def _retry_operation(self, context: Dict) -> Dict:
-        """Retry failed operation."""
-        max_retries = context.get("max_retries", 3)
-        for i in range(max_retries):
-            try:
-                # Retry logic
-                return {"status": "retried", "attempt": i + 1}
-            except Exception as e:
-                if i == max_retries - 1:
-                    return {"status": "retry_failed", "error": str(e)}
-                time.sleep(2 ** i)
-        return {"status": "retry_exhausted"}
+    def _retry_with_backoff(self, context: dict) -> Command:
+        """Retry operation with exponential backoff."""
+        # Implementation would retry the operation
+        return Command(update={}, goto="RetryOperation")
     
-    def _fallback_operation(self, context: Dict) -> Dict:
-        """Use fallback operation."""
-        fallback = context.get("fallback")
-        if fallback:
-            return {"status": "fallback_used", "method": fallback}
-        return {"status": "no_fallback_available"}
+    def _escalate_to_human(self, state: AgentState, error: Exception) -> Command:
+        """Escalate to human-in-the-loop."""
+        return Command(update=state, goto="SuggestHumanActions")
     
-    def _self_correct(self, context: Dict) -> Dict:
-        """Self-correct based on error analysis."""
-        prompt = f"""Analyze this error and suggest correction:
-        Error: {context.get('error')}
-        Context: {json.dumps(context)}
-        Provide corrected approach."""
-        
-        response = self.llm.invoke(prompt)
-        return {"status": "self_corrected", "correction": response.content}
-    
-    def _escalate_to_human(self, error: Exception, context: Dict) -> Dict:
-        """Escalate to human operator."""
-        # In production, send to human queue
-        return {
-            "status": "escalated",
-            "message": f"Critical error escalated: {error}",
-            "context": context
-        }
+    def _log_and_continue(self, state: AgentState, error: Exception) -> Command:
+        """Log error and continue execution."""
+        logger.warning(f"Non-critical error logged: {error}")
+        return Command(update=state, goto="ContinueExecution")
 
 # Usage
 handler = ExceptionHandler()
+state: AgentState = {
+    "sub_task": "Process data",
+    "stm_all_history": [],
+    "last_planner_answer": ""
+}
+
 try:
-    # Operation that might fail
-    result = risky_operation()
+    # Some operation that fails
+    raise ValueError("Execution error: Invalid syntax")
 except Exception as e:
-    recovery = handler.handle_exception(e, {"operation": "risky_operation"})
-    print(f"Recovery: {recovery}")
+    command = handler.handle_exception(e, {"operation": "data_processing"}, state)
 ```
 
-**Explanation:**
-This advanced example implements comprehensive exception handling with severity assessment, strategy determination, and multiple recovery mechanisms. It demonstrates production-ready error handling with logging, retry logic, fallbacks, self-correction, and escalation capabilities.
+### Example: Structured Output Validation with Retry
 
-### Framework-Specific Examples
-
-#### Google ADK Sequential Agent with Fallback
 ```python
-from google.adk.agents import Agent, SequentialAgent
+from pydantic import BaseModel, ValidationError
+from langchain_core.runnables import RunnableLambda
+from langchain_core.prompts import ChatPromptTemplate
+from typing import Any, Type
+import logging
 
-# Primary handler
-primary_handler = Agent(
-    name="primary_handler",
-    model="gemini-2.0-flash",
-    instruction="Use get_precise_location_info tool with user's address.",
-    tools=[get_precise_location_info]
-)
+logger = logging.getLogger(__name__)
 
-# Fallback handler
-fallback_handler = Agent(
-    name="fallback_handler",
-    model="gemini-2.0-flash",
-    instruction="""Check state['primary_location_failed'].
-    If True, use get_general_area_info tool.
-    If False, do nothing.""",
-    tools=[get_general_area_info]
-)
+# Automatic retry on validation failures
+def create_validated_chain(
+    llm: Any,
+    schema: Type[BaseModel],
+    prompt_template: ChatPromptTemplate
+):
+    """Create chain with validation and automatic retry."""
+    base_chain = prompt_template | llm.with_structured_output(schema)
+    
+    # Add validation wrapper
+    validated = base_chain | RunnableLambda(
+        lambda output: validate_output(output, schema)
+    )
+    
+    # Retry on validation failure (up to 3 times)
+    return validated.with_retry(stop_after_attempt=3)
 
-# Response agent
-response_agent = Agent(
-    name="response_agent",
-    model="gemini-2.0-flash",
-    instruction="Present location info from state['location_result'].",
-    tools=[]
-)
-
-# Sequential agent with fallback
-robust_agent = SequentialAgent(
-    name="robust_location_agent",
-    sub_agents=[primary_handler, fallback_handler, response_agent]
-)
-```
-
-#### LangChain with Error Handling
-```python
-from langchain.agents import AgentExecutor
-from langchain_openai import ChatOpenAI
-
-def safe_execute(agent_executor, input_data):
-    """Execute agent with error handling."""
+def validate_output(output: Any, schema: Type[BaseModel]) -> BaseModel:
+    """Validate output against schema."""
     try:
-        return agent_executor.invoke(input_data)
-    except Exception as e:
-        logger.error(f"Agent execution failed: {e}")
-        # Fallback response
-        return {
-            "output": "I encountered an error. Let me try an alternative approach.",
-            "error": str(e)
-        }
+        if isinstance(output, dict):
+            return schema(**output)
+        elif isinstance(output, schema):
+            return output
+        else:
+            raise ValidationError(f"Invalid output type: {type(output)}")
+    except ValidationError as e:
+        logger.error(f"Validation failed: {e}")
+        raise  # Triggers retry
+
+# Usage example
+# class ResultSchema(BaseModel):
+#     result: str
+#     confidence: float
+# 
+# chain = create_validated_chain(llm, ResultSchema, prompt_template)
+# result = await chain.ainvoke({"input": "process this"})
+```
+
+### Example: API Error Handling
+
+```python
+import asyncio
+import logging
+from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
+
+async def call_api(app_name: str, api_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Simulated API call."""
+    # Simulate API call that might fail
+    import random
+    if random.random() < 0.3:
+        return {"status": "exception", "message": "API timeout error"}
+    return {"status": "success", "data": "result"}
+
+async def retry_api_call(
+    app_name: str,
+    api_name: str,
+    args: Dict[str, Any],
+    max_retries: int = 3
+) -> Dict[str, Any]:
+    """Retry API call with exponential backoff."""
+    for attempt in range(max_retries):
+        await asyncio.sleep(2 ** attempt)  # Exponential backoff
+        response = await call_api(app_name, api_name, args)
+        if response.get("status") != "exception":
+            return response
+    return {"status": "exception", "message": "Max retries exceeded"}
+
+async def call_api_with_error_handling(
+    app_name: str,
+    api_name: str,
+    args: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Call API with error detection and handling."""
+    response = await call_api(app_name, api_name, args)
+    
+    # Check for error status
+    if isinstance(response, dict) and response.get("status") == "exception":
+        error_msg = response.get("message", "API error")
+        logger.error(f"API error: {error_msg}")
+        
+        # Determine handling based on error type
+        if "timeout" in error_msg.lower():
+            # Retry for timeouts
+            return await retry_api_call(app_name, api_name, args)
+        else:
+            # Return error for replanning
+            return {"error": error_msg}
+    
+    return response
+
+# Usage
+result = await call_api_with_error_handling(
+    "my_app",
+    "get_data",
+    {"param": "value"}
+)
+print(f"Result: {result}")
 ```
 
 ## Key Takeaways
 
-- **Core Concept:** Exception Handling and Recovery is essential for building robust and reliable agents that can operate effectively in unpredictable environments.
-- **Best Practice:** Implement comprehensive error detection, logging, retry logic, fallbacks, and recovery mechanisms for production systems.
-- **Common Pitfall:** Failing to handle exceptions leads to fragile agents that crash on unexpected errors; always implement error handling.
-- **Performance Note:** Exception handling adds overhead but is essential for reliability; optimize detection and recovery paths for performance.
+- **Multi-Level Error Detection:** Errors can be detected at multiple levels: tool execution (connection errors, tool failures), code execution (syntax errors, runtime exceptions), API responses (error status codes), and output validation (schema mismatches). Detection should also check output content for error indicators.
+
+- **Error Classification:** Classify errors by type (syntax, runtime, connection, validation) and severity (low, medium, high, critical) to determine appropriate handling strategies. Transient errors (timeouts, connection failures) should be retried, while permanent errors require different strategies.
+
+- **Retry Logic:** Implement automatic retry mechanisms for transient errors with exponential backoff. Retries can be applied at tool execution, API calls, and structured output validation levels. Session reconnection should be attempted for connection errors before retrying operations.
+
+- **Error Propagation:** Route errors to appropriate handlers based on context. For sub-tasks, propagate errors to plan controller for replanning. For critical errors, escalate to human-in-the-loop. Update execution history with error information for context.
+
+- **Recovery Strategies:** Different errors require different recovery strategies:
+  - **Retry:** For transient errors (timeouts, connection failures)
+  - **Replan:** For execution errors in sub-tasks (return to plan controller)
+  - **Fallback:** Use alternative tools or methods when primary fails
+  - **Escalation:** Route critical errors to human operators
+
+- **State Management:** Update execution history with error information, preserve partial results when possible, and mark failed subtasks in plan progress. This enables the plan controller to make informed decisions about replanning.
+
+- **Best Practice:** Implement comprehensive error detection at all levels, automatic retry for transient errors, error propagation to appropriate handlers, and state updates for context preservation. Use structured output validation with automatic retry.
+
+- **Common Pitfall:** Failing to handle exceptions leads to fragile agents that crash on unexpected errors. Not detecting errors in output content can allow errors to propagate undetected. Always implement error handling at tool, code, and validation levels.
+
+- **Performance Note:** Exception handling adds overhead but is essential for reliability. Optimize detection paths and use efficient error classification to minimize performance impact. Retry logic should have reasonable limits to avoid infinite loops.
 
 ## Related Patterns
 

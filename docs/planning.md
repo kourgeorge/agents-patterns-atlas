@@ -20,19 +20,74 @@ A hallmark of this process is adaptability. An initial plan is merely a starting
 However, it is crucial to recognize the trade-off between flexibility and predictability. Dynamic planning is a specific tool, not a universal solution. When a problem's solution is already well-understood and repeatable, constraining the agent to a predetermined, fixed workflow is more effective. This approach limits the agent's autonomy to reduce uncertainty and the risk of unpredictable behavior, guaranteeing a reliable and consistent outcome. Therefore, the decision to use a planning agent versus a simple task-execution agent hinges on a single question: does the "how" need to be discovered, or is it already known?
 
 ### Key Concepts
-- **Goal Decomposition:** Planning breaks high-level goals into discrete, executable sub-tasks that can be sequenced logically.
+- **Goal Decomposition:** Planning breaks high-level goals into discrete, executable sub-tasks that can be sequenced logically. Decomposition strategies adapt based on task complexity and available applications.
+- **Task Decomposition Strategies:** Different approaches for breaking down tasks:
+  - **Exact Strategy:** One subtask per application (enforces strict application boundaries)
+  - **Flexible Strategy:** Logical decomposition (allows multiple subtasks per application when workflow requires it)
+- **Type-Aware Decomposition:** Tasks are classified by type (`web` for browser interactions, `api` for service calls), enabling specialized planning for each domain.
+- **Multi-Application Handling:** When multiple applications are involved, decomposition can distribute work across applications or create sequential workflows that span application boundaries.
 - **State Space Navigation:** The agent must understand initial state, goal state, and the actions that transition between states.
 - **Adaptive Replanning:** Plans are not rigid; agents must adapt when obstacles arise or new information becomes available.
 - **Dependency Management:** Planning must account for task dependencies, ensuring prerequisites are completed before dependent tasks.
+- **Plan Execution Control:** A plan controller tracks progress, manages subtask execution, and determines when to conclude the overall task.
 
 ### How It Works
-Planning works through a structured process: (1) Goal Analysis—the agent understands the desired outcome and constraints, (2) State Assessment—it evaluates the current state and available resources, (3) Plan Generation—it formulates a sequence of actions to bridge the gap between current and goal states, (4) Plan Execution—it executes the plan step by step, and (5) Monitoring and Adaptation—it monitors progress and adapts the plan when obstacles arise or conditions change.
+Planning works through a structured process that integrates task decomposition, execution control, and adaptive replanning:
 
-Effective planning requires gathering all relevant information before plan generation, but not more than necessary. The State Assessment phase should include targeted information-seeking operations to discover available resources, tools, APIs, and constraints that will inform the plan. For instance, a code-writing agent should first discover what tools and APIs are available before planning how to write code, ensuring the plan is grounded in actual capabilities rather than assumptions. This information-seeking phase enables the agent to create realistic, executable plans that leverage available resources effectively.
+**1. Goal Analysis & Application Discovery**
+The agent understands the desired outcome, constraints, and available applications. Each application is characterized by:
+- **Name and description:** What the application does
+- **Type:** `web` (browser-based) or `api` (service-based)
+- **URL:** Starting point for web applications
 
-The planning process can be explicit, where the agent generates a detailed plan document before execution, or implicit, where planning happens dynamically during execution. Explicit planning is useful for complex, multi-step tasks where the full sequence needs to be understood upfront. Implicit planning is more reactive, generating the next step based on current state without a full plan document.
+**2. Task Decomposition**
+The agent breaks down the goal into high-level subtasks using one of two strategies:
 
-Frameworks support planning through various mechanisms. CrewAI enables agents to create plans as part of their task execution. Google DeepResearch demonstrates planning through multi-step research plans that are generated, reviewed, and executed iteratively. LangGraph and LangChain support planning through state management and conditional workflows that can represent planned sequences.
+**Exact Strategy (One Subtask Per Application):**
+- When multiple applications are provided, generates exactly one subtask per application
+- Enforces strict application boundaries
+- Useful when each application has a distinct, well-defined role
+- Example: 3 applications → exactly 3 subtasks
+
+**Flexible Strategy (Logical Decomposition):**
+- Decomposes based on logical workflow requirements
+- Allows multiple subtasks per application when needed
+- Subtasks must alternate between different applications (no consecutive same-app subtasks)
+- More adaptable to complex workflows
+- Example: May use App A → App B → App A if the workflow requires it
+
+**Decomposition Rules:**
+- **Single Application:** If only one application, return the intent verbatim (no decomposition)
+- **Type Assignment:** Each subtask is assigned a type (`web` or `api`) and an application
+- **High-Level Abstraction:** Subtasks describe "what" not "how" (no low-level actions like "click", "type", "call endpoint")
+- **Context Preservation:** Subtasks reference data from previous steps when dependencies exist
+- **User Context:** Personal pronouns and identifiers are preserved across subtasks
+
+**3. Plan Generation**
+The decomposition creates a structured plan with:
+- List of subtasks with descriptions
+- Type and application assignment for each subtask
+- Thoughts explaining the decomposition strategy
+
+**4. Plan Execution Control**
+A plan controller manages execution:
+- **Progress Tracking:** Monitors each subtask status (`not-started`, `in-progress`, `completed`)
+- **Variable Management:** Tracks data collected during execution for use in subsequent steps
+- **Next Action Selection:** Determines which subtask to execute next based on progress and dependencies
+- **Task Conclusion:** Decides when all subtasks are complete and the overall goal is achieved
+
+**5. Execution & Adaptation**
+- Each subtask is executed by specialized planners (web planner for browser tasks, API planner for service tasks)
+- The plan controller monitors progress and adapts when obstacles arise
+- Variables from completed subtasks inform subsequent subtask execution
+- The plan concludes when all subtasks are completed or the goal is achieved
+
+**Information Gathering:**
+Effective planning requires gathering relevant information before plan generation. The State Assessment phase should include targeted information-seeking operations to discover available resources, tools, APIs, and constraints. For instance, an agent should first discover what tools and APIs are available before planning how to use them, ensuring the plan is grounded in actual capabilities rather than assumptions.
+
+**Planning Modes:**
+- **Explicit Planning:** Generates a detailed plan document before execution (useful for complex, multi-step tasks)
+- **Implicit Planning:** Planning happens dynamically during execution (more reactive, generates next step based on current state)
 
 ## When to Use This Pattern
 
@@ -50,7 +105,33 @@ Frameworks support planning through various mechanisms. CrewAI enables agents to
 - **Real-time constraints:** The overhead of planning adds unacceptable latency for time-sensitive tasks.
 
 ### Decision Guidelines
-Use planning when the benefits of adaptability and goal discovery outweigh the costs of increased complexity and potential unpredictability. Consider: the complexity of the goal (more complex = more benefit from planning), the variability of the environment (more variable = more need for adaptive planning), and whether the solution path is known (unknown = use planning, known = use workflow). Be aware that planning adds latency and cost, and can introduce unpredictability. For critical systems requiring guaranteed behavior, consider hybrid approaches that combine planning with fixed workflow fallbacks.
+
+**When to Use Planning:**
+Use planning when the benefits of adaptability and goal discovery outweigh the costs of increased complexity and potential unpredictability. Consider:
+- **Task Complexity:** More complex = more benefit from planning
+- **Environment Variability:** More variable = more need for adaptive planning
+- **Solution Path:** Unknown = use planning, known = use workflow
+
+**Choosing Decomposition Strategy:**
+
+**Use Exact Strategy when:**
+- Each application has a distinct, well-defined role
+- Task naturally maps to one operation per application
+- You need predictable, deterministic decomposition
+- Parallel execution is desired (each app handles one subtask)
+- Multi-domain tasks with clear boundaries
+
+**Use Flexible Strategy when:**
+- Workflow requires multiple operations within the same application
+- Logical task flow doesn't align with strict one-per-app boundaries
+- Sequential operations need to be broken down naturally
+- Task complexity requires adaptive decomposition
+- Applications need to be reused in the workflow
+
+**General Considerations:**
+- Planning adds latency and cost but improves outcomes for complex, multi-step tasks
+- For single-application tasks, no decomposition is needed (return intent verbatim)
+- For critical systems requiring guaranteed behavior, consider hybrid approaches that combine planning with fixed workflow fallbacks
 
 ## Practical Applications & Use Cases
 
@@ -62,135 +143,323 @@ Planning is a core computational process in autonomous systems, enabling agents 
 - **Customer Support:** Create systematic plans for multi-step problem resolution including diagnosis, solution implementation, and escalation.
 - **Project Management:** Break down high-level projects into task sequences with dependencies and resource allocation.
 
+## Task Decomposition Strategies
+
+### Exact Strategy: One Subtask Per Application
+
+**When to Use:** When each application has a distinct, well-defined role and the task naturally maps to one operation per application.
+
+**Characteristics:**
+- Generates exactly the same number of subtasks as applications provided
+- Each application gets exactly one subtask
+- Enforces strict application boundaries
+- Predictable and deterministic
+
+**Example:**
+```python
+# Input: 3 applications
+applications = [
+    {"name": "News Portal", "type": "web"},
+    {"name": "Summarizer", "type": "api"},
+    {"name": "Social Media", "type": "api"}
+]
+
+# Task: "Find article about AI, summarize it, and share on social media"
+
+# Output: Exactly 3 subtasks
+subtasks = [
+    {"task": "Find article about AI", "type": "web", "app": "News Portal"},
+    {"task": "Summarize the article", "type": "api", "app": "Summarizer"},
+    {"task": "Share summary on social media", "type": "api", "app": "Social Media"}
+]
+```
+
+**Benefits:**
+- Clear task boundaries
+- Easy to parallelize (each app handles one subtask)
+- Predictable execution flow
+- Well-suited for multi-domain tasks
+
+### Flexible Strategy: Logical Decomposition
+
+**When to Use:** When the workflow requires multiple operations within the same application, or when logical task flow doesn't align with strict one-per-app boundaries.
+
+**Characteristics:**
+- Decomposes based on logical workflow requirements
+- Allows multiple subtasks per application
+- Subtasks must alternate between different applications (no consecutive same-app)
+- More adaptable to complex workflows
+
+**Example:**
+```python
+# Input: 2 applications
+applications = [
+    {"name": "File System", "type": "api"},
+    {"name": "Team Management", "type": "api"}
+]
+
+# Task: "Create project folder, add files, get team list, set permissions"
+
+# Output: Logical decomposition (File System used twice)
+subtasks = [
+    {"task": "Create project folder", "type": "api", "app": "File System"},
+    {"task": "Add initial documentation files", "type": "api", "app": "File System"},
+    {"task": "Retrieve team members list", "type": "api", "app": "Team Management"},
+    {"task": "Configure folder permissions for team", "type": "api", "app": "File System"}
+]
+# Note: File System → File System → Team Management → File System (alternating pattern)
+```
+
+**Benefits:**
+- Adapts to task complexity
+- Supports multi-step workflows within applications
+- More natural task flow
+- Better for sequential operations
+
+### Type-Aware Decomposition
+
+Tasks are classified by type to enable specialized planning:
+
+- **`web` type:** Browser-based interactions, UI navigation, form filling
+- **`api` type:** Service calls, data retrieval, programmatic operations
+
+Each subtask includes type information so the appropriate planner handles it:
+- Web planner for browser interactions
+- API planner for service calls
+
+### Multi-Application Handling
+
+When multiple applications are involved:
+
+**Exact Strategy:**
+- All applications must be utilized
+- One subtask per application
+- Applications are used in logical sequence
+
+**Flexible Strategy:**
+- Applications are selected based on subtask requirements
+- Applications can be reused if workflow requires it
+- Focus on logical workflow over strict app boundaries
+
 ## Implementation
 
-### Prerequisites
-```bash
-pip install crewai langchain langchain-openai
-# or
-pip install google-adk
+### Core Components
+
+**Task Decomposition Agent:**
+```python
+from typing import List, Literal
+from pydantic import BaseModel, Field
+
+class Subtask(BaseModel):
+    task: str
+    app: str
+    type: Literal['web', 'api']
+
+class DecompositionPlan(BaseModel):
+    thoughts: str
+    task_decomposition: List[Subtask]
+
+class DecompositionAgent:
+    def __init__(self, llm, strategy: Literal['exact', 'flexible']):
+        self.llm = llm
+        self.strategy = strategy
+    
+    async def decompose(
+        self, 
+        intent: str, 
+        applications: List[dict]
+    ) -> DecompositionPlan:
+        """Decompose task into subtasks based on strategy."""
+        # Single app: return intent as-is
+        if len(applications) == 1:
+            return DecompositionPlan(
+                thoughts="Single application, no decomposition needed",
+                task_decomposition=[
+                    Subtask(
+                        task=intent,
+                        app=applications[0]["name"],
+                        type=applications[0]["type"]
+                    )
+                ]
+            )
+        
+        # Multi-app: use strategy
+        prompt = self._build_prompt(intent, applications, self.strategy)
+        response = await self.llm.ainvoke(prompt)
+        return DecompositionPlan.model_validate_json(response.content)
 ```
 
-### Basic Example
+**Plan Controller:**
 ```python
-from crewai import Agent, Task, Crew, Process
-from langchain_openai import ChatOpenAI
+from typing import Literal
 
-llm = ChatOpenAI(model="gpt-4-turbo")
+class PlanControllerOutput(BaseModel):
+    thoughts: List[str]
+    subtasks_progress: List[Literal['completed', 'not-started', 'in-progress']]
+    next_subtask: str
+    next_subtask_type: Literal['web', 'api', None]
+    next_subtask_app: str
+    conclude_task: bool
+    final_answer: str
 
-# Pattern: Planning agent
-planner_agent = Agent(
-    role='Project Planner',
-    goal='Create and execute plans for complex tasks',
-    backstory='You are an expert at breaking down complex goals into actionable plans.',
-    llm=llm,
-    verbose=True
-)
-
-# Task with planning requirement
-task = Task(
-    description="""1. Create a detailed plan for organizing a team offsite.
-    2. Execute the plan step by step.""",
-    expected_output="A plan and execution report",
-    agent=planner_agent
-)
-
-# Execute
-crew = Crew(
-    agents=[planner_agent],
-    tasks=[task],
-    process=Process.sequential
-)
-
-result = crew.kickoff()
-print(result)
+class PlanController:
+    def __init__(self, llm):
+        self.llm = llm
+    
+    async def control(
+        self,
+        plan: DecompositionPlan,
+        execution_history: List[dict],
+        variables: dict
+    ) -> PlanControllerOutput:
+        """Determine next action based on plan progress."""
+        # Analyze progress, select next subtask, or conclude
+        prompt = self._build_prompt(plan, execution_history, variables)
+        response = await self.llm.ainvoke(prompt)
+        return PlanControllerOutput.model_validate_json(response.content)
 ```
 
-**Explanation:**
-This example demonstrates planning using CrewAI. The agent is instructed to first create a plan, then execute it. The planning happens as part of the agent's task execution, where it breaks down the complex goal into manageable steps before proceeding.
+### Basic Example: Task Decomposition
 
-### Advanced Example
 ```python
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from typing import Dict
-import json
+# Decompose a task into subtasks
+intent = "Find article about AI, summarize it, and share on social media"
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+applications = [
+    {"name": "News Portal", "type": "web", "url": "https://news.example.com"},
+    {"name": "Summarizer", "type": "api"},
+    {"name": "Social Media", "type": "api"}
+]
 
-def generate_plan(goal: str, constraints: Dict) -> Dict:
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """Create a plan. Return JSON with:
-        - "steps": [{"id": int, "action": str, "dependencies": [int]}]
-        - "estimated_duration": str
-        - "resources_needed": [str]"""),
-        ("user", f"Goal: {goal}\nConstraints: {constraints}")
-    ])
-    chain = prompt | llm | JsonOutputParser()
-    return chain.invoke({"goal": goal, "constraints": constraints})
+decomposer = DecompositionAgent(llm, strategy="exact")
+plan = await decomposer.decompose(intent, applications)
 
-def adapt_plan(current_plan: Dict, obstacle: str) -> Dict:
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "Adapt the plan to handle obstacles. Return updated plan JSON."),
-        ("user", f"Plan: {json.dumps(current_plan)}\nObstacle: {obstacle}")
-    ])
-    chain = prompt | llm | JsonOutputParser()
-    return chain.invoke({"current_plan": current_plan, "obstacle": obstacle})
-
-plan = generate_plan(
-    goal="Organize team offsite for 30 people",
-    constraints={"budget": 10000, "location": "Lisbon"}
-)
-print(json.dumps(plan, indent=2))
+# Output:
+# {
+#   "thoughts": "Three distinct operations across three applications",
+#   "task_decomposition": [
+#     {"task": "Find article about AI", "type": "web", "app": "News Portal"},
+#     {"task": "Summarize the article", "type": "api", "app": "Summarizer"},
+#     {"task": "Share summary on social media", "type": "api", "app": "Social Media"}
+#   ]
+# }
 ```
 
-**Explanation:**
-This advanced example implements a PlanningAgent class with plan generation, adaptation, and execution capabilities. It demonstrates structured plan representation with dependencies, obstacle handling through adaptive replanning, and plan history tracking. This shows production-ready planning with JSON-structured plans and adaptation mechanisms.
+### Advanced Example: Plan Execution with Controller
 
-### Framework-Specific Examples
-
-#### CrewAI
 ```python
-from crewai import Agent, Task, Crew
+# Initial decomposition
+plan = await decomposer.decompose(intent, applications)
 
-planner = Agent(
-    role='Strategic Planner',
-    goal='Create comprehensive plans',
-    backstory='Expert in strategic planning',
-    verbose=True
-)
+# Execute with plan controller
+controller = PlanController(llm)
+execution_history = []
+variables = {}
 
-planning_task = Task(
-    description="""Create a detailed plan for: {goal}
-    Then execute the plan.""",
-    agent=planner
-)
-
-crew = Crew(agents=[planner], tasks=[planning_task])
-result = crew.kickoff(inputs={"goal": "Launch new product"})
+while True:
+    # Controller determines next action
+    control_output = await controller.control(
+        plan=plan,
+        execution_history=execution_history,
+        variables=variables
+    )
+    
+    if control_output.conclude_task:
+        print(f"Task complete: {control_output.final_answer}")
+        break
+    
+    # Execute next subtask
+    next_subtask = control_output.next_subtask
+    result = await execute_subtask(
+        next_subtask,
+        type=control_output.next_subtask_type,
+        app=control_output.next_subtask_app
+    )
+    
+    # Update history and variables
+    execution_history.append({
+        "subtask": next_subtask,
+        "result": result,
+        "status": "completed"
+    })
+    variables.update(extract_variables(result))
 ```
 
-#### Google DeepResearch
-```python
-# DeepResearch demonstrates planning through multi-step research plans
-# The system:
-# 1. Deconstructs user prompt into research plan
-# 2. Presents plan for user review/modification
-# 3. Executes iterative search-and-analysis loop
-# 4. Dynamically formulates queries based on gathered information
-# 5. Consolidates findings into structured summary
+### Example: Flexible Strategy
 
-# Pattern: Planning is implicit in the research pipeline structure
+```python
+# Task requiring multiple operations in same app
+intent = "Create project folder, add files, get team list, set permissions"
+
+applications = [
+    {"name": "File System", "type": "api"},
+    {"name": "Team Management", "type": "api"}
+]
+
+decomposer = DecompositionAgent(llm, strategy="flexible")
+plan = await decomposer.decompose(intent, applications)
+
+# Output allows File System to be used multiple times:
+# [
+#   {"task": "Create project folder", "app": "File System", ...},
+#   {"task": "Add initial files", "app": "File System", ...},
+#   {"task": "Get team members", "app": "Team Management", ...},
+#   {"task": "Set folder permissions", "app": "File System", ...}
+# ]
+# Note: Alternating pattern (File → File → Team → File) is maintained
+```
+
+### Workflow Integration
+
+```python
+# Complete planning workflow
+async def planning_workflow(intent: str, applications: List[dict]):
+    # 1. Decompose task
+    decomposer = DecompositionAgent(llm, strategy="flexible")
+    plan = await decomposer.decompose(intent, applications)
+    
+    # 2. Execute with plan controller
+    controller = PlanController(llm)
+    execution_history = []
+    variables = {}
+    
+    while True:
+        control = await controller.control(plan, execution_history, variables)
+        
+        if control.conclude_task:
+            return control.final_answer
+        
+        # Execute next subtask based on type
+        if control.next_subtask_type == "web":
+            result = await web_planner.execute(control.next_subtask)
+        else:
+            result = await api_planner.execute(control.next_subtask, control.next_subtask_app)
+        
+        execution_history.append({"subtask": control.next_subtask, "result": result})
+        variables.update(extract_variables(result))
 ```
 
 ## Key Takeaways
 
-- **Core Concept:** Planning enables agents to formulate sequences of actions to achieve goals, breaking complex tasks into manageable steps.
-- **Best Practice:** Use explicit planning for complex, long-horizon tasks; use implicit planning for reactive, adaptive scenarios.
+- **Core Concept:** Planning enables agents to formulate sequences of actions to achieve goals, breaking complex tasks into manageable steps through task decomposition.
+
+- **Decomposition Strategies:** Choose the right strategy based on task characteristics:
+  - **Exact Strategy:** One subtask per application - predictable, clear boundaries, good for multi-domain tasks
+  - **Flexible Strategy:** Logical decomposition - adaptable, supports complex workflows, allows multiple operations per app
+
+- **Type-Aware Planning:** Classify tasks as `web` (browser interactions) or `api` (service calls) to enable specialized planning for each domain.
+
+- **Multi-Application Handling:** When multiple applications are involved, decomposition can distribute work across applications (exact) or create sequential workflows (flexible) based on the chosen strategy.
+
+- **Plan Execution Control:** A plan controller tracks progress, manages subtask execution, selects next actions based on dependencies, and determines when to conclude the overall task.
+
 - **Information Gathering:** Planning should be informed by relevant context gathered through targeted information-seeking operations (e.g., discovering available tools, APIs, constraints) before plan generation, but should avoid over-gathering unnecessary information.
-- **Common Pitfall:** Over-planning simple tasks adds unnecessary complexity; use fixed workflows when the solution path is known.
-- **Performance Note:** Planning adds latency and cost but improves outcomes for complex, multi-step tasks requiring coordination.
+
+- **Best Practice:** Use explicit planning for complex, long-horizon tasks; use implicit planning for reactive, adaptive scenarios.
+
+- **Common Pitfall:** Over-planning simple tasks adds unnecessary complexity; use fixed workflows when the solution path is known. For single-application tasks, return the intent verbatim without decomposition.
+
+- **Performance Note:** Planning adds latency and cost but improves outcomes for complex, multi-step tasks requiring coordination. Decomposition strategies balance predictability (exact) with flexibility (flexible).
 
 ## Related Patterns
 

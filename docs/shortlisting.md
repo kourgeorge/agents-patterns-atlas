@@ -32,21 +32,45 @@ Without shortlisting, agents face a fundamental tension: include too many tools 
 
 ### How It Works
 
-The Shortlisting Pattern operates through a structured process:
+The Shortlisting Pattern operates through a structured process that integrates seamlessly into agent workflows:
 
-1. **Tool Catalog Input:** The agent receives a task description and a catalog of available tools/APIs, each with metadata including name, description, parameters, types, and response schemas.
+1. **Trigger & Context Setup:** The shortlisting agent is triggered by a planning agent when it determines that API discovery is needed. The agent receives:
+   - A task description (often enriched with context from the current sub-task)
+   - A filtered catalog of available tools/APIs for a specific application
+   - Application context (app name, description)
+   - Optional memory tips from past successful shortlisting experiences
 
-2. **LLM-Based Analysis:** An LLM analyzes each tool against the task, considering:
-   - Direct functional match (does the tool's purpose align with the task?)
-   - Parameter availability (can required parameters be sourced from user input or other tools?)
-   - Chaining potential (can this tool's output feed into other relevant tools?)
-   - Schema compatibility (do response schemas match input requirements for chaining?)
+2. **LLM-Based Analysis:** An LLM analyzes each tool against the task using a sophisticated prompt that emphasizes:
+   - **Direct functional match:** Does the tool's purpose align with the task?
+   - **Parameter availability:** Can required parameters be satisfied from:
+     - Direct user input (explicitly mentioned in the query)
+     - Output from other APIs (enabling chaining)
+     - **Critical constraint:** Do NOT assume missing parameters unless they can be realistically obtained from another API's output
+   - **Chaining potential:** Can this tool's output provide input parameters for other relevant tools?
+   - **Schema compatibility:** Do response schemas match input requirements for chaining? (e.g., API A returns `id: integer`, API B requires `petId: integer`)
+   - **Workflow position:** Is this tool for initial data gathering, intermediate processing, or final action?
 
-3. **Relevance Scoring:** Each tool receives a relevance score (0.0-1.0) with reasoning explaining why it was selected, how parameters can be satisfied, and its role in potential workflows.
+3. **Relevance Scoring:** Each tool receives a relevance score (0.0-1.0) with detailed reasoning that explains:
+   - Why it was selected
+   - How its required parameters can be satisfied
+   - Its role in potential multi-step workflows
+   - Its compatibility with other shortlisted APIs for chaining
 
-4. **Ranked Shortlist:** The agent returns a ranked list of relevant tools, ordered by relevance score, with detailed reasoning for each selection.
+4. **Ranked Shortlist:** The agent returns a ranked list of relevant tools, ordered by relevance score (highest first), with:
+   - At least 1 API (enforced minimum)
+   - Detailed reasoning for each selection
+   - Step-by-step thoughts explaining the analysis process
 
-5. **Integration with Planning:** The shortlist feeds into downstream planning or execution agents, which use the filtered, relevant tools to create action sequences.
+5. **Post-Processing & State Management:** The shortlist is processed to:
+   - Filter the full API catalog to only include shortlisted APIs
+   - Build structured output summaries with app names, API names, descriptions, and reasoning
+   - Store results in agent state history for future reference
+   - Track the step for activity logging and debugging
+
+6. **Integration with Planning:** The shortlist feeds back into the planning agent, which:
+   - Uses the filtered API set for subsequent planning decisions
+   - Can trigger additional shortlisting if new APIs are needed
+   - Passes shortlisted APIs to code generation agents for execution
 
 ## When to Use This Pattern
 
@@ -82,11 +106,19 @@ The Shortlisting Pattern is essential for building scalable agentic systems that
 **Challenge:** Including all 200+ API definitions in every prompt would consume thousands of tokens and confuse the agent. The agent needs to identify which APIs are relevant for specific tasks like "get the top account by revenue" or "update a customer's contact information."
 
 **Solution:** Shortlisting analyzes the task description against all available APIs, scoring each for relevance. For "get top account by revenue," it might shortlist:
-- `get_accounts` (relevance: 0.95) - retrieves account data
-- `get_account_by_id` (relevance: 0.85) - can retrieve specific account details
-- `get_accounts_tpp` (relevance: 0.80) - alternative account retrieval method
+- `get_accounts` (relevance: 0.95) - retrieves all accounts with revenue data, no parameters required
+- `get_accounts_alt` (relevance: 0.80) - alternative account retrieval method
+- `get_account_by_id` (relevance: 0.60) - useful for getting details after identifying top account, can chain with first API's output
 
-The agent then uses only these shortlisted APIs in subsequent planning and execution, dramatically reducing context usage.
+**Real-World Flow:**
+1. User query: "get top account by revenue"
+2. Planning agent determines shortlisting is needed
+3. Shortlister receives task and all 200+ available APIs
+4. Shortlister analyzes and returns 2-3 relevant APIs with scores
+5. Filtered API set (only 2-3 APIs) is passed to code generation agent
+6. Code generation uses only shortlisted APIs, saving ~95% of context tokens
+
+The agent then uses only these shortlisted APIs in subsequent planning and execution, dramatically reducing context usage from thousands of tokens to hundreds.
 
 ### Tool Selection in Multi-Agent Systems
 
@@ -124,335 +156,264 @@ The core agent that performs the analysis:
 
 ```python
 from typing import List, Optional
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel, Field
 
-class APIDetails(BaseModel):
-    """Details for a shortlisted API/tool."""
-    name: str = Field(..., description="Tool/API name")
-    relevance_score: float = Field(
-        ..., 
-        description="Relevance score between 0.0 and 1.0"
-    )
-    reasoning: str = Field(
-        ..., 
-        description="Explanation of why this tool is relevant, including parameter sources and chaining potential"
-    )
+class ToolDetails(BaseModel):
+    """Details for a shortlisted tool."""
+    name: str
+    relevance_score: float = Field(ge=0.0, le=1.0)
+    reasoning: str
 
-class ShortListerOutput(BaseModel):
+class ShortlistOutput(BaseModel):
     """Output from the shortlisting agent."""
-    thoughts: List[str] = Field(
-        ..., 
-        description="Step-by-step reasoning about the task and available tools"
-    )
-    result: List[APIDetails] = Field(
-        ..., 
-        description="Ranked list of relevant tools, ordered by relevance_score (highest first)"
-    )
+    thoughts: List[str]
+    result: List[ToolDetails]  # Ranked by relevance_score
 
 class ShortlisterAgent:
-    def __init__(
-        self,
-        prompt_template: ChatPromptTemplate,
-        llm: BaseChatModel,
-    ):
+    """Agent that shortlists relevant tools for a given task."""
+    
+    def __init__(self, llm, prompt_template):
         self.llm = llm
         self.prompt_template = prompt_template
     
     async def shortlist(
-        self,
-        task_description: str,
+        self, 
+        task: str, 
         available_tools: List[dict],
-        app_name: Optional[str] = None,
-    ) -> ShortListerOutput:
+        memory_tips: Optional[str] = None
+    ) -> ShortlistOutput:
         """Shortlist relevant tools for a task."""
         # Format tools for analysis
         tools_json = json.dumps(available_tools, indent=2)
         
         # Invoke LLM with structured output
         messages = self.prompt_template.format_messages(
-            input=task_description,
-            api_shortlister_current_app=app_name or "default",
-            api_shortlister_current_app_apis=tools_json,
+            task=task,
+            available_tools=tools_json,
+            memory=memory_tips or ""
         )
         
         response = await self.llm.ainvoke(messages)
-        
-        # Parse structured output
-        return ShortListerOutput.model_validate_json(response.content)
+        return ShortlistOutput.model_validate_json(response.content)
+    
+    @staticmethod
+    def filter_tools(all_tools: dict, shortlisted_names: List[str]) -> dict:
+        """Filter tool catalog to only include shortlisted tools."""
+        return {
+            app: {tid: tool for tid, tool in tools.items() 
+                  if tool.get("name") in shortlisted_names}
+            for app, tools in all_tools.items()
+        }
 ```
 
 **Key Design Decisions:**
-- **Structured Output:** Using Pydantic models ensures consistent, parseable results
-- **Relevance Scoring:** 0.0-1.0 scale enables ranking and threshold filtering
-- **Reasoning Field:** Detailed reasoning enables transparency and debugging
-- **Thoughts Field:** Step-by-step reasoning helps understand the agent's analysis process
+- **Structured Output:** Pydantic models ensure consistent, parseable results
+- **Relevance Scoring:** 0.0-1.0 scale enables ranking and filtering
+- **Reasoning Field:** Enables transparency and downstream agent understanding
+- **Memory Integration:** Optional past experiences improve accuracy over time
+- **Filtering:** Reduces large catalogs to only shortlisted entries, saving context
 
 #### Prompt Design
 
-The system prompt is critical for effective shortlisting. It must emphasize:
+The system prompt is critical for effective shortlisting. The actual implementation uses a sophisticated prompt with few-shot examples and explicit constraints:
 
-1. **Parameter Matching:** How to evaluate whether required parameters can be satisfied
-2. **API Chaining:** How to identify tools that can work together
-3. **Schema Matching:** How to match output schemas to input requirements
+**System Prompt Structure:**
 
 ```python
-SYSTEM_PROMPT = """You are an expert AI assistant responsible for selecting relevant APIs to fulfill a user's request.
-Your goal is to analyze a list of available API definitions (provided in JSON format) and a user's query to find relevant APIs.
+SYSTEM_PROMPT = """You are an expert at selecting relevant tools/APIs to fulfill a user's request.
 
-Based on this analysis, you must identify the APIs that are most relevant to achieve the user's goal. These APIs should be ranked by their `relevance_score` from highest to lowest.
+Analyze the available tools and user query, then return a ranked list of relevant tools.
 
-Your primary focus should be on:
-1. **Direct User Input:** Parameters explicitly mentioned in the user's query can be used as inputs for an API.
-2. **API Output as Input (Chaining):** A crucial aspect of relevance is whether an API's output can provide the necessary input parameters for another API that moves closer to fulfilling the user's overall goal. Use the provided `response_schema` to understand what data each API returns and how it can be used as input for other APIs.
-3. **Schema Matching for Chaining:** When evaluating API chaining potential, consider whether the expected output format/schema of one API matches the required input parameters of another API.
-4. **Multi-Step Workflows:** Complex user goals often require multiple API calls in sequence. An API that serves as an intermediate step in achieving the final goal should be considered highly relevant.
+**Key Evaluation Criteria:**
+1. **Direct Match:** How well does the tool's purpose match the task?
+2. **Parameter Availability:** Can required parameters be sourced from:
+   - Direct user input (explicitly mentioned)
+   - Output from other tools (enabling chaining)
+   - Do NOT assume missing parameters unless obtainable from another tool
+3. **Chaining Potential:** Can this tool's output provide inputs for other relevant tools?
+4. **Schema Compatibility:** Do response schemas match input requirements for chaining?
+5. **Workflow Position:** Is this for initial data gathering, processing, or final action?
 
-You need to evaluate each API's relevance based on:
-- How directly its described functionality matches the user's query
-- The availability of its required input parameters, sourced as described above
-- Its potential role in a sequence of API calls to achieve the user's objective
-- Its compatibility with other APIs in terms of input/output schema matching for chaining purposes
-- Its position in potential multi-step workflows (initial data gathering, intermediate processing, final action)
+**Output Requirements:**
+- Return at least 1 tool (enforced minimum)
+- Rank by relevance_score (0.0-1.0, highest first)
+- Provide detailed reasoning for each selection
+- Explain parameter sources and chaining potential
 
-Return a JSON object with:
-- "thoughts": A list of strings representing your step-by-step reasoning
-- "result": A list of API details, each with "name", "relevance_score" (0.0-1.0), and "reasoning"
+{% if memory %}
+{{memory}}
+{% endif %}
 """
 ```
 
-#### Integration with Agent Workflow
-
-Shortlisting typically occurs before planning or execution:
+**User Prompt Template:**
 
 ```python
-from langgraph.graph import StateGraph, END
-from typing import TypedDict
+USER_PROMPT = """Task: {{task}}
+
+Available Tools:
+{{available_tools}}
+"""
+```
+
+**Key Prompt Features:**
+- **Enforced Minimum:** Requires at least 1 tool (prevents empty shortlists)
+- **Few-Shot Examples:** Include examples showing tool chaining scenarios
+- **Explicit Constraints:** Clear rules about parameter sourcing
+- **Memory Integration:** Optional memory tips for learning from past experiences
+- **Schema Awareness:** Emphasizes understanding response schemas for chaining
+- **Workflow Position:** Considers where tools fit in multi-step workflows
+
+#### Integration with Agent Workflow
+
+Shortlisting integrates into agent workflows through a node-based architecture:
+
+**Workflow Integration Pattern:**
+
+```python
+from typing import TypedDict, Optional, Literal
 
 class AgentState(TypedDict):
-    task_description: str
-    available_tools: dict
-    shortlisted_tools: Optional[List[APIDetails]]
-    plan: Optional[List[str]]
-    execution_result: Optional[str]
+    """State managed across the agent workflow."""
+    task: str
+    available_tools: dict  # Full tool catalog
+    shortlisted_tools: Optional[List[ToolDetails]]
+    history: List[dict]
 
-def shortlist_node(state: AgentState) -> AgentState:
-    """Shortlist relevant tools for the task."""
-    shortlister = ShortlisterAgent(...)
+async def shortlist_node(state: AgentState) -> AgentState:
+    """Shortlisting node in the workflow."""
+    shortlister = ShortlisterAgent(llm, prompt_template)
+    
+    # Execute shortlisting
     result = await shortlister.shortlist(
-        task_description=state["task_description"],
-        available_tools=state["available_tools"],
+        task=state["task"],
+        available_tools=list(state["available_tools"].values())
     )
+    
+    # Filter catalog to only shortlisted tools
+    shortlisted_names = [t.name for t in result.result]
+    filtered_tools = ShortlisterAgent.filter_tools(
+        state["available_tools"], 
+        shortlisted_names
+    )
+    
+    # Update state
     return {
         **state,
-        "shortlisted_tools": result.result
+        "shortlisted_tools": result.result,
+        "available_tools": filtered_tools,  # Reduced catalog
+        "history": state["history"] + [{"action": "shortlist", "result": result}]
     }
 
-def plan_node(state: AgentState) -> AgentState:
-    """Create a plan using only shortlisted tools."""
-    # Use only shortlisted tools for planning
-    relevant_tools = [tool.name for tool in state["shortlisted_tools"]]
-    # ... planning logic using relevant_tools ...
-    return state
+async def planner_node(state: AgentState) -> AgentState:
+    """Planning agent decides when to shortlist."""
+    # Planning logic determines if shortlisting is needed
+    if needs_shortlisting(state):
+        return {"next": "shortlist"}
+    else:
+        return {"next": "execute"}
 
-# Build graph
+# Build workflow graph
 graph = StateGraph(AgentState)
+graph.add_node("planner", planner_node)
 graph.add_node("shortlist", shortlist_node)
-graph.add_node("plan", plan_node)
-graph.add_edge("shortlist", "plan")
-graph.add_edge("plan", END)
+graph.add_node("execute", execute_node)
+
+# Conditional routing
+graph.add_conditional_edges(
+    "planner",
+    lambda s: s.get("next", "execute"),
+    {"shortlist": "shortlist", "execute": "execute"}
+)
+graph.add_edge("shortlist", "planner")  # Return to planner
 ```
+
+**Key Integration Points:**
+- **State Management:** Shortlisted tools are stored and filtered from the full catalog
+- **History Tracking:** Results stored for reflection and debugging
+- **Conditional Routing:** Planning agent decides when shortlisting is needed
+- **Iterative Process:** Shortlisting can be triggered multiple times as tasks evolve
 
 ### Basic Example
 
 ```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 import json
 
-# Initialize LLM
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash-exp",
-    temperature=0
-)
-
 # Define output schema
-class APIDetails(BaseModel):
+class ToolDetails(BaseModel):
     name: str
     relevance_score: float = Field(ge=0.0, le=1.0)
     reasoning: str
 
-class ShortListerOutput(BaseModel):
+class ShortlistOutput(BaseModel):
     thoughts: list[str]
-    result: list[APIDetails]
-
-# Create prompt
-system_prompt = """You are an expert at selecting relevant APIs.
-Analyze the available APIs and user query, then return a ranked list of relevant APIs.
-Consider parameter matching and API chaining potential."""
-
-user_prompt = """User Intent: {task_description}
-
-Available APIs:
-{available_apis}
-"""
-
-prompt = ChatPromptTemplate.from_messages([
-    ("system", system_prompt),
-    ("user", user_prompt)
-])
+    result: list[ToolDetails]
 
 # Available tools
-available_apis = [
+available_tools = [
     {
         "name": "get_accounts",
-        "description": "Retrieve all accounts for the current user's territory",
+        "description": "Retrieve all accounts with revenue data",
         "parameters": [],
         "response_schema": {
             "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "revenue": {"type": "number"}
-                }
-            }
+            "items": {"properties": {"id": "string", "revenue": "number"}}
         }
     },
     {
         "name": "get_account_by_id",
-        "description": "Get detailed information about a specific account",
-        "parameters": [
-            {
-                "name": "account_id",
-                "type": "string",
-                "required": True
-            }
-        ],
-        "response_schema": {
-            "type": "object",
-            "properties": {
-                "id": {"type": "string"},
-                "name": {"type": "string"},
-                "revenue": {"type": "number"},
-                "contacts": {"type": "array"}
-            }
-        }
-    },
-    {
-        "name": "update_account",
-        "description": "Update account information",
-        "parameters": [
-            {
-                "name": "account_id",
-                "type": "string",
-                "required": True
-            },
-            {
-                "name": "name",
-                "type": "string",
-                "required": False
-            }
-        ],
-        "response_schema": {"type": "object"}
+        "description": "Get account details by ID",
+        "parameters": [{"name": "account_id", "required": True}],
+        "response_schema": {"properties": {"id": "string", "revenue": "number"}}
     }
 ]
 
 # Shortlist for a task
 task = "Get the top account by revenue"
+shortlister = ShortlisterAgent(llm, prompt_template)
+result = await shortlister.shortlist(task, available_tools)
 
-chain = prompt | llm.with_structured_output(ShortListerOutput)
-result = chain.invoke({
-    "task_description": task,
-    "available_apis": json.dumps(available_apis, indent=2)
-})
-
-print("Shortlisted APIs:")
-for api in result.result:
-    print(f"- {api.name}: {api.relevance_score:.2f}")
-    print(f"  Reasoning: {api.reasoning}\n")
+# Output: ranked list with scores and reasoning
+for tool in result.result:
+    print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
 ```
 
 **Expected Output:**
 ```
-Shortlisted APIs:
-- get_accounts: 0.95
-  Reasoning: Directly fulfills the task by retrieving all accounts with revenue data. No parameters required, making it immediately usable. Response includes revenue field needed for ranking.
-
-- get_account_by_id: 0.60
-  Reasoning: Useful for retrieving detailed information about the top account after identification, but requires account_id parameter that can be sourced from get_accounts output. Good chaining candidate.
-
-- update_account: 0.10
-  Reasoning: Low relevance as task is about retrieval, not updates. Could be used in a workflow but not directly relevant to "get top account" goal.
+get_accounts: 0.95 - Directly fulfills task, no parameters needed, includes revenue data
+get_account_by_id: 0.60 - Useful after identification, can chain with get_accounts output
 ```
 
-### Advanced Example: API Chaining Consideration
+### Advanced Example: Tool Chaining
 
-This example demonstrates how shortlisting identifies tools that can be chained together:
+Demonstrates how shortlisting identifies tools that can be chained together:
 
 ```python
-# More complex scenario with chaining
-available_apis = [
+available_tools = [
     {
         "name": "search_products",
-        "description": "Search for products by keyword",
-        "parameters": [
-            {"name": "keyword", "type": "string", "required": True}
-        ],
+        "description": "Search products by keyword",
+        "parameters": [{"name": "keyword", "required": True}],
         "response_schema": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "product_id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "price": {"type": "number"}
-                }
-            }
-        }
-    },
-    {
-        "name": "get_product_details",
-        "description": "Get detailed information about a product",
-        "parameters": [
-            {"name": "product_id", "type": "string", "required": True}
-        ],
-        "response_schema": {
-            "type": "object",
-            "properties": {
-                "product_id": {"type": "string"},
-                "name": {"type": "string"},
-                "price": {"type": "number"},
-                "description": {"type": "string"},
-                "inventory": {"type": "number"}
-            }
+            "items": {"properties": {"product_id": "string", "price": "number"}}
         }
     },
     {
         "name": "add_to_cart",
-        "description": "Add a product to the shopping cart",
+        "description": "Add product to cart",
         "parameters": [
-            {"name": "product_id", "type": "string", "required": True},
-            {"name": "quantity", "type": "integer", "required": True}
-        ],
-        "response_schema": {"type": "object"}
+            {"name": "product_id", "required": True},
+            {"name": "quantity", "required": True}
+        ]
     }
 ]
 
 task = "Find products matching 'laptop' and add the cheapest one to my cart"
 
-result = chain.invoke({
-    "task_description": task,
-    "available_apis": json.dumps(available_apis, indent=2)
-})
-
-# The shortlister should identify:
-# 1. search_products (high relevance) - finds products by keyword
-# 2. get_product_details (medium relevance) - can get price details for comparison
-# 3. add_to_cart (high relevance) - required for final action, product_id can come from search_products
+result = await shortlister.shortlist(task, available_tools)
+# Identifies: search_products (high) - finds products
+#            add_to_cart (high) - product_id can come from search_products output
 ```
 
 ### Memory-Enhanced Shortlisting
@@ -461,43 +422,41 @@ Shortlisting can be improved by learning from past experiences:
 
 ```python
 class MemoryEnhancedShortlister(ShortlisterAgent):
-    def __init__(self, *args, memory_store=None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, llm, prompt_template, memory_store=None):
+        super().__init__(llm, prompt_template)
         self.memory_store = memory_store
     
     async def shortlist(
-        self,
-        task_description: str,
-        available_tools: List[dict],
-        **kwargs
-    ) -> ShortListerOutput:
-        # Retrieve relevant past shortlisting experiences
+        self, 
+        task: str, 
+        available_tools: List[dict]
+    ) -> ShortlistOutput:
+        # Retrieve relevant past experiences
         memory_tips = None
         if self.memory_store:
             memory_tips = await self.memory_store.retrieve(
-                query=task_description,
+                query=task,
                 namespace="shortlisting",
-                limit=3
+                limit=3  # Top 3 most relevant
             )
         
         # Include memory in prompt
         messages = self.prompt_template.format_messages(
-            input=task_description,
-            available_apis=json.dumps(available_tools, indent=2),
-            memory=memory_tips,  # Past experiences
-            **kwargs
+            task=task,
+            available_tools=json.dumps(available_tools, indent=2),
+            memory=memory_tips or ""
         )
         
         response = await self.llm.ainvoke(messages)
-        result = ShortListerOutput.model_validate_json(response.content)
+        result = ShortlistOutput.model_validate_json(response.content)
         
-        # Store this shortlisting experience for future use
+        # Store this experience for future use
         if self.memory_store:
             await self.memory_store.store(
                 namespace="shortlisting",
                 content={
-                    "task": task_description,
-                    "shortlisted": [api.name for api in result.result],
+                    "task": task,
+                    "shortlisted": [t.name for t in result.result],
                     "reasoning": result.thoughts
                 }
             )
@@ -506,84 +465,82 @@ class MemoryEnhancedShortlister(ShortlisterAgent):
 ```
 
 **Benefits:**
-- Learns which tools work well together for similar tasks
-- Improves relevance scoring over time
-- Reduces errors in parameter matching by learning from past chains
+- **Learns Tool Combinations:** Recognizes which tools work well together
+- **Improves Scoring:** Better relevance scores over time
+- **Avoids Failures:** Memory can include explicit failure patterns to watch for
+- **Reduces Errors:** Learns from successful tool chains
+
+### Tool Filtering
+
+After shortlisting, filter the full tool catalog to only include shortlisted tools:
+
+```python
+@staticmethod
+def filter_tools(all_tools: dict, shortlisted_names: List[str]) -> dict:
+    """Filter tool catalog to only include shortlisted tools.
+    
+    Input structure: {app_name: {tool_id: {name, description, ...}}}
+    Returns: Same structure but only with matching tool names
+    """
+    return {
+        app: {tid: tool for tid, tool in tools.items() 
+              if tool.get("name") in shortlisted_names}
+        for app, tools in all_tools.items()
+    }
+
+# Usage after shortlisting
+result = await shortlister.shortlist(task, available_tools)
+shortlisted_names = [t.name for t in result.result]
+filtered_tools = ShortlisterAgent.filter_tools(all_tools, shortlisted_names)
+```
+
+**Benefits:**
+- **Context Reduction:** Reduces catalog from hundreds to 3-10 relevant tools
+- **Token Savings:** Dramatically reduces token usage in downstream agents
+- **Focus:** Downstream agents only see relevant tools, improving decision quality
 
 ### Framework Integration
 
-#### LangGraph Integration
+**LangGraph Example:**
 
 ```python
-from langgraph.graph import StateGraph, END
-from typing import TypedDict, Literal
+from langgraph.graph import StateGraph
 
-class ShortlistingState(TypedDict):
-    task: str
-    all_tools: dict
-    shortlisted: Optional[list]
-    next_action: Literal["plan", "execute"]
-
-def shortlist_tools(state: ShortlistingState) -> ShortlistingState:
-    shortlister = ShortlisterAgent(...)
+def shortlist_node(state):
+    shortlister = ShortlisterAgent(llm, prompt_template)
     result = await shortlister.shortlist(
-        task_description=state["task"],
+        task=state["task"],
         available_tools=state["all_tools"]
     )
-    return {
-        **state,
-        "shortlisted": result.result,
-        "next_action": "plan"
-    }
+    return {**state, "shortlisted": result.result}
 
-# Build graph
-graph = StateGraph(ShortlistingState)
-graph.add_node("shortlist", shortlist_tools)
-graph.add_conditional_edges(
-    "shortlist",
-    lambda s: s["next_action"],
-    {"plan": "plan_node", "execute": "execute_node"}
-)
+graph = StateGraph(AgentState)
+graph.add_node("shortlist", shortlist_node)
+graph.add_edge("shortlist", "plan")
 ```
 
-#### Google ADK Integration
-
-```python
-from google.adk.agents import Agent
-from google.adk.tools import FunctionTool
-
-# Create shortlisting agent
-shortlister_agent = Agent(
-    name="ToolShortlister",
-    model="gemini-2.0-flash-exp",
-    description="Selects relevant tools from large catalogs",
-    instruction="""Analyze available tools and shortlist the most relevant ones.
-    Consider parameter matching and tool chaining potential.""",
-    tools=[shortlist_tool]  # Tool that performs shortlisting
-)
-
-# Use in workflow
-orchestrator = Agent(
-    name="Orchestrator",
-    model="gemini-2.0-flash-exp",
-    sub_agents=[shortlister_agent, planner_agent, executor_agent],
-    instruction="""First shortlist relevant tools, then plan, then execute."""
-)
-```
+**General Pattern:**
+- Shortlisting node receives task and full tool catalog
+- Returns filtered shortlist
+- Downstream nodes use only shortlisted tools
 
 ## Key Takeaways
 
-- **Context Efficiency:** Shortlisting dramatically reduces context window usage by filtering large tool catalogs to relevant subsets, enabling agents to work with 100+ tool ecosystems without overwhelming the context.
+- **Context Efficiency:** Shortlisting dramatically reduces context window usage by filtering large tool catalogs to relevant subsets (typically from 100+ APIs down to 3-10), enabling agents to work with extensive tool ecosystems without overwhelming the context. The filtering mechanism ensures downstream agents only receive relevant APIs, saving thousands of tokens per interaction.
 
-- **Parameter Matching is Critical:** Effective shortlisting must evaluate not just functional relevance, but whether required parameters can be satisfied—either from user input or from other tools' outputs in a chain.
+- **Parameter Matching is Critical:** Effective shortlisting must evaluate not just functional relevance, but whether required parameters can be satisfied—either from user input or from other tools' outputs in a chain. The prompt explicitly forbids assuming missing parameters unless they can be realistically obtained from another API's output, preventing incomplete selections.
 
-- **API Chaining Discovery:** The pattern's greatest value comes from identifying how tools can work together in multi-step workflows, where one tool's output feeds into another's input, enabling complex goal achievement.
+- **API Chaining Discovery:** The pattern's greatest value comes from identifying how tools can work together in multi-step workflows, where one tool's output feeds into another's input, enabling complex goal achievement. The system analyzes response schemas to match output fields with input parameter requirements, discovering chains that might not be obvious.
 
-- **Structured Output Enables Integration:** Returning ranked lists with scores and reasoning enables downstream agents (planners, executors) to make informed decisions and provides transparency for debugging.
+- **Structured Output Enables Integration:** Returning ranked lists with scores and reasoning enables downstream agents (planners, executors) to make informed decisions and provides transparency for debugging. The structured output includes thoughts, relevance scores, and detailed reasoning for each API, creating a complete audit trail.
 
-- **Memory Integration Improves Accuracy:** Learning from past shortlisting experiences helps the agent improve over time, recognizing successful tool combinations and parameter patterns.
+- **Memory Integration Improves Accuracy:** Learning from past shortlisting experiences helps the agent improve over time, recognizing successful tool combinations and parameter patterns. Memory can also include explicit failure patterns to avoid, such as missing payment APIs for purchase tasks or incomplete API sets.
 
-- **When to Use:** Apply shortlisting for catalogs with 20+ tools, multi-step workflows requiring tool chaining, and scenarios where context window constraints make including all tools impractical.
+- **Workflow Integration:** Shortlisting is not a one-time operation but an iterative process. Planning agents can trigger shortlisting multiple times as tasks evolve, and shortlisted APIs are stored in state history for reflection and future reference.
+
+- **Activity Tracking:** Each shortlisting step is tracked for observability, enabling debugging, performance analysis, and understanding of agent decision-making processes.
+
+- **When to Use:** Apply shortlisting for catalogs with 20+ tools, multi-step workflows requiring tool chaining, and scenarios where context window constraints make including all tools impractical. The pattern is especially valuable when different tasks require different tool subsets.
 
 ## Related Patterns
 
