@@ -61,6 +61,48 @@ Both approaches maintain conversation continuity while managing context size, en
 
 5. **Resume Operation:** Agent continues from the summary as if it were the original conversation history.
 
+## Relationship to Context Compression
+
+Context Editing is a **specific automatic technique** within the broader Context Compression strategy. Understanding this relationship helps clarify when to use automatic vs manual approaches.
+
+### Context Editing as Automatic Technique
+
+Context Editing focuses on **automatic, hands-off management** of context size. It's part of the broader Context Compression strategy, which includes both:
+- **Automatic techniques** (Context Editing): Server-side clearing or client-side compaction
+- **Manual techniques**: Strategic summarization, pruning, and externalization decisions
+
+### When to Use Context Editing vs Manual Compression
+
+**Use Context Editing when:**
+- You want automatic, set-and-forget context management
+- Tool-heavy workflows where tool results accumulate quickly
+- Long-running conversations that need continuous management
+- You prefer configuration over manual intervention
+- You need consistent, predictable context size management
+
+**Use Manual Context Compression when:**
+- You need fine-grained control over what gets compressed
+- Strategic summarization is required (e.g., preserving specific information)
+- You want to combine multiple compression techniques with custom logic
+- You need to make compression decisions based on content analysis
+- You're implementing custom compression strategies beyond automatic clearing
+
+**Combine Both:**
+- Use Context Editing for automatic tool result clearing
+- Use manual Context Compression for strategic conversation summarization
+- This provides both automatic management and manual control
+
+### Context Editing vs Filesystem as Context
+
+**Context Editing** automatically manages content that's already in context (clearing tool results, thinking blocks).
+
+**Filesystem as Context** externalizes large data before it enters context (offloading to persistent storage).
+
+**How they work together:**
+- Externalize large data first using Filesystem as Context
+- Let Context Editing automatically clear old tool result references
+- Maintain references to externalized content for restorable compression
+
 ## When to Use This Pattern
 
 ### ✅ Use when:
@@ -329,13 +371,13 @@ runner = Runner(
 ## Related Patterns
 
 This pattern works well with:
-- **Context Compression:** Context editing is a specific technique within the broader context compression strategy, focusing on automatic management rather than manual techniques.
+- **Context Compression:** Context editing is a specific automatic technique within the broader context compression strategy. Use Context Editing for automatic management, and manual Context Compression for strategic summarization.
 
-- **External Memory (Filesystem as Context):** Cleared tool results can reference externalized content, enabling restorable compression through the filesystem pattern.
+- **Filesystem as Context:** Cleared tool results can reference externalized content, enabling restorable compression through the filesystem pattern. **Combination workflow:** Externalize large tool results to files first (Filesystem as Context), then let Context Editing automatically clear old tool result references when context grows. The cleared references point to externalized files, maintaining restorable compression.
 
-- **Memory Management:** Context editing is a key component of comprehensive memory management, complementing external memory and compression techniques.
+- **Memory Management:** Context editing is a key component of comprehensive memory management, specifically for managing short-term memory (context window). It complements external memory (Filesystem as Context, RAG) and other compression techniques.
 
-- **Tool Result Management:** Context editing automatically manages tool results, clearing old ones while preserving recent outputs and references.
+- **Tool Result Management:** Context editing automatically manages tool results, clearing old ones while preserving recent outputs and references. This is particularly effective when combined with Filesystem as Context for restorable compression.
 
 This pattern is often combined with:
 - **Stable, Append-Only Context:** Context editing maintains conversation structure while clearing content, preserving KV-Cache efficiency.

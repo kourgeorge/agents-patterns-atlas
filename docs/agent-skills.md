@@ -670,7 +670,7 @@ Skills provide agents with new capabilities through instructions and code. While
 ## Related Patterns
 
 This pattern works well with:
-- **Leverage External Memory (Filesystem as Context):** The SKILL pattern is a specific application of using the filesystem as external memory, with a structured organization for procedural knowledge.
+- **Filesystem as Context:** The SKILL pattern is a specific application of using the filesystem as external memory, with a structured organization for procedural knowledge.
 
 - **Tool Use & Execution:** Skills often define how to use specific tools, and the skill activation mechanism uses filesystem tools to load skill content.
 

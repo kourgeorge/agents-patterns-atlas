@@ -42,6 +42,62 @@ Long-term memory acts as a repository for information agents need to retain acro
 - **Consistency:** Managing updates and ensuring data consistency
 - **Integration:** Seamlessly integrating retrieved information into context
 
+## Relationship to Context Patterns
+
+Memory Management is a **conceptual overview** that describes the architecture of agent memory. Understanding how it relates to implementation patterns helps clarify when to use which approach.
+
+### Memory Management (Concept) vs Context Compression (Pattern)
+
+**Memory Management** is the **conceptual framework** that describes:
+- **What:** Two types of memory (short-term/context vs long-term/persistent)
+- **Why:** The need for different memory types and their trade-offs
+- **Overview:** High-level strategies for managing memory
+
+**Context Compression** and **Context Editing** are **implementation patterns** that provide:
+- **How:** Concrete techniques for managing short-term memory (context window)
+- **Specific methods:** Externalization, summarization, pruning, automatic clearing
+- **Practical guidance:** When and how to apply compression techniques
+
+**Relationship:** Memory Management explains the "what" and "why" of memory architecture, while Context Compression/Editing provide the "how" for managing short-term memory.
+
+### Short-Term Memory Management
+
+Short-term memory (context window) is managed through:
+- **Context Compression:** Umbrella strategy including externalization, summarization, pruning, attention manipulation
+- **Context Editing:** Automatic technique for managing context size (server-side clearing, client-side compaction)
+- **Filesystem as Context:** Primary externalization technique for offloading large data
+
+These patterns work together: Filesystem as Context externalizes large data, Context Compression provides the overall strategy, and Context Editing provides automatic management.
+
+### Long-Term Memory Implementation
+
+Long-term memory (persistent storage) is implemented through:
+- **Filesystem as Context:** For targeted retrieval of specific files, line ranges, or structured data
+- **Knowledge Retrieval (RAG):** For semantic search over large knowledge bases using vector databases
+
+**When to use Filesystem as Context:** Exact file retrieval, line-range reads, structured data access
+**When to use RAG:** Semantic search, similarity matching, large knowledge bases
+
+## Pattern Selection Guide
+
+Use the following flowchart to determine which memory strategy to use:
+
+```mermaid
+flowchart TD
+    A[Need to store information?] --> B{Memory type needed}
+    B -->|Short-term: Current session| C{Context size}
+    C -->|Large data > context limit| D[Use Filesystem as Context<br/>Externalize to persistent storage]
+    C -->|Data fits but growing| E{Want automatic management?}
+    E -->|Yes| F[Use Context Editing<br/>Automatic clearing/compaction]
+    E -->|No| G[Use Context Compression<br/>Manual summarization/pruning]
+    C -->|Small, static| H[Keep in context]
+    B -->|Long-term: Cross-session| I{Retrieval pattern}
+    I -->|Exact match, file access| J[Use Filesystem as Context<br/>Targeted file/line retrieval]
+    I -->|Semantic search| K[Use RAG<br/>Vector database search]
+    D --> L[Then compress remaining context]
+    L --> E
+```
+
 ## Key Memory Management Challenges
 
 ### The Persistence Challenge
@@ -81,7 +137,7 @@ For data too large for context windows, external memory systems use an **Offload
 2. **Pointer:** Place only a reference in context (e.g., "Content saved to /data/doc1.txt")
 3. **Read on Demand:** Agent queries external memory via specialized tools when needed
 
-This pattern, detailed in the **Pattern: Leverage External Memory (Filesystem as Context)** module, enables agents to handle datasets far exceeding context limits.
+This pattern, detailed in the **Pattern: Filesystem as Context** module, enables agents to handle datasets far exceeding context limits.
 
 ### Persistent Planning and Recitation
 

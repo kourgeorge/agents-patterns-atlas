@@ -528,7 +528,7 @@ This pattern works well with:
 
 This pattern differs from:
 - **Session State (Memory Management)** - Session state manages conversation-level context; Variable Manager tracks execution-level computation results
-- **External Memory / RAG** - External memory provides semantic search over documents; Variable Manager provides exact-name lookup for execution variables
+- **Filesystem as Context / RAG** - Filesystem as Context provides semantic search over documents; Variable Manager provides exact-name lookup for execution variables
 - **Persistent Task Lists (Recitation)** - Recitation tracks tasks; Variable Manager tracks data values
 
 ## References

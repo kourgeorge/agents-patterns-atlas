@@ -676,7 +676,7 @@ This pattern works well with:
 
 - **Persistent Task List (Recitation):** Orchestrators maintain and recite plans to keep high-level goals visible while workers execute subtasks.
 
-- **Leverage External Memory:** Orchestrators save plans to external memory before spawning workers, and workers can store results externally.
+- **Filesystem as Context:** Orchestrators save plans to external memory before spawning workers, and workers can store results externally.
 
 - **Context Compression:** Orchestrators compress worker outputs, storing details externally and keeping summaries in context.
 

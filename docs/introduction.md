@@ -197,7 +197,7 @@ We have spent decades perfecting the Human-Computer Interface (HCI). We must now
 Assume things will go wrong and build resilience into your system from the start.
 * **Error Recovery:** Implement retry mechanisms, fallback strategies, and graceful degradation.
 * **Validation:** Check outputs before using them, validate tool results, and verify goal achievement.
-* **Monitoring:** Track agent behavior, detect anomalies, and measure performance continuously.
+* **Monitoring:** Consider tracking agent behavior, detecting anomalies, and measuring performance where appropriate.
 
 ### 5. Balance Autonomy with Control
 Give agents enough autonomy to be effective, but maintain appropriate oversight and control mechanisms.

@@ -85,7 +85,8 @@ nav:
     - "Pattern: Planning": planning.md
     - "Pattern: Prioritization": prioritization.md
 - Context:
-    - "Pattern: Context Compression": context-compression.md
+    - Context Engineering: context-compression.md
+    - "Pattern: Attention Engineering": attention-engineering.md
     - "Pattern: Context Editing": context-editing.md
     - "Pattern: Variables Manager": variables-manager.md
 - Memory:

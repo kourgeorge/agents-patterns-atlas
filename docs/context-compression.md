@@ -1,521 +1,243 @@
-# Pattern: Context Compression
+# Context Engineering
 
-## Motivation
+## Introduction
 
-When summarizing a long meeting, you extract key decisions and action items, not every word spoken. When reading a research paper, you focus on the abstract and conclusions. Humans naturally compress information, keeping essential details while discarding the rest. Context Compression applies this principle: fitting necessary information into the finite context window through summarization, pruning, and selective retrieval, just as we distill complex information into manageable insights.
+Context engineering is the discipline of strategically managing what information appears in the LLM's context window to optimize performance, cost, and reasoning quality. Just as software engineers optimize memory usage and database queries, context engineers optimize the finite context window—the maximum number of tokens an LLM can process in a single interaction.
 
-## Pattern Overview
-**What it is:** Context compression encompasses techniques used to fit the necessary information for a task into the Large Language Model's (LLM) finite context window, thereby sustaining performance and reducing costs.
+The context window represents a fundamental constraint of LLM-based agents. Unlike human memory, which can recall vast amounts of information, LLMs operate within hard token limits (typically 32K to 1M+ tokens depending on the model). As agents tackle complex, multi-step tasks, they accumulate conversation history, tool results, and intermediate reasoning that can quickly exhaust available context. Without effective context engineering, agents hit hard limits, suffer performance degradation, incur excessive costs, and lose critical information.
 
-**When to use:** When building agents that process large amounts of information, maintain long conversation histories, or work with extensive datasets that would exceed context window limits or degrade performance.
+This chapter provides a high-level overview of context engineering as a domain. We'll explore the fundamental challenges, key concepts, and the patterns available for managing context effectively. For specific implementation patterns, see the pattern modules referenced throughout this chapter.
 
-**Why it matters:** The finite context window is a fundamental constraint of LLM-based agents. Without effective compression strategies, agents hit hard limits, suffer performance degradation, and incur excessive costs. Context compression enables agents to work with unlimited information while maintaining efficiency and performance.
+## The Fundamental Challenge
 
-The context window represents the maximum number of tokens an LLM can process in a single interaction. This finite boundary creates a fundamental challenge: agents must balance the need for comprehensive information against the constraints of token limits, processing costs, and performance degradation. As agents tackle complex, multi-step tasks, they accumulate conversation history, tool results, and intermediate reasoning that can quickly exhaust available context.
+The finite context window creates a fundamental tension: agents need comprehensive information to reason effectively, but must balance this against the constraints of token limits, processing costs, and performance degradation. This challenge manifests in several ways:
 
-Context compression is not a single technique but a comprehensive strategy combining multiple approaches. The most powerful method is externalizing memory—offloading large or long-term information to persistent storage. For information that must remain in context, techniques like summarization, truncation, and attention manipulation ensure the agent maintains focus on what matters most.
+### Token Limits and Hard Boundaries
 
-Effective context compression is essential for production agent systems. It directly impacts cost (fewer tokens = lower API costs), latency (shorter contexts = faster processing), and performance (focused contexts = better reasoning). Without compression, agents cannot scale to handle real-world complexity.
+Every LLM has a maximum context window size—a hard limit on the number of tokens it can process. Exceeding this limit causes errors, truncation, or complete failure. As agents execute multi-step tasks, they accumulate:
+- **Conversation history:** Messages from previous turns
+- **Tool results:** Outputs from API calls, file operations, code execution
+- **Intermediate reasoning:** Thinking blocks, reflections, and planning steps
+- **System instructions:** Prompts, tool definitions, and guidelines
 
-### Key Concepts
-- **Finite Context Window:** The maximum number of tokens an LLM can process at once, creating a hard limit on information capacity.
-- **Externalized Memory:** Offloading large data to persistent storage (filesystem, database) to extend working memory beyond context limits.
-- **Restorable Compression:** Dropping content from context while maintaining references (paths, URLs) for on-demand retrieval.
-- **Contextual Pruning:** Removing or summarizing less relevant information to preserve space for critical content.
-- **Summarization:** Condensing conversation history or documents into compact representations that preserve essential information.
-- **Chunking:** Breaking large documents into smaller, manageable pieces for processing and retrieval.
-- **Attention Manipulation:** Strategically positioning important information (like plans) to bias model attention.
-- **Lost-in-the-Middle Problem:** Performance degradation when critical information appears in the middle of very long contexts.
+Without management, these accumulate until the context window is exhausted.
 
-### How It Works: Step-by-step Explanation
+### The "Lost in the Middle" Problem
 
-Context compression operates through multiple complementary strategies:
+Research shows that LLMs have reduced attention to information in the middle of long contexts. Important information placed at the beginning or end receives more attention than information in the middle. This creates challenges for:
+- **Long conversations:** Critical early context may be "lost" as conversations extend
+- **Complex plans:** High-level goals defined early may be forgotten during execution
+- **Multi-step tasks:** Intermediate results may be forgotten in later steps
 
-1. **Externalize Large Data:** The primary compression strategy is to offload large or long-term information to external persistent storage. The agent writes intermediate results, tool outputs, or large observations to files or databases, keeping only lightweight references in context.
+Context engineering addresses this through strategic positioning and attention manipulation techniques.
 
-2. **Maintain Restorable References:** Compression must be restorable. The agent drops large content from the prompt but retains references (file paths, URLs, database keys) that enable precise retrieval when needed.
+### Cost and Performance Impact
 
-3. **Just-in-Time Retrieval:** When specific information is required, the agent retrieves only relevant snippets using targeted tools (grep, line-range reads, semantic search) rather than loading entire files.
+Large contexts are expensive to process. Every token in the context window consumes computational resources, directly impacting:
+- **API costs:** More tokens = higher costs per request
+- **Latency:** Longer contexts = slower processing times
+- **Reasoning quality:** Overly long contexts can degrade model performance and focus
 
-4. **Summarize Context History:** For information that must remain in context, older conversation segments are summarized into compact blocks, preserving essential information while freeing space for active reasoning.
+Effective context engineering optimizes all three dimensions simultaneously.
 
-5. **Prune and Prioritize:** Less critical information is truncated or removed, ensuring the most relevant content remains accessible within context limits.
+### KV-Cache Efficiency
 
-6. **Manipulate Attention:** Important information (like high-level plans) is strategically positioned (e.g., at the end of context) to leverage recency bias and maintain focus.
+Modern LLM inference uses Key-Value (KV) caches to optimize repeated processing of the same prompt prefix. When the prompt prefix changes (even by a single token), the cache is invalidated, dramatically increasing latency and cost. Context engineering strategies that maintain stable, append-only context structures maximize KV-cache reuse, directly improving performance.
 
-## When to Use This Pattern
-
-### ✅ Use when:
-- Building agents that process large documents, datasets, or extensive research materials.
-- Maintaining long conversation histories across multiple turns.
-- Working with unstructured data (web pages, PDFs) that exceeds context limits.
-- Implementing multi-step agents that accumulate intermediate results and reasoning.
-- Cost and latency optimization are critical requirements.
-- Performance degradation is observed with long contexts.
-
-### ❌ Avoid when:
-- All necessary information fits comfortably within context limits without performance issues.
-- The task is simple and single-turn, making compression overhead unnecessary.
-- Real-time retrieval latency from external storage is unacceptable.
-- The compression strategy would lose critical information that cannot be restored.
-
-### Decision Guidelines
-Context compression is essential for any production agent system handling real-world complexity. The strategy should be layered: externalize large data first (most effective), then summarize/prune what remains in context, and finally use attention manipulation for critical information. Consider: data size (large = externalize), access pattern (frequent = keep in context, rare = externalize), and criticality (essential = keep recent, supplementary = summarize or externalize). Always maintain restorable references for externalized data.
-
-## Practical Applications & Use Cases
-
-Context compression is fundamental to building scalable, efficient agent systems across diverse applications.
-
-- **Research Agents:** Agents conducting literature reviews offload search results and papers to external storage, retrieving specific sections when synthesizing findings.
-
-- **Code Generation Agents:** Systems like Claude Code use external memory to store codebase context, reading specific files and functions on demand rather than loading entire repositories.
-
-- **Long-Running Conversations:** Chatbots and assistants compress old conversation history through summarization, maintaining recent context while preserving essential context from earlier exchanges.
-
-- **Document Processing:** Agents processing large PDFs or documents save extracted content externally, then query specific sections when answering questions.
-
-- **Multi-Agent Systems:** Orchestrator agents compress subagent outputs, storing detailed results externally and keeping only summaries and references in context.
-
-- **RAG Systems:** Knowledge bases are chunked and indexed, with agents retrieving only relevant chunks rather than entire documents.
-
-- **Planning Agents:** Agents maintain persistent plans externally (todo.md) and recite them into context, ensuring goals remain visible without consuming context space.
-
-## Implementation
-
-### Prerequisites
-```bash
-pip install langchain langchain-openai
-# or
-pip install google-adk
-# or
-pip install tiktoken  # For token counting
-```
-
-### Basic Example: Context Compression Manager
-
-This example demonstrates a comprehensive context compression system combining externalization, summarization, and pruning:
-
-```python
-from typing import List, Dict
-from pathlib import Path
-import tiktoken
-
-class ContextCompressionManager:
-    def __init__(self, workspace_dir: str = "./workspace", max_tokens: int = 100000):
-        self.workspace = Path(workspace_dir)
-        self.workspace.mkdir(exist_ok=True)
-        self.max_tokens = max_tokens
-        self.encoding = tiktoken.encoding_for_model("gpt-4")
-        self.context_history = []
-        self.external_memory = {}
-    
-    def count_tokens(self, text: str) -> int:
-        """Count tokens in text."""
-        return len(self.encoding.encode(text))
-    
-    def externalize(self, content: str, key: str) -> str:
-        """Offload large content to external storage."""
-        filepath = self.workspace / f"{key}.txt"
-        filepath.write_text(content)
-        self.external_memory[key] = str(filepath)
-        
-        # Return lightweight reference
-        size = len(content)
-        return f"[External Memory: {key} ({size} chars stored)]"
-    
-    def should_compress(self) -> bool:
-        """Check if context needs compression."""
-        total_tokens = sum(self.count_tokens(msg["content"]) for msg in self.context_history)
-        return total_tokens > self.max_tokens * 0.9
-    
-    def summarize_old_messages(self, messages: List[Dict], llm) -> str:
-        """Summarize old conversation messages."""
-        if not messages:
-            return ""
-        
-        # Prepare messages for summarization
-        conversation_text = "\n".join([
-            f"{msg['role']}: {msg['content'][:500]}"  # Truncate for summary
-            for msg in messages
-        ])
-        
-        summary_prompt = f"""Summarize this conversation history concisely, 
-        preserving key decisions, user preferences, and important context:
-        
-        {conversation_text}
-        
-        Summary:"""
-        
-        summary = llm.invoke(summary_prompt).content
-        return summary
-    
-    def compress_context(self, llm) -> List[Dict]:
-        """Compress context when approaching limits."""
-        if not self.should_compress():
-            return self.context_history
-        
-        # Keep recent messages (last 10)
-        recent_messages = self.context_history[-10:]
-        old_messages = self.context_history[:-10]
-        
-        # Summarize old messages
-        if old_messages:
-            summary = self.summarize_old_messages(old_messages, llm)
-            summary_message = {
-                "role": "system",
-                "content": f"Previous conversation summary: {summary}"
-            }
-            # Replace old messages with summary
-            self.context_history = [summary_message] + recent_messages
-        
-        return self.context_history
-    
-    def add_message(self, role: str, content: str, llm=None):
-        """Add message with automatic compression."""
-        # Check if content is too large
-        if self.count_tokens(content) > 5000:
-            # Externalize large content
-            key = f"message_{len(self.context_history)}"
-            reference = self.externalize(content, key)
-            self.context_history.append({
-                "role": role,
-                "content": f"{reference}\n\n[Content stored externally. Use retrieve_external('{key}') to access.]"
-            })
-        else:
-            self.context_history.append({"role": role, "content": content})
-        
-        # Compress if needed
-        if llm and self.should_compress():
-            self.compress_context(llm)
-    
-    def retrieve_external(self, key: str, query: str = None) -> str:
-        """Retrieve from external memory with optional filtering."""
-        if key not in self.external_memory:
-            return f"Key '{key}' not found in external memory."
-        
-        filepath = Path(self.external_memory[key])
-        content = filepath.read_text()
-        
-        # If query provided, filter content
-        if query:
-            lines = [line for line in content.split('\n') if query.lower() in line.lower()]
-            return '\n'.join(lines[:50])  # Top 50 matches
-        
-        return content[:2000]  # Return first portion
-
-# Usage
-from langchain_openai import ChatOpenAI
-
-llm = ChatOpenAI(model="gpt-4o")
-compressor = ContextCompressionManager(max_tokens=100000)
-
-# Add messages (large content automatically externalized)
-compressor.add_message("user", "Large web search result...", llm)
-compressor.add_message("assistant", "Processing...", llm)
-
-# Context automatically compressed when approaching limits
-compressed_context = compressor.compress_context(llm)
-```
-
-**Explanation:**
-This example demonstrates a comprehensive compression manager that automatically externalizes large content, summarizes old messages, and maintains context within token limits. It combines multiple compression strategies in a unified system.
-
-### Advanced Example: Intelligent Context Pruning
-
-```python
-from typing import List, Dict, Tuple
-import re
-from collections import defaultdict
-
-class IntelligentContextPruner:
-    def __init__(self, max_tokens: int = 100000, keep_recent: int = 20):
-        self.max_tokens = max_tokens
-        self.keep_recent = keep_recent
-        self.encoding = tiktoken.encoding_for_model("gpt-4")
-        self.importance_scores = {}
-    
-    def calculate_importance(self, message: Dict, context: List[Dict]) -> float:
-        """Calculate importance score for a message."""
-        score = 0.0
-        content = message.get("content", "")
-        
-        # Recent messages are more important
-        position = context.index(message) if message in context else len(context)
-        recency_score = 1.0 / (position + 1)
-        score += recency_score * 0.3
-        
-        # System messages are important
-        if message.get("role") == "system":
-            score += 0.4
-        
-        # Messages with tool results might be important
-        if "tool" in content.lower() or "result" in content.lower():
-            score += 0.2
-        
-        # Messages with user queries are important
-        if message.get("role") == "user":
-            score += 0.3
-        
-        # Check for key indicators
-        key_phrases = ["error", "important", "critical", "decision", "plan"]
-        if any(phrase in content.lower() for phrase in key_phrases):
-            score += 0.2
-        
-        return score
-    
-    def prune_context(self, context: List[Dict], target_tokens: int) -> List[Dict]:
-        """Intelligently prune context to fit within token budget."""
-        # Calculate importance for each message
-        importance_scores = {
-            i: self.calculate_importance(msg, context)
-            for i, msg in enumerate(context)
-        }
-        
-        # Always keep most recent messages
-        recent_indices = set(range(max(0, len(context) - self.keep_recent), len(context)))
-        
-        # Sort by importance (descending)
-        sorted_indices = sorted(
-            importance_scores.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
-        
-        # Select messages to keep
-        kept_indices = set(recent_indices)
-        current_tokens = sum(
-            self.count_tokens(context[i]["content"])
-            for i in recent_indices
-        )
-        
-        for idx, score in sorted_indices:
-            if idx in kept_indices:
-                continue
-            
-            msg_tokens = self.count_tokens(context[idx]["content"])
-            if current_tokens + msg_tokens <= target_tokens:
-                kept_indices.add(idx)
-                current_tokens += msg_tokens
-            else:
-                break
-        
-        # Reconstruct context in original order
-        pruned_context = [
-            context[i] for i in sorted(kept_indices)
-            if i < len(context)
-        ]
-        
-        return pruned_context
-    
-    def count_tokens(self, text: str) -> int:
-        """Count tokens in text."""
-        return len(self.encoding.encode(text))
-    
-    def compress_with_summarization(self, context: List[Dict], llm, max_summary_tokens: int = 1000) -> List[Dict]:
-        """Compress by summarizing less important messages."""
-        # Identify messages to summarize (not in recent set)
-        recent_count = min(self.keep_recent, len(context))
-        to_summarize = context[:-recent_count] if recent_count < len(context) else []
-        to_keep = context[-recent_count:] if recent_count < len(context) else context
-        
-        if not to_summarize:
-            return context
-        
-        # Create summary of old messages
-        summary_text = "\n".join([
-            f"{msg['role']}: {msg['content'][:200]}"
-            for msg in to_summarize
-        ])
-        
-        summary_prompt = f"""Create a concise summary of this conversation history, 
-        preserving key information, decisions, and context:
-        
-        {summary_text}
-        
-        Summary (max {max_summary_tokens} tokens):"""
-        
-        summary = llm.invoke(summary_prompt).content
-        
-        # Combine summary with recent messages
-        compressed = [
-            {"role": "system", "content": f"Previous conversation summary: {summary}"}
-        ] + to_keep
-        
-        return compressed
-
-# Usage
-pruner = IntelligentContextPruner(max_tokens=100000, keep_recent=20)
-
-# Prune context intelligently
-compressed = pruner.prune_context(long_context, target_tokens=80000)
-
-# Or use summarization
-from langchain_openai import ChatOpenAI
-llm = ChatOpenAI(model="gpt-4o")
-compressed = pruner.compress_with_summarization(long_context, llm)
-```
-
-**Explanation:**
-This advanced example implements intelligent context pruning that considers message importance, recency, and content type. It prioritizes critical information while removing less important messages, and can also use summarization for more aggressive compression.
-
-### Framework-Specific Examples
-
-#### LangChain: Conversation Summary Memory
-```python
-from langchain_openai import ChatOpenAI
-from langchain.memory import ConversationSummaryMemory
-from langchain.chains import ConversationChain
-
-llm = ChatOpenAI(model="gpt-4o")
-
-# Summary memory automatically compresses old messages
-memory = ConversationSummaryMemory(
-    llm=llm,
-    max_token_limit=1000,  # Target summary size
-    return_messages=True
-)
-
-chain = ConversationChain(
-    llm=llm,
-    memory=memory,
-    verbose=True
-)
-
-# Long conversation automatically compressed
-response1 = chain.predict(input="Tell me about AI agents")
-# ... many turns later ...
-response10 = chain.predict(input="What did we discuss earlier?")
-# Old messages are summarized, recent ones preserved
-```
-
-#### Google ADK: Session State with Compression
-```python
-from google.adk.sessions import InMemorySessionService
-from google.adk.agents import LlmAgent
-from google.adk.runners import Runner
-
-def compress_session_state(state: dict, max_size: int = 10000) -> dict:
-    """Compress session state when it exceeds size limit."""
-    state_str = str(state)
-    if len(state_str) > max_size:
-        # Summarize or externalize large state
-        # Keep only essential keys
-        essential_keys = ["user_id", "current_task", "recent_messages"]
-        compressed = {k: state[k] for k in essential_keys if k in state}
-        # Externalize rest
-        # ... externalization logic ...
-        return compressed
-    return state
-
-session_service = InMemorySessionService()
-session_service.add_compression_hook(compress_session_state)
-
-agent = LlmAgent(
-    name="CompressedAgent",
-    model="gemini-2.0-flash",
-    instruction="Work efficiently within context limits."
-)
-
-runner = Runner(
-    agent=agent,
-    app_name="compressed_app",
-    session_service=session_service
-)
-```
-
-#### Custom Chunking for RAG
-```python
-from typing import List
-import tiktoken
-
-class DocumentChunker:
-    def __init__(self, chunk_size: int = 1000, overlap: int = 200):
-        self.chunk_size = chunk_size
-        self.overlap = overlap
-        self.encoding = tiktoken.encoding_for_model("gpt-4")
-    
-    def chunk_text(self, text: str) -> List[str]:
-        """Split text into overlapping chunks."""
-        tokens = self.encoding.encode(text)
-        chunks = []
-        
-        for i in range(0, len(tokens), self.chunk_size - self.overlap):
-            chunk_tokens = tokens[i:i + self.chunk_size]
-            chunk_text = self.encoding.decode(chunk_tokens)
-            chunks.append(chunk_text)
-        
-        return chunks
-    
-    def chunk_by_sentences(self, text: str) -> List[str]:
-        """Chunk by sentences for better semantic coherence."""
-        sentences = re.split(r'(?<=[.!?])\s+', text)
-        chunks = []
-        current_chunk = []
-        current_size = 0
-        
-        for sentence in sentences:
-            sent_tokens = len(self.encoding.encode(sentence))
-            if current_size + sent_tokens > self.chunk_size and current_chunk:
-                chunks.append(' '.join(current_chunk))
-                current_chunk = [sentence]
-                current_size = sent_tokens
-            else:
-                current_chunk.append(sentence)
-                current_size += sent_tokens
-        
-        if current_chunk:
-            chunks.append(' '.join(current_chunk))
-        
-        return chunks
-
-# Usage
-chunker = DocumentChunker(chunk_size=1000, overlap=200)
-chunks = chunker.chunk_by_sentences(large_document)
-
-# Store chunks in vector database
-# Retrieve only relevant chunks for context
-```
-
-## Key Takeaways
-
-- **Core Strategy:** Context compression is essential for managing the finite context window through externalization, summarization, pruning, and attention manipulation.
-
-- **Primary Method:** Externalizing memory (offloading to filesystem/database) is the most powerful compression technique, enabling unlimited information storage with restorable references.
-
-- **Layered Approach:** Combine multiple strategies: externalize large data first, then summarize/prune what remains, and use attention manipulation for critical information.
-
-- **Restorable Compression:** Always maintain references (paths, URLs, keys) when externalizing data to enable precise retrieval when needed.
-
-- **Performance Impact:** Effective compression directly improves cost, latency, and reasoning quality by keeping contexts focused and within optimal token ranges.
-
-- **Common Pitfall:** Aggressive compression that loses critical information or fails to maintain restorable references defeats the purpose. Always preserve essential context and references.
-
-- **Best Practice:** Monitor context token usage and implement automatic compression when approaching limits (e.g., 90% of max tokens) to prevent hard failures.
-
-## Related Patterns
-
-This pattern works well with:
-- **Leverage External Memory (Filesystem as Context):** Externalization is the primary compression strategy, offloading large data to persistent storage.
-
-- **Persistent Task List (Recitation):** Attention manipulation through recitation keeps important plans visible without consuming context space.
-
-- **Memory Management:** Context compression is a key component of comprehensive memory management, complementing context window optimization and external memory systems.
-
-- **Knowledge Retrieval (RAG):** Chunking enables RAG systems to retrieve only relevant document sections rather than entire documents.
-
-This pattern is often combined with:
-- **Stable, Append-Only Context:** Compression helps maintain stable context prefixes for KV-Cache optimization.
-
-- **Tool Result Management:** Large tool results are externalized, with only summaries or references kept in context.
-
-- **Multi-Agent Architectures:** Orchestrators compress subagent outputs, storing details externally and keeping summaries in context.
-
-## References
-
-- Agentic AI System Design Patterns
-- Context Engineering for AI Agents: Lessons from Building Manus
-- LangChain Memory Management: https://python.langchain.com/docs/modules/memory/
-- Google ADK Sessions: https://google.github.io/adk-docs/sessions/
-- Context Compression Techniques: https://arxiv.org/abs/2309.00071
-- Lost in the Middle: How Language Models Use Long Contexts: https://arxiv.org/abs/2307.03172
+## Core Concepts in Context Engineering
 
+Context engineering encompasses several key concepts and techniques:
+
+### Externalization
+
+The most powerful context engineering technique is **externalization**—offloading large or long-term information to persistent storage (filesystem, database) rather than keeping it in the context window. This enables:
+- **Unlimited storage:** Information beyond context limits
+- **Restorable compression:** Maintaining references (paths, URLs, keys) for on-demand retrieval
+- **Just-in-time access:** Retrieving only relevant portions when needed
+
+Externalization is covered in detail in the **Pattern: Filesystem as Context** module (in the Memory part).
+
+### Compression Strategies
+
+For information that must remain in context, compression techniques reduce token usage while preserving essential information:
+- **Summarization:** Condensing conversation history or documents into compact representations
+- **Pruning:** Removing or truncating less critical information
+- **Selective retention:** Keeping only the most relevant or recent content
+
+### Automatic Context Management
+
+Automatic techniques manage context size without manual intervention:
+- **Server-side editing:** API-level clearing of tool results, thinking blocks, or old messages
+- **Client-side compaction:** SDK-based summarization that replaces full history with structured summaries
+- **Threshold-based triggers:** Automatic management when context exceeds configured limits
+
+### Attention Manipulation
+
+Strategic positioning of important information to bias model attention:
+- **Recency bias:** Placing critical information at the end of context
+- **Recitation:** Actively bringing important plans or goals back into context
+- **Stable prefixes:** Maintaining consistent prompt structures for KV-cache optimization
+
+### Metadata vs. Values
+
+Separating metadata (what exists) from full values (the actual data) enables agents to maintain awareness of execution state without consuming excessive tokens. This pattern is covered in **Pattern: Variables Manager**.
+
+## Patterns in This Part
+
+This part of the book covers specific patterns for context engineering:
+
+### Pattern: Attention Engineering
+
+**Attention Engineering** is a specialized prompt design pattern focused on manipulating where and how information appears in an AI model's context to deliberately steer the model's focus. It exploits the model's inherent attention biases (primacy and recency) by strategically positioning critical information at optimal locations in the prompt. This pattern directly addresses the "lost in the middle" problem by ensuring important information receives adequate attention regardless of context length.
+
+**When to use:** Building agents that process long contexts (10K+ tokens), need to ensure critical instructions are reliably followed, or must maintain focus on important information across extended conversations or multi-step tasks.
+
+### Pattern: Context Editing
+
+**Context Editing** provides automatic, hands-off management of conversation context as it grows. It automatically removes or compresses less critical content (tool results, thinking blocks, old messages) to stay within token limits and optimize costs. This pattern operates either server-side (API-level clearing) or client-side (SDK compaction), requiring minimal configuration and operating transparently.
+
+**When to use:** Long-running agents that accumulate extensive conversation history, tool-heavy workflows, or when you want automatic, set-and-forget context management.
+
+### Pattern: Variables Manager
+
+**Variables Manager** maintains a centralized registry of execution variables with rich metadata while providing context-efficient summaries. Instead of passing full values through context, agents work with variable references and retrieve full values only when needed. This pattern separates metadata from values, enabling agents to maintain awareness of execution state through lightweight summaries.
+
+**When to use:** Multi-step workflows with large intermediate values, code execution agents, or multi-agent systems requiring shared state tracking.
+
+## Relationship to Memory Patterns
+
+Context engineering is closely related to memory management, but focuses specifically on optimizing the **short-term memory** (context window) rather than long-term persistent storage. The **Memory** part of this book covers:
+
+- **Memory Management:** Conceptual overview of short-term vs. long-term memory
+- **Pattern: Filesystem as Context:** Externalization technique for offloading large data
+- **Pattern: Recitation:** Attention manipulation through persistent plan maintenance
+- **Pattern: RAG:** Knowledge retrieval for long-term memory
+
+Context engineering patterns work together with memory patterns: externalize large data first (Filesystem as Context), then optimize what remains in context (Context Editing, Variables Manager).
+
+## Key Context Engineering Strategies
+
+Effective context engineering uses a layered approach:
+
+### 1. Externalize First
+
+The most effective strategy is to externalize large data before it enters context. Offload tool results, large documents, or intermediate computations to persistent storage, keeping only lightweight references in context.
+
+### 2. Compress What Remains
+
+For information that must stay in context, use compression techniques:
+- Summarize old conversation history
+- Prune less critical information
+- Use automatic context editing for tool results
+
+### 3. Manipulate Attention
+
+Strategically position important information:
+- Place critical plans or goals at the end of context (recency bias)
+- Use recitation to actively bring important information back into focus
+- Maintain stable context prefixes for KV-cache optimization
+
+### 4. Separate Metadata from Values
+
+Use metadata summaries to maintain awareness without full values:
+- Track variable existence and characteristics without including full data
+- Retrieve full values only when explicitly needed
+- Use structured summaries for observability
+
+## Common Challenges and Solutions
+
+### Challenge: Context Growing Over Time
+
+**Solution:** Implement automatic context editing with threshold-based triggers. Use server-side clearing for tool results or client-side compaction for full history replacement.
+
+### Challenge: Large Tool Results
+
+**Solution:** Externalize tool results to filesystem before they enter context. Keep only file paths or summaries in context, retrieving full results on-demand.
+
+### Challenge: Maintaining Goal Awareness
+
+**Solution:** Use recitation patterns to actively bring high-level plans back into context. Maintain persistent plan files that are read at each step.
+
+### Challenge: Variable Tracking Across Steps
+
+**Solution:** Use Variables Manager pattern to track execution state through metadata summaries, retrieving full values only when needed.
+
+### Challenge: KV-Cache Invalidation
+
+**Solution:** Maintain stable, append-only context structures. Keep tool definitions and system instructions fixed, appending new content rather than modifying prefixes.
+
+## What's Missing?
+
+While this part covers essential context engineering patterns, several areas represent opportunities for future patterns or deeper exploration:
+
+### Stable, Append-Only Context
+
+While mentioned throughout the book, **Stable, Append-Only Context** is not yet a standalone pattern. This concept involves maintaining consistent prompt prefixes to maximize KV-cache reuse. A dedicated pattern could provide:
+- Techniques for structuring stable prefixes
+- Strategies for append-only message management
+- KV-cache optimization guidelines
+- Framework-specific implementations
+
+### Context Window Optimization
+
+A pattern focused specifically on **optimizing context window usage** could cover:
+- Token counting and monitoring strategies
+- Context window sizing decisions
+- Performance profiling and optimization
+- Cost analysis and trade-offs
+
+### Attention Engineering
+
+While attention manipulation is discussed, a dedicated **Attention Engineering** pattern could provide:
+- Systematic approaches to information positioning
+- Recency bias exploitation techniques
+- Attention scoring and prioritization
+- Multi-layer attention strategies
+
+### Context Composition
+
+A pattern for **composing context from multiple sources** could address:
+- Strategies for combining external memory with context
+- Balancing retrieved information with conversation history
+- Context prioritization and ordering
+- Multi-source context integration
+
+## Integration with Other Capabilities
+
+Context engineering integrates with other agent capabilities:
+
+- **Tool Use:** Context engineering manages tool results and tool definitions efficiently
+- **Reasoning Techniques:** Optimized context improves reasoning quality and focus
+- **Planning:** Context engineering maintains plan visibility through recitation and attention manipulation
+- **Memory Management:** Context engineering optimizes short-term memory while memory patterns handle long-term storage
+- **Multi-Agent Systems:** Context engineering enables orchestrators to manage subagent outputs efficiently
+
+## Key Insights
+
+1. **Context engineering is essential:** Agents operating over time or handling complex tasks require sophisticated context management. Without it, they cannot scale to handle real-world complexity.
+
+2. **Externalization is the most powerful technique:** Offloading large data to persistent storage enables unlimited information handling while keeping contexts focused and efficient.
+
+3. **Layered strategies work best:** Combine externalization (first), compression (second), and attention manipulation (third) for optimal results.
+
+4. **Automatic management enables scale:** Context editing provides hands-off management for production systems, while manual techniques provide fine-grained control.
+
+5. **Metadata separation improves efficiency:** Tracking what exists without including full values enables awareness without token bloat.
+
+6. **KV-cache optimization matters:** Maintaining stable, append-only context structures directly improves latency and reduces costs.
+
+## Next Steps
+
+This chapter provided a high-level overview of context engineering as a domain. For detailed implementation guidance, see:
+
+- **Pattern: Attention Engineering** - Strategic positioning of information to maximize model attention
+- **Pattern: Context Editing** - Automatic management of conversation context
+- **Pattern: Variables Manager** - Metadata-based variable tracking
+
+For related patterns covering externalization and long-term memory, see the **Memory** part:
+
+- **Pattern: Filesystem as Context** - Externalization technique for large data
+- **Pattern: Recitation** - Attention manipulation through persistent plans
+- **Memory Management** - Conceptual overview of memory types
+
+Effective context engineering is essential for building production-ready agentic systems. Understanding these concepts and patterns will enable you to build agents that operate efficiently within context limits, maintain focus on critical information, and scale to handle complex, long-horizon tasks.

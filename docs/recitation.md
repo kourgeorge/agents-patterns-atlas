@@ -325,7 +325,7 @@ current_plan = recitation.read_and_recite()
 ## Related Patterns
 
 This pattern works well with:
-- **Leverage External Memory (Filesystem as Context):** The task list itself is often stored in an external persistent store (like a filesystem) so it can be reliably referenced and updated across many steps.
+- **Filesystem as Context:** The task list itself is often stored in an external persistent store (like a filesystem) so it can be reliably referenced and updated across many steps.
 
 - **Stable, Append-Only Context:** Recitation aligns with the need to keep the prompt prefix stable; the plan is appended to the context history rather than modifying the core instructions.
 
