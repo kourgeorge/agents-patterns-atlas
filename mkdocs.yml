@@ -71,7 +71,7 @@ nav:
     - Introduction: introduction.md
     - What is an Agentic Design Pattern?: what-is-a-design-pattern.md
 - Core Workflow:
-    - "Pattern: Prompt Chaining (Pipeline Pattern)": prompt-chaining.md
+    - "Pattern: Prompt Chaining": prompt-chaining.md
     - "Pattern: Routing": routing.md
     - "Pattern: Parallelization": parallelization.md
     - "Pattern: Reflection": reflection.md

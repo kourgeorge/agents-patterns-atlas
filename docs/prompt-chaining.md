@@ -1,4 +1,4 @@
-# Prompt Chaining (Pipeline Pattern)
+# Prompt Chaining
 
 ## Motivation
 
