@@ -2,7 +2,9 @@
 
 ## The Paradigm Shift
 
-We are standing on the precipice of a transformation in artificial intelligence that is as significant as the move from command-line interfaces to graphical user interfaces. We are moving from models that simply generate content to systems that **achieve goals**. This is the fundamental shift from passive tools to active participants in problem-solving.
+We are standing on the precipice of a transformation in artificial intelligence that is as significant as the move from command-line interfaces to graphical user interfaces. As AI systems shift from **passive classifiers to active problem-solvers**, engineers face a critical challenge: building intelligent agents requires not just technical skills, but a deeper understanding of *how intelligence works*.
+
+We are moving from models that simply generate content to systems that **achieve goals**. This is the fundamental shift from passive tools to active participants in problem-solving. Large language models augmented with tools, memory, and multi-step reasoning are increasingly deployed as agents capable of planning, acting, and coordinating with humans and other agents. Yet despite rapid progress, the field lacks a **shared conceptual framework** that provides AI agent engineers with a common language that revolves around the key components of intelligence.
 
 For the past few years, the spotlight has been on **Generative AI**. These models are impressive; they can write poetry, debug code, and summarize history. However, they remain fundamentally reactive. They wait for input, process it, and return output. They are stateless oracles.
 
@@ -23,6 +25,14 @@ For the past few years, the spotlight has been on **Generative AI**. These model
 ![Agentic Systems Overview](img1.png)
 
 ---
+
+## A New Era of Software Engineering
+
+This shift represents a **fundamental transition in software engineering**: from building systems that manage data flow to building systems that **embody intelligence**. Building systems that must themselves decompose general problems, intelligently select solvers for subproblems, and synchronize cognitive states across multiple reasoning steps represents a qualitatively different class of engineering problem than coordinating data pipelines or distributed processes.
+
+It introduces novel challenges directly related to the limits of LLMs—challenges that traditional software engineering never faced. Effective context engineering, for instance, was not a problem in traditional software engineering. How do you manage working memory constraints? How do you allocate cognitive load across reasoning steps? How do you maintain executive control in multi-agent systems? These are questions that cognitive neuroscience has been studying for decades, and they are now central to building effective agentic systems.
+
+**Thus, a new conceptual language is needed**, one that provides engineers with the vocabulary to reason about these cognitive operations. This gap has practical consequences. Engineers building agentic systems must make countless design decisions: how to decompose tasks, manage context, allocate work to tools, coordinate multi-step workflows, and enable learning. They lack a unified cognitive framework to guide these choices. Without a shared conceptual language, each team reinvents patterns, struggles to communicate design decisions, and misses opportunities to learn from decades of cognitive science research on how biological minds solve similar problems.
 
 ## The Evolution of AI Systems
 
@@ -90,7 +100,7 @@ Agents are characterized by several key capabilities:
 
 ## The Anatomy of an Agent
 
-We can understand agentic patterns by mapping them to the core components of an intelligent system. This book is structured around building an agent, piece by piece, mirroring biological cognition.
+We can understand agentic patterns by mapping them to the core components of an intelligent system. This book is structured around building an agent, piece by piece, mirroring biological cognition. By grounding our framework in cognitive neuroscience, we can understand both the mechanisms and the underlying principles that explain their effectiveness. These components—memory, reasoning, tool use, and collaboration—are both necessary and sufficient for reliable, long-horizon problem solving in both biological and artificial agents.
 
 ### 1. Memory & Context (The Mind)
 An agent is useless if it cannot remember previous actions or retrieve relevant knowledge.
@@ -195,21 +205,25 @@ Give agents enough autonomy to be effective, but maintain appropriate oversight 
 
 ---
 
-## Why Design Patterns Matter
+## Why Design Patterns Matter: A Cognitive Framework
 
 Design patterns are battle-tested templates offering proven approaches to standard design and implementation challenges. The patterns presented in this book were extracted through careful analysis and dissection of real-world agent implementations, including systems like IBM's CUGA (Cognitive Understanding and Generation Agent). By examining how successful agent architectures are constructed, we've identified reusable patterns, design components, and principles that can be applied across different agentic systems. This pattern extraction methodology allows us to learn from proven implementations and codify their best practices into transferable knowledge.
+
+However, this book goes further: it provides AI agent engineers with a **shared conceptual language grounded in cognitive neuroscience**, enabling you to build intelligent problem solvers with a common understanding of how intelligence works. At the same time, cognitive neuroscience has spent decades studying how humans break down complex problems, focus attention, delegate work to tools or collaborators, integrate partial results, and improve through experience. These theories offer deep insights into the **structure and limitations of intelligence**—working memory constraints, cognitive load, executive control bottlenecks.
+
+Until the recent surge of LLMs, these cognitive theories seldom translated cleanly into engineering practice. Conversely, AI agent frameworks (e.g., ReAct, RAG pipelines, LangGraph, multi-agent orchestration) provide pragmatic mechanisms for controlling LLM-based agents but often lack a unifying cognitive perspective that explains *why* certain patterns work and how they relate to fundamental principles of intelligence. By grounding agent design in cognitive principles, this framework helps engineers understand the limits of intelligence while inspiring effective solutions that map naturally onto existing agentic architectures.
 
 In agentic systems, these patterns address fundamental questions:
 
 * How do you structure sequential operations?
-* How do you manage state and context?
+* How do you manage state and context within working memory constraints?
 * How do you handle errors and unexpected situations?
-* How do you coordinate multiple agents?
+* How do you coordinate multiple agents and allocate cognitive load?
 * How do you ensure quality and safety?
 
-By recognizing and applying these patterns, you gain access to solutions that enhance structure, maintainability, reliability, and efficiency. Patterns provide a common language that makes your agent's logic clearer and easier to understand, maintain, and extend.
+By recognizing and applying these patterns with an understanding of their cognitive foundations, you gain access to solutions that enhance structure, maintainability, reliability, and efficiency. Patterns provide a common language that makes your agent's logic clearer and easier to understand, maintain, and extend. More importantly, this shared vocabulary—grounded in cognitive science—allows teams to reason about cognitive operations, understand the limits of intelligence, and communicate design decisions with a principled foundation.
 
-Using design patterns helps you avoid reinventing fundamental solutions and accelerates development, allowing you to focus on the unique aspects of your application rather than foundational mechanics.
+Using design patterns helps you avoid reinventing fundamental solutions and accelerates development, allowing you to focus on the unique aspects of your application rather than foundational mechanics. By connecting engineering practice with cognitive principles, we can build more robust, reliable, and effective agentic systems.
 
 ---
 
