@@ -87,33 +87,6 @@ Throughout this book, we demonstrate patterns using prominent frameworks:
 
 These frameworks represent different approaches to the agent development "canvas," each with its strengths. By showing examples across these tools, you'll gain a broader understanding of how patterns can be applied regardless of your chosen technical environment.
 
-## How to Use This Book
-
-This book is crafted to be a practical and accessible resource. Its primary focus is on clearly explaining each agentic pattern and providing concrete, runnable code examples to demonstrate its implementation.
-
-### For Beginners
-
-Start with **Part 1: Introduction & Foundations** to understand the core concepts and context. Then work through **Part 2: Core Workflow** in order. These build upon each other and establish fundamental concepts. Practice with the code examples to build understanding. Don't rush—take time to experiment with each pattern before moving to the next. As you progress, explore **Part 3: Tools** and **Part 4: Reasoning & Planning** to build more sophisticated capabilities.
-
-### For Experienced Developers
-
-Use this as a reference guide. Jump to patterns that address your specific challenges. Each module is self-contained, though cross-references help you understand relationships. Read the Pattern Overview and Key Takeaways for quick understanding, then dive into Implementation sections when you need to build something. The modular structure allows you to quickly find relevant patterns for your current project needs.
-
-### For Teams
-
-Use patterns as a common language for discussing agent architecture. Reference specific patterns when designing systems to ensure consistent approaches across your organization. This shared vocabulary will improve communication and reduce misunderstandings about system design.
-
-### For Learning
-
-Read the Pattern Overview and Key Takeaways for quick understanding. Dive into Implementation sections when you need to build something. Review Related Patterns to understand how patterns work together. We strongly encourage you to run the code examples, experiment with them, and adapt them to build your own intelligent systems.
-
-### Reading Strategies
-
-* **Sequential Reading:** Follow the module order to build concepts progressively
-* **Reference Reading:** Jump to specific patterns when you encounter challenges
-* **Deep Dive:** Focus on Implementation sections when you need to build
-* **Quick Scan:** Read Pattern Overview and Key Takeaways for rapid understanding
-
 ## The Emphasis on Practical Application
 
 Throughout this book, the emphasis is on practical application. Every pattern includes runnable code examples that you can execute, modify, and learn from. We encourage you to:

@@ -160,9 +160,6 @@ Agents must interact with diverse external systems, each with different APIs, er
 ### 7. Coordination in Multi-Agent Systems
 When multiple agents work together, managing communication, state sharing, and task coordination becomes complex.
 
-### 8. Safety and Guardrails
-Agents operating autonomously need boundaries to prevent harmful actions, ensure compliance, and maintain ethical standards.
-
 These challenges are precisely why design patterns matter. They provide proven solutions to these recurring problems.
 
 ---
@@ -195,8 +192,6 @@ Assume things will go wrong and build resilience into your system from the start
 ### 5. Balance Autonomy with Control
 Give agents enough autonomy to be effective, but maintain appropriate oversight and control mechanisms.
 * **Human-in-the-Loop:** Know when to involve humans for critical decisions or validation.
-* **Guardrails:** Set clear boundaries and constraints to prevent harmful actions.
-* **Observability:** Make agent decisions and actions visible and auditable.
 
 ---
 
