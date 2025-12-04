@@ -111,47 +111,11 @@ Multi-agent systems are **not** ideal when:
 
 ## Theoretical Foundations
 
-Multi-agent systems draw from multiple theoretical domains, each providing insights into how intelligent agents can effectively collaborate. Understanding these foundations helps engineers design more robust and effective multi-agent architectures.
+Multi-agent systems draw from multiple theoretical domains that inform effective agent collaboration. Cognitive science provides biological models: social insects and neural networks demonstrate division of labor through specialized roles, which multi-agent systems mirror with domain-specialized agents. Human cognition's working memory constraints (7±2 items) are addressed by distributing cognitive load across agents, each maintaining focused context to handle complexity beyond single-agent capacity. The brain's hierarchical control structures, where the prefrontal cortex acts as an "orchestrator" coordinating specialized regions, parallel multi-agent hierarchies where orchestrators maintain goals while workers execute tasks. Agents also benefit from modeling other agents' capabilities and intentions—a form of "theory of mind"—enabling better task allocation and coordination.
 
-### Cognitive Science Foundations
+Distributed systems theory provides algorithms and frameworks for agent coordination. Consensus algorithms like Paxos and Raft, designed for distributed databases, apply directly to multi-agent coordination, enabling agents to agree on shared state or decisions despite failures. Voting, averaging, and weighted aggregation mechanisms enable decentralized coordination where agents contribute opinions aggregated into collective decisions. The CAP theorem (Consistency, Availability, Partition tolerance) applies to multi-agent systems, requiring trade-offs that different patterns optimize for differently. Event-driven communication, where agents react to events like task completions or state changes, enables loose coupling and dynamic adaptation.
 
-Biological systems provide powerful models for multi-agent coordination, revealing principles that translate directly to artificial agent systems:
-
-**Division of Labor in Biological Systems:** Social insects (ants, bees) demonstrate sophisticated division of labor where specialized workers perform distinct roles. Similarly, neural networks distribute computation across specialized regions. Multi-agent systems mirror this: specialized agents handle distinct aspects of complex problems, each optimized for their domain.
-
-**Working Memory Constraints and Distributed Cognition:** Human cognition is limited by working memory capacity (typically 7±2 items). Multi-agent systems address similar constraints by distributing cognitive load across agents, each maintaining focused context on their specific subtask. This distributed cognition enables systems to handle complexity that exceeds any single agent's capacity.
-
-**Executive Control and Hierarchical Organization:** The human brain uses hierarchical control structures (prefrontal cortex as "orchestrator") to coordinate specialized regions. Multi-agent systems employ similar hierarchies: orchestrators maintain high-level goals while workers execute specialized tasks, mirroring the brain's executive control mechanisms.
-
-**Attention Allocation Across Multiple Agents:** Just as humans allocate attention across competing tasks, multi-agent systems must allocate computational resources (tokens, model calls) across agents. Effective systems balance attention between coordination overhead and task execution, optimizing resource allocation based on task priorities.
-
-**Theory of Mind in Multi-Agent Coordination:** Agents benefit from modeling other agents' capabilities, intentions, and states—a form of "theory of mind." This enables better task allocation, expectation management, and coordination, as agents can predict how others will respond and adapt their behavior accordingly.
-
-### Distributed Systems Theory
-
-Multi-agent systems share fundamental challenges with distributed computing systems, providing a rich theoretical foundation:
-
-**Consensus Algorithms and Agent Coordination:** Algorithms like Paxos and Raft, designed for distributed consensus in distributed databases, apply directly to multi-agent coordination. Agents must agree on shared state, task allocation, or decisions, requiring consensus mechanisms that handle failures and network partitions. Byzantine fault-tolerant consensus enables agents to coordinate even when some agents fail or behave maliciously.
-
-**Distributed Decision-Making and Voting Mechanisms:** Multi-agent systems often require collective decisions through voting, averaging, or weighted aggregation. These mechanisms enable decentralized coordination where agents contribute opinions or votes, and the system aggregates them into collective decisions—essential for swarm architectures and consensus-based systems.
-
-**Event-Driven Architectures and Message Passing:** Multi-agent coordination relies heavily on event-driven communication where agents react to events (task completions, state changes, messages from other agents). Message passing protocols enable loose coupling between agents, allowing systems to scale and adapt dynamically.
-
-**CAP Theorem Implications:** The CAP theorem (Consistency, Availability, Partition tolerance) applies to multi-agent systems. Systems must choose trade-offs: strong consistency (all agents see same state) vs. availability (agents continue operating during partitions) vs. partition tolerance (system operates despite network failures). Different multi-agent patterns optimize for different CAP trade-offs.
-
-**Byzantine Fault Tolerance in Agent Networks:** When agents may fail or behave incorrectly, systems need Byzantine fault tolerance—the ability to reach consensus despite malicious or faulty agents. This is critical for open multi-agent systems where agent reliability cannot be guaranteed.
-
-### Game Theory and Mechanism Design
-
-Economic and game-theoretic principles provide frameworks for designing agent interactions:
-
-**Nash Equilibrium in Agent Interactions:** When agents have competing or partially aligned interests, game theory predicts stable outcomes (Nash equilibria) where no agent benefits from unilaterally changing strategy. Understanding these equilibria helps design multi-agent systems that converge to desirable states.
-
-**Auction Mechanisms for Task Allocation:** Economic mechanisms like auctions enable efficient task allocation when agents have different capabilities and costs. First-price, second-price (Vickrey), and combinatorial auctions provide algorithms for matching tasks to agents based on bids, enabling market-based coordination.
-
-**Contract Net Protocol Foundations:** The Contract Net Protocol, a classic multi-agent coordination mechanism, uses a bidding process where task managers announce tasks, agents bid based on capabilities, and managers award contracts to winning bidders. This provides a formal framework for decentralized task allocation.
-
-**Incentive Alignment in Multi-Agent Systems:** Agents must have incentives aligned with system goals. Mechanism design provides frameworks for designing systems where rational, self-interested agents naturally achieve desired collective outcomes—essential for open multi-agent systems where agents may optimize for individual rather than collective goals.
+Game theory and mechanism design provide frameworks for designing agent interactions. Nash equilibrium predicts stable outcomes where no agent benefits from unilaterally changing strategy, helping design systems that converge to desirable states. Auction mechanisms enable efficient task allocation when agents have different capabilities and costs, providing algorithms for market-based coordination. Mechanism design ensures rational, self-interested agents achieve desired collective outcomes—essential for open systems where agents may optimize for individual rather than collective goals.
 
 ## Algorithmic Collaboration Strategies
 
