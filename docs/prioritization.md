@@ -1,4 +1,4 @@
-# Prioritization
+# Pattern: Prioritization
 
 ## Motivation
 

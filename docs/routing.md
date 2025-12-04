@@ -1,4 +1,4 @@
-# Routing
+# Pattern: Routing
 
 ## Motivation
 
@@ -127,70 +127,38 @@ This example demonstrates LLM-based routing. The router chain uses an LLM to cla
 ```python
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableBranch, RunnablePassthrough
-from typing import Literal
-import json
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-# Advanced router with structured output and fallback
 router_prompt = ChatPromptTemplate.from_messages([
-    ("system", """Analyze the request and return JSON with:
-    - "route": one of ["booking", "info", "support", "unclear"]
-    - "confidence": 0.0-1.0
-    - "reasoning": brief explanation
-    
-    Return ONLY valid JSON."""),
+    ("system", """Return JSON: {"route": "booking|info|support", "confidence": 0.0-1.0}"""),
     ("user", "{request}")
 ])
 
-def parse_route(response: str) -> dict:
-    try:
-        return json.loads(response)
-    except:
-        return {"route": "unclear", "confidence": 0.0, "reasoning": "Parse error"}
-
-def route_with_confidence(route_data: dict, request: str) -> dict:
-    route = route_data.get("route", "unclear")
-    confidence = route_data.get("confidence", 0.0)
-    
-    # Low confidence threshold
-    if confidence < 0.7:
-        return {"output": f"Unclear request. Please clarify: {request}", "route": "unclear"}
-    
+def route_handler(route_data: dict, request: str) -> dict:
+    route = route_data.get("route", "info")
     handlers = {
-        "booking": lambda r: f"Booking system: {r}",
-        "info": lambda r: f"Information service: {r}",
-        "support": lambda r: f"Support ticket created: {r}",
-        "unclear": lambda r: f"Need clarification: {r}"
+        "booking": lambda r: f"Booking: {r}",
+        "info": lambda r: f"Info: {r}",
+        "support": lambda r: f"Support: {r}"
     }
-    
-    handler = handlers.get(route, handlers["unclear"])
-    return {"output": handler(request), "route": route, "confidence": confidence}
+    return {"output": handlers.get(route, handlers["info"])(request)}
 
-# Create advanced routing chain
-advanced_router = (
-    router_prompt 
-    | llm 
-    | parse_route
-    | (lambda x: route_with_confidence(x, x.get("request", "")))
+router = (
+    router_prompt | llm | JsonOutputParser()
+    | (lambda x: route_handler(x, x.get("request", "")))
 )
 
-# Usage with error handling
-def route_request(request: str) -> str:
-    try:
-        result = advanced_router.invoke({"request": request})
-        return result.get("output", "Error processing request")
-    except Exception as e:
-        return f"Routing error: {str(e)}"
+result = router.invoke({"request": "Book a flight"})
+print(result["output"])
 ```
 
 **Explanation:**
 This advanced example adds confidence scoring, structured JSON output, and error handling. The router returns not just a route decision but also confidence and reasoning, enabling the system to handle low-confidence cases by asking for clarification. This makes the routing more robust and transparent.
 
-### Complexity-Based Model Routing Example
-
-This example demonstrates routing based on task complexity to optimize resource usage—using fast, cost-efficient models for simple tasks and powerful models for complex ones.
+### Complexity-Based Model Routing
 
 ```python
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -198,218 +166,49 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableBranch, RunnablePassthrough
 
-# Initialize different models for different complexity levels
 fast_model = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 powerful_model = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
 
-# Complexity classifier
 complexity_prompt = ChatPromptTemplate.from_messages([
-    ("system", """Analyze the user's question and classify its complexity:
-    - 'simple' for straightforward questions with clear answers (FAQs, definitions, basic facts)
-    - 'complex' for questions requiring reasoning, analysis, or multi-step thinking
-    
-    Consider:
-    - Simple: "What is Python?", "How do I install package X?", "What's the weather?"
-    - Complex: "Explain the trade-offs between microservices and monoliths", "Debug this error...", "Design a system for..."
-    
-    Output only: simple or complex"""),
+    ("system", "Classify as 'simple' or 'complex'. Output only: simple or complex"),
     ("user", "{question}")
 ])
 
-# Handlers using different models
 def handle_simple(question: str) -> str:
-    """Use fast, cost-efficient model for simple questions"""
-    prompt = ChatPromptTemplate.from_template("Answer this question concisely: {question}")
-    chain = prompt | fast_model | StrOutputParser()
+    chain = ChatPromptTemplate.from_template("Answer: {question}") | fast_model | StrOutputParser()
     return chain.invoke({"question": question})
 
 def handle_complex(question: str) -> str:
-    """Use powerful model for complex questions requiring reasoning"""
-    prompt = ChatPromptTemplate.from_template(
-        "Think step-by-step and provide a detailed answer: {question}"
-    )
-    chain = prompt | powerful_model | StrOutputParser()
+    chain = ChatPromptTemplate.from_template("Think step-by-step: {question}") | powerful_model | StrOutputParser()
     return chain.invoke({"question": question})
 
-# Create routing chain
-complexity_classifier = complexity_prompt | fast_model | StrOutputParser()
-
-# Route based on complexity
-routing_branch = RunnableBranch(
+classifier = complexity_prompt | fast_model | StrOutputParser()
+router = {
+    "complexity": classifier,
+    "question": RunnablePassthrough()
+} | RunnableBranch(
     (lambda x: "simple" in x['complexity'].lower(),
-     RunnablePassthrough.assign(
-         answer=lambda x: handle_simple(x['question']),
-         model_used="fast_model"
-     )),
-    RunnablePassthrough.assign(
-        answer=lambda x: handle_complex(x['question']),
-        model_used="powerful_model"
-    )
+     RunnablePassthrough.assign(answer=lambda x: handle_simple(x['question']))),
+    RunnablePassthrough.assign(answer=lambda x: handle_complex(x['question']))
 )
 
-# Combine into agent
-complexity_router = {
-    "complexity": complexity_classifier,
-    "question": RunnablePassthrough()
-} | routing_branch
-
-# Usage
-if __name__ == "__main__":
-    # Simple question - will route to fast_model
-    result = complexity_router.invoke({
-        "question": "What is Python?"
-    })
-    print(f"Answer: {result['answer']}")
-    print(f"Model used: {result['model_used']}\n")
-    
-    # Complex question - will route to powerful_model
-    result = complexity_router.invoke({
-        "question": "Explain the architectural trade-offs between event-driven and request-response patterns in distributed systems"
-    })
-    print(f"Answer: {result['answer']}")
-    print(f"Model used: {result['model_used']}")
+result = router.invoke({"question": "What is Python?"})
+print(result['answer'])
 ```
 
 **Explanation:**
 This example demonstrates complexity-based routing for resource optimization. The router first classifies the question's complexity using a lightweight model, then routes simple questions to a fast, cost-efficient model and complex questions to a more capable (and expensive) model. This pattern enables automatic cost and performance optimization by matching task complexity to model capability.
 
-### Advanced Complexity Routing with Budget Awareness
-
-This example extends complexity-based routing with budget tracking, enabling graceful degradation when budget constraints are tight.
-
-```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-import json
-from typing import Dict, Any
-
-# Models with different cost/performance profiles
-models = {
-    "haiku": ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0),
-    "sonnet": ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0),
-}
-
-# Budget tracker
-class BudgetTracker:
-    def __init__(self, budget: float = 100.0):
-        self.budget = budget
-        self.used = 0.0
-        self.costs = {"haiku": 0.25, "sonnet": 1.0}  # per request
-    
-    def can_afford(self, model: str) -> bool:
-        return (self.used + self.costs[model]) <= self.budget
-    
-    def use(self, model: str):
-        if model in self.costs:
-            self.used += self.costs[model]
-    
-    def get_remaining(self) -> float:
-        return self.budget - self.used
-
-# Complexity and budget-aware router
-router_prompt = ChatPromptTemplate.from_messages([
-    ("system", """Analyze the question and return JSON:
-    {{
-        "complexity": "simple" | "complex",
-        "estimated_tokens": number,
-        "reasoning": "brief explanation"
-    }}
-    
-    Consider:
-    - Simple: clear, factual, single-step questions
-    - Complex: requires reasoning, analysis, multi-step thinking, or creative solutions
-    
-    Return ONLY valid JSON."""),
-    ("user", "{question}")
-])
-
-def parse_json_response(response: str) -> Dict[str, Any]:
-    """Safely parse JSON response from LLM"""
-    try:
-        # Try to extract JSON from response if it contains markdown code blocks
-        if "```json" in response:
-            start = response.find("```json") + 7
-            end = response.find("```", start)
-            response = response[start:end].strip()
-        elif "```" in response:
-            start = response.find("```") + 3
-            end = response.find("```", start)
-            response = response[start:end].strip()
-        return json.loads(response)
-    except (json.JSONDecodeError, ValueError):
-        # Default to simple if parsing fails
-        return {"complexity": "simple", "estimated_tokens": 100, "reasoning": "Parse error"}
-
-def route_with_budget(question: str, budget_tracker: BudgetTracker) -> Dict[str, Any]:
-    """Route question based on complexity and available budget"""
-    # Classify complexity using the cheaper model
-    classifier_chain = router_prompt | models["haiku"] | StrOutputParser()
-    response = classifier_chain.invoke({"question": question})
-    classification = parse_json_response(response)
-    
-    complexity = classification.get("complexity", "simple")
-    
-    # Route based on complexity and budget
-    if complexity == "simple":
-        model_name = "haiku"
-    else:
-        # Check if we can afford the powerful model
-        if budget_tracker.can_afford("sonnet"):
-            model_name = "sonnet"
-        else:
-            # Fallback to cheaper model if budget is low
-            model_name = "haiku"
-    
-    # Use the selected model
-    model = models[model_name]
-    answer_prompt = ChatPromptTemplate.from_template(
-        "Answer this question: {question}"
-    )
-    answer_chain = answer_prompt | model | StrOutputParser()
-    answer = answer_chain.invoke({"question": question})
-    
-    # Track usage
-    budget_tracker.use(model_name)
-    
-    return {
-        "answer": answer,
-        "model_used": model_name,
-        "complexity": complexity,
-        "budget_remaining": budget_tracker.get_remaining()
-    }
-
-# Usage
-if __name__ == "__main__":
-    tracker = BudgetTracker(budget=10.0)
-    
-    # Simple question
-    result = route_with_budget("What is machine learning?", tracker)
-    print(f"Question: What is machine learning?")
-    print(f"Model: {result['model_used']}")
-    print(f"Complexity: {result['complexity']}")
-    print(f"Budget remaining: ${result['budget_remaining']:.2f}\n")
-    
-    # Complex question
-    result = route_with_budget(
-        "Design a distributed system architecture for handling 1 million concurrent users with sub-100ms latency",
-        tracker
-    )
-    print(f"Question: Design a distributed system...")
-    print(f"Model: {result['model_used']}")
-    print(f"Complexity: {result['complexity']}")
-    print(f"Budget remaining: ${result['budget_remaining']:.2f}")
-```
-
-**Explanation:**
-This advanced example adds budget awareness to complexity-based routing. The router classifies complexity and checks available budget before selecting a model. If budget is constrained, it may route complex tasks to cheaper models, enabling graceful degradation while staying within resource limits. The budget tracker monitors usage and prevents overspending.
 
 ### Framework-Specific Examples
 
 #### LangGraph
 ```python
 from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
 from typing import TypedDict
+
+llm = ChatOpenAI(temperature=0)
 
 class RouterState(TypedDict):
     request: str
@@ -417,9 +216,8 @@ class RouterState(TypedDict):
     output: str
 
 def route_node(state: RouterState) -> RouterState:
-    # LLM-based routing logic
-    route = llm.invoke(f"Route this: {state['request']}").content
-    return {**state, "route": route}
+    route = llm.invoke(f"Route as 'booking' or 'info': {state['request']}").content
+    return {**state, "route": route.lower()}
 
 def booking_node(state: RouterState) -> RouterState:
     return {**state, "output": f"Booking: {state['request']}"}
@@ -427,48 +225,39 @@ def booking_node(state: RouterState) -> RouterState:
 def info_node(state: RouterState) -> RouterState:
     return {**state, "output": f"Info: {state['request']}"}
 
-# Build graph
 graph = StateGraph(RouterState)
 graph.add_node("route", route_node)
 graph.add_node("booking", booking_node)
 graph.add_node("info", info_node)
-
-graph.add_conditional_edges(
-    "route",
-    lambda state: state["route"],
-    {"booking": "booking", "info": "info"}
-)
+graph.set_entry_point("route")
+graph.add_conditional_edges("route", lambda s: s["route"], {"booking": "booking", "info": "info"})
 graph.add_edge("booking", END)
 graph.add_edge("info", END)
+
+result = graph.invoke({"request": "Book a flight"})
+print(result["output"])
 ```
 
 #### Google ADK
 ```python
 from google.adk.agents import Agent
-from google.adk.tools import FunctionTool
 
-# Define specialized agents
 booking_agent = Agent(
     name="Booker",
     model="gemini-2.0-flash",
-    description="Handles all booking requests",
-    tools=[booking_tool]
+    description="Handles booking requests"
 )
 
 info_agent = Agent(
     name="Info",
-    model="gemini-2.0-flash", 
-    description="Answers general questions",
-    tools=[info_tool]
+    model="gemini-2.0-flash",
+    description="Answers general questions"
 )
 
-# Coordinator with routing
 coordinator = Agent(
     name="Coordinator",
     model="gemini-2.0-flash",
-    instruction="""Route requests:
-    - Booking requests → Booker agent
-    - Questions → Info agent""",
+    instruction="Route booking requests to Booker, questions to Info",
     sub_agents=[booking_agent, info_agent]
 )
 ```

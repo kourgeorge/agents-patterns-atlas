@@ -1,4 +1,4 @@
-# Constrained Tool Use (Mask, Don't Remove)
+# Pattern: Constrained Tool Use
 
 ## Motivation
 

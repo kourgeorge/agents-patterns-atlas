@@ -77,9 +77,9 @@ nav:
     - "Pattern: Reflection": reflection.md
 - Tools:
     - "Pattern: Tool Use": tool-use.md
-    - "Pattern: Constrained Tool Use": constrained-tool-use.md
-    - "Pattern: The SKILL.md Pattern": agent-skills.md
     - "Pattern: Shortlisting": shortlisting.md
+    - "Pattern: Constrained Tool Use": constrained-tool-use.md
+    - "Pattern: Tool Discovery": agent-skills.md
 - Reasoning & Planning:
     - Reasoning Techniques: reasoning-techniques.md
     - "Pattern: Planning": planning.md
@@ -92,20 +92,11 @@ nav:
     - Memory Management: memory-management.md
     - "Pattern: Recitation": recitation.md
     - "Pattern: Filesystem as Context": external-memory.md
+    - "Pattern: Knowledge Retrieval (RAG)": knowledge-retrieval.md
 - Multi-Agent Systems:
     - Multi-Agent Architectures: multi-agent.md
     - "Pattern: Orchestrator-Worker (Coordinator)": orchestrator-worker.md
-- Advanced Capabilities:
+- Human input and Recovery:
     - Learning and Adaptation: learning-adaptation.md
-    - "Model Context Protocol (MCP)": model-context-protocol.md
-    - Goal Setting and Monitoring: goal-setting-monitoring.md
     - "Pattern: Exception Handling and Recovery": exception-handling.md
     - "Pattern: Human-in-the-Loop": human-in-the-loop.md
-- Knowledge & Communication:
-    - "Pattern: Knowledge Retrieval (RAG)": knowledge-retrieval.md
-    - "Pattern: Inter-Agent Communication (A2A)": inter-agent-communication.md
-- Optimization & Safety:
-    - Resource-Aware Optimization: resource-optimization.md
-    - "Guardrails/Safety Patterns": guardrails-safety.md
-    - Evaluation and Monitoring: evaluation-monitoring.md
-    - Exploration and Discovery: exploration-discovery.md

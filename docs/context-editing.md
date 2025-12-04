@@ -1,4 +1,4 @@
-# Context Editing: Automatic Context Management
+# Pattern: Context Editing
 
 ## Motivation
 
@@ -103,241 +103,163 @@ Context editing is fundamental to building scalable, cost-effective agent system
 
 ### Prerequisites
 ```bash
-pip install anthropic  # For Claude API with context editing
+pip install langchain langchain-openai langgraph
 # or
-pip install langchain langchain-anthropic
+pip install langchain langchain-google-genai langgraph
 # or
 pip install google-adk
 ```
 
-### Basic Example: Server-Side Tool Result Clearing
-
-This example demonstrates server-side context editing using Claude's API to automatically clear tool results:
+### Basic Example: Context Editing with LangGraph Middleware
 
 ```python
-from anthropic import Anthropic
+from langchain.agents import create_agent
+from langchain.agents.middleware import BaseMiddleware
+from langchain_core.messages import BaseMessage, ToolMessage
+from langchain_openai import ChatOpenAI
+from langchain_core.tools import tool
+from typing import List, Dict, Any
+import tiktoken
 
-client = Anthropic(api_key="your-api-key")
+@tool
+def search_web(query: str) -> str:
+    """Search the web for information."""
+    return f"Search results for: {query}"
 
-# Enable context editing with tool result clearing
-response = client.beta.messages.create(
-    model="claude-sonnet-4-5",
-    max_tokens=4096,
-    messages=[
-        {
-            "role": "user",
-            "content": "Search for recent developments in AI agents"
-        }
-    ],
-    tools=[
-        {
-            "type": "web_search_20250305",
-            "name": "web_search"
-        }
-    ],
-    betas=["context-management-2025-06-27"],
-    context_management={
-        "edits": [
-            {
-                "type": "clear_tool_uses_20250919",
-                "trigger": {
-                    "type": "input_tokens",
-                    "value": 30000  # Trigger when context exceeds 30K tokens
-                },
-                "keep": {
-                    "type": "tool_uses",
-                    "value": 3  # Keep last 3 tool uses
-                }
-            }
-        ]
-    }
+class ContextEditingMiddleware(BaseMiddleware):
+    def __init__(self, token_threshold: int = 30000, keep_last_n: int = 3):
+        super().__init__()
+        self.token_threshold = token_threshold
+        self.keep_last_n = keep_last_n
+        self.encoding = tiktoken.get_encoding("cl100k_base")
+    
+    def count_tokens(self, messages: List[BaseMessage]) -> int:
+        return sum(
+            len(self.encoding.encode(str(msg.content)))
+            for msg in messages if hasattr(msg, 'content')
+        )
+    
+    async def on_agent_step_start(self, state: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        if "messages" not in state:
+            return state
+        
+        messages = state["messages"]
+        if self.count_tokens(messages) >= self.token_threshold:
+            tool_messages = [(i, msg) for i, msg in enumerate(messages) if isinstance(msg, ToolMessage)]
+            if len(tool_messages) > self.keep_last_n:
+                edited = messages.copy()
+                for idx, _ in tool_messages[:-self.keep_last_n]:
+                    edited[idx] = ToolMessage(content="[Cleared]", tool_call_id=edited[idx].tool_call_id)
+                return {**state, "messages": edited}
+        return state
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
+agent = create_agent(
+    model=llm,
+    tools=[search_web],
+    middleware=[ContextEditingMiddleware(token_threshold=30000, keep_last_n=3)]
 )
+
+result = agent.invoke({"messages": [{"role": "user", "content": "Research AI agents"}]})
 ```
 
 **Explanation:**
-This example enables automatic tool result clearing when input tokens exceed 30,000. The API will automatically remove older tool results, keeping only the last 3 tool uses, while preserving conversation structure and allowing the agent to continue normally.
-
-### Advanced Example: Configurable Context Editing
-
-This example demonstrates advanced configuration with multiple editing strategies:
-
-```python
-from anthropic import Anthropic
-
-client = Anthropic(api_key="your-api-key")
-
-response = client.beta.messages.create(
-    model="claude-opus-4-5",
-    max_tokens=4096,
-    messages=[
-        {
-            "role": "user",
-            "content": "Create a comprehensive research report on AI safety"
-        }
-    ],
-    tools=[
-        {
-            "type": "web_search_20250305",
-            "name": "web_search"
-        },
-        {
-            "type": "text_editor_20250728",
-            "name": "text_editor",
-            "max_characters": 10000
-        }
-    ],
-    betas=["context-management-2025-06-27"],
-    context_management={
-        "edits": [
-            {
-                "type": "clear_tool_uses_20250919",
-                "trigger": {
-                    "type": "input_tokens",
-                    "value": 50000
-                },
-                "keep": {
-                    "type": "tool_uses",
-                    "value": 5  # Keep last 5 tool uses
-                },
-                "clear_at_least": {
-                    "type": "input_tokens",
-                    "value": 10000  # Clear at least 10K tokens each time
-                },
-                "clear_tool_inputs": True,  # Also clear tool call parameters
-                "exclude_tools": ["web_search"]  # Never clear web search results
-            },
-            {
-                "type": "clear_thinking_20251015",
-                "trigger": {
-                    "type": "input_tokens",
-                    "value": 60000
-                },
-                "keep": {
-                    "type": "thinking_turns",
-                    "value": 2  # Keep thinking from last 2 assistant turns
-                }
-            }
-        ]
-    }
-)
-```
-
-**Explanation:**
-This advanced configuration uses two editing strategies:
-1. **Tool Result Clearing:** Triggers at 50K tokens, keeps last 5 tool uses, clears at least 10K tokens, also clears tool inputs, but never clears web search results.
-2. **Thinking Block Clearing:** Triggers at 60K tokens, keeps thinking from last 2 assistant turns. This preserves prompt cache efficiency while managing context size.
-
-### Client-Side Compaction Example
-
-This example demonstrates client-side compaction using the Anthropic SDK's tool runner:
-
-```python
-from anthropic import Anthropic
-from anthropic.lib.tools import ToolRunner
-
-client = Anthropic(api_key="your-api-key")
-
-# Create tool runner with compaction enabled
-tool_runner = ToolRunner(
-    client=client,
-    model="claude-sonnet-4-5",
-    compaction_control={
-        "enabled": True,
-        "context_token_threshold": 100000,  # Trigger at 100K tokens
-        "model": "claude-haiku-4-5"  # Use cheaper model for summaries
-    }
-)
-
-# Long-running agent task
-messages = [
-    {
-        "role": "user",
-        "content": "Analyze all files in the codebase and create a comprehensive refactoring plan"
-    }
-]
-
-# As the agent processes files, context grows
-# When threshold is reached, SDK automatically:
-# 1. Generates a structured summary
-# 2. Replaces conversation history with summary
-# 3. Agent continues from summary
-
-result = tool_runner.run(messages=messages)
-```
-
-**Explanation:**
-The SDK automatically monitors token usage. When it exceeds 100,000 tokens, it generates a structured continuation summary using a cheaper model (Haiku), replaces the full history with the summary, and the agent continues seamlessly from the compressed state.
-
-### Custom Compaction Summary Prompt
-
-This example shows how to customize the summary prompt for domain-specific needs:
-
-```python
-from anthropic import Anthropic
-from anthropic.lib.tools import ToolRunner
-
-client = Anthropic(api_key="your-api-key")
-
-tool_runner = ToolRunner(
-    client=client,
-    model="claude-sonnet-4-5",
-    compaction_control={
-        "enabled": True,
-        "context_token_threshold": 100000,
-        "summary_prompt": """Summarize the research conducted so far, including:
-- Sources consulted and key findings
-- Questions answered and remaining unknowns
-- Recommended next steps
-- Technical constraints discovered
-
-Wrap your summary in <summary></summary> tags."""
-    }
-)
-```
-
-**Explanation:**
-Custom summary prompts allow you to tailor compaction summaries to your domain. The prompt should instruct the model to wrap the summary in `<summary></summary>` tags for proper parsing.
+This middleware automatically clears old tool results when context exceeds 30,000 tokens, keeping only the last 3. This enables agents to operate indefinitely without hitting token limits.
 
 ### Framework-Specific Examples
 
-#### LangChain: Context Editing Middleware
+#### LangGraph: Advanced Context Editing
 
 ```python
-from langchain_anthropic import ChatAnthropic
-from langchain.middleware import ContextEditingMiddleware
-from langchain.chains import ConversationChain
+from langchain.agents import create_agent
+from langchain.agents.middleware import BaseMiddleware
+from langchain_core.messages import BaseMessage, ToolMessage, HumanMessage
+from langchain_openai import ChatOpenAI
+from langchain_core.tools import tool
+from typing import List, Dict, Any, Optional
+import tiktoken
 
-llm = ChatAnthropic(
-    model="claude-sonnet-4-5",
-    anthropic_api_key="your-api-key"
+@tool
+def web_search(query: str) -> str:
+    """Search the web."""
+    return f"Results: {query}"
+
+class AdvancedContextEditingMiddleware(BaseMiddleware):
+    def __init__(
+        self,
+        tool_threshold: int = 50000,
+        keep_last_n: int = 5,
+        exclude_tools: Optional[List[str]] = None
+    ):
+        super().__init__()
+        self.tool_threshold = tool_threshold
+        self.keep_last_n = keep_last_n
+        self.exclude_tools = exclude_tools or []
+        self.encoding = tiktoken.get_encoding("cl100k_base")
+    
+    def count_tokens(self, messages: List[BaseMessage]) -> int:
+        return sum(len(self.encoding.encode(str(msg.content))) for msg in messages if hasattr(msg, 'content'))
+    
+    async def on_agent_step_start(self, state: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        if "messages" not in state:
+            return state
+        
+        messages = state["messages"]
+        if self.count_tokens(messages) >= self.tool_threshold:
+            tool_messages = [
+                (i, msg) for i, msg in enumerate(messages)
+                if isinstance(msg, ToolMessage) and msg.name not in self.exclude_tools
+            ]
+            if len(tool_messages) > self.keep_last_n:
+                edited = messages.copy()
+                for idx, _ in tool_messages[:-self.keep_last_n]:
+                    edited[idx] = ToolMessage(content="[Cleared]", tool_call_id=edited[idx].tool_call_id)
+                return {**state, "messages": edited}
+        return state
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
+agent = create_agent(
+    model=llm,
+    tools=[web_search],
+    middleware=[AdvancedContextEditingMiddleware(
+        tool_threshold=50000,
+        keep_last_n=5,
+        exclude_tools=["web_search"]
+    )]
 )
 
-# Create context editing middleware
-context_editor = ContextEditingMiddleware(
-    tool_result_clearing={
-        "enabled": True,
-        "threshold": 30000,
-        "keep_last_n": 3
-    },
-    thinking_block_clearing={
-        "enabled": True,
-        "threshold": 50000,
-        "keep_turns": 2
-    }
+result = agent.invoke({"messages": [{"role": "user", "content": "Research multiple topics"}]})
+```
+
+#### Google ADK: Session State Compression
+
+```python
+from google.adk.agents import Agent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+
+def compress_context(state: dict, max_tokens: int = 80000) -> dict:
+    messages = state.get("messages", [])
+    if len(messages) > 20:  # Simple heuristic
+        state["messages"] = [
+            {"role": "system", "content": "[Previous conversation summarized]"}
+        ] + messages[-10:]
+    return state
+
+session_service = InMemorySessionService()
+session_service.add_compression_hook(compress_context)
+
+agent = Agent(
+    name="CompressedAgent",
+    model="gemini-2.0-flash",
+    instruction="Work efficiently within context limits."
 )
 
-# Apply middleware to chain
-chain = ConversationChain(
-    llm=llm,
-    middleware=[context_editor],
-    verbose=True
+runner = Runner(
+    agent=agent,
+    app_name="compressed_app",
+    session_service=session_service
 )
-
-# Long conversation automatically managed
-response = chain.invoke({"input": "Research AI safety"})
-# ... many tool calls later ...
-response = chain.invoke({"input": "What did we find?"})
-# Old tool results automatically cleared
 ```
 
 #### Google ADK: Session State Compression
@@ -385,70 +307,6 @@ runner = Runner(
 )
 ```
 
-#### Custom Context Editor
-
-```python
-from typing import List, Dict
-import tiktoken
-
-class ContextEditor:
-    def __init__(self, max_tokens: int = 100000, keep_recent: int = 20):
-        self.max_tokens = max_tokens
-        self.keep_recent = keep_recent
-        self.encoding = tiktoken.encoding_for_model("gpt-4")
-    
-    def count_tokens(self, text: str) -> int:
-        """Count tokens in text."""
-        return len(self.encoding.encode(text))
-    
-    def clear_tool_results(self, messages: List[Dict], threshold: int = 30000) -> List[Dict]:
-        """Clear old tool results when threshold exceeded."""
-        total_tokens = sum(
-            self.count_tokens(str(msg.get("content", "")))
-            for msg in messages
-        )
-        
-        if total_tokens < threshold:
-            return messages
-        
-        # Find tool result messages
-        tool_results = [
-            (i, msg) for i, msg in enumerate(messages)
-            if isinstance(msg.get("content"), list) and any(
-                item.get("type") == "tool_result"
-                for item in msg.get("content", [])
-            )
-        ]
-        
-        # Keep recent tool results, clear old ones
-        if len(tool_results) > self.keep_recent:
-            to_clear = tool_results[:-self.keep_recent]
-            
-            for idx, msg in to_clear:
-                # Replace tool results with placeholder
-                if isinstance(messages[idx].get("content"), list):
-                    messages[idx]["content"] = [
-                        item if item.get("type") != "tool_result"
-                        else {"type": "tool_result", "content": "[Tool result cleared]"}
-                        for item in messages[idx]["content"]
-                    ]
-        
-        return messages
-    
-    def edit_context(self, messages: List[Dict]) -> List[Dict]:
-        """Apply context editing strategies."""
-        # Clear old tool results
-        messages = self.clear_tool_results(messages, threshold=self.max_tokens * 0.8)
-        
-        return messages
-
-# Usage
-editor = ContextEditor(max_tokens=100000, keep_recent=20)
-edited_messages = editor.edit_context(conversation_messages)
-```
-
-**Explanation:**
-This custom implementation demonstrates how to build context editing logic that clears old tool results while preserving recent ones, maintaining conversation continuity while managing context size.
 
 ## Key Takeaways
 
@@ -489,9 +347,9 @@ This pattern is often combined with:
 ## References
 
 - Context Engineering for AI Agents: The Complete Guide - https://medium.com/@khanzzirfan/context-engineering-for-ai-agents-the-complete-guide-5047f84595c7
-- Anthropic Context Editing Documentation - https://platform.claude.com/docs/en/build-with-claude/context-editing
 - Context Engineering Guide - https://www.promptingguide.ai/guides/context-engineering-guide
-- LangChain Context Editing Middleware - https://docs.langchain.com/oss/python/langchain/middleware/built-in#context-editing
+- LangGraph Middleware Documentation - https://langchain-ai.github.io/langgraph/how-tos/middleware/
+- LangChain Agents Middleware - https://docs.langchain.com/oss/python/langchain/agents/middleware/
 - Context Compression Techniques: Managing the Finite Window
 - Memory Management: Strategies for Context Windows and External Memory
 

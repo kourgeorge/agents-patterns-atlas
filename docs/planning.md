@@ -1,4 +1,4 @@
-# Planning
+# Pattern: Planning
 
 ## Motivation
 
@@ -78,7 +78,7 @@ from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(model="gpt-4-turbo")
 
-# Planning agent
+# Pattern: Planning agent
 planner_agent = Agent(
     role='Project Planner',
     goal='Create and execute plans for complex tasks',
@@ -113,67 +113,36 @@ This example demonstrates planning using CrewAI. The agent is instructed to firs
 ```python
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from typing import List, Dict
+from langchain_core.output_parsers import JsonOutputParser
+from typing import Dict
 import json
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
-class PlanningAgent:
-    def __init__(self):
-        self.llm = llm
-        self.plan_history = []
-    
-    def generate_plan(self, goal: str, constraints: Dict) -> Dict:
-        """Generate an initial plan for a goal."""
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a planning expert. Create a detailed plan.
-            Return JSON with:
-            - "steps": list of {"id": int, "action": str, "dependencies": [int]}
-            - "estimated_duration": str
-            - "resources_needed": list"""),
-            ("user", f"Goal: {goal}\nConstraints: {constraints}")
-        ])
-        
-        response = self.llm.invoke(prompt.format_messages())
-        plan = json.loads(response.content)
-        self.plan_history.append({"goal": goal, "plan": plan})
-        return plan
-    
-    def adapt_plan(self, current_plan: Dict, obstacle: str) -> Dict:
-        """Adapt plan when obstacles arise."""
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """Adapt the plan to handle obstacles.
-            Return updated plan JSON."""),
-            ("user", f"Current plan: {json.dumps(current_plan)}\nObstacle: {obstacle}")
-        ])
-        
-        response = self.llm.invoke(prompt.format_messages())
-        adapted_plan = json.loads(response.content)
-        return adapted_plan
-    
-    def execute_step(self, step: Dict, context: Dict) -> Dict:
-        """Execute a single plan step."""
-        # Simulate step execution
-        return {
-            "step_id": step["id"],
-            "status": "completed",
-            "result": f"Executed: {step['action']}",
-            "context": context
-        }
+def generate_plan(goal: str, constraints: Dict) -> Dict:
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """Create a plan. Return JSON with:
+        - "steps": [{"id": int, "action": str, "dependencies": [int]}]
+        - "estimated_duration": str
+        - "resources_needed": [str]"""),
+        ("user", f"Goal: {goal}\nConstraints: {constraints}")
+    ])
+    chain = prompt | llm | JsonOutputParser()
+    return chain.invoke({"goal": goal, "constraints": constraints})
 
-# Usage
-agent = PlanningAgent()
-plan = agent.generate_plan(
+def adapt_plan(current_plan: Dict, obstacle: str) -> Dict:
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Adapt the plan to handle obstacles. Return updated plan JSON."),
+        ("user", f"Plan: {json.dumps(current_plan)}\nObstacle: {obstacle}")
+    ])
+    chain = prompt | llm | JsonOutputParser()
+    return chain.invoke({"current_plan": current_plan, "obstacle": obstacle})
+
+plan = generate_plan(
     goal="Organize team offsite for 30 people",
-    constraints={"budget": 10000, "location": "Lisbon", "dates": "Q2 2025"}
+    constraints={"budget": 10000, "location": "Lisbon"}
 )
-
-print("Generated Plan:")
 print(json.dumps(plan, indent=2))
-
-# Adapt if obstacle arises
-if obstacle_detected:
-    plan = agent.adapt_plan(plan, "Preferred venue unavailable")
 ```
 
 **Explanation:**
@@ -212,7 +181,7 @@ result = crew.kickoff(inputs={"goal": "Launch new product"})
 # 4. Dynamically formulates queries based on gathered information
 # 5. Consolidates findings into structured summary
 
-# Planning is implicit in the research pipeline structure
+# Pattern: Planning is implicit in the research pipeline structure
 ```
 
 ## Key Takeaways

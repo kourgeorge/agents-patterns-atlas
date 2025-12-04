@@ -1,4 +1,4 @@
-# Exception Handling and Recovery
+# Pattern: Exception Handling and Recovery
 
 ## Motivation
 

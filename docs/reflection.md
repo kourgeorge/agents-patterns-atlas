@@ -1,4 +1,4 @@
-# Reflection
+# Pattern: Reflection
 
 ## Motivation
 
@@ -126,88 +126,38 @@ This example demonstrates a basic reflection loop. The Producer generates code, 
 ```python
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
-from typing import Dict, List
+from langchain_core.output_parsers import JsonOutputParser
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
 
-class ReflectionAgent:
-    def __init__(self, max_iterations: int = 5, quality_threshold: float = 0.9):
-        self.max_iterations = max_iterations
-        self.quality_threshold = quality_threshold
-        self.llm = llm
-    
-    def produce(self, task: str, context: List) -> str:
-        """Producer agent generates output."""
-        messages = context + [HumanMessage(content=task)]
-        response = self.llm.invoke(messages)
-        return response.content
-    
-    def critique(self, output: str, criteria: str) -> Dict:
-        """Critic agent evaluates output."""
-        prompt = [
-            SystemMessage(content=f"""You are an expert evaluator.
-            Rate the output 0.0-1.0 and provide specific feedback.
-            Criteria: {criteria}
-            Return JSON: {{"score": float, "feedback": str, "status": "PASS"|"FAIL"}}"""),
-            HumanMessage(content=output)
-        ]
-        response = self.llm.invoke(prompt)
-        # Parse JSON response
-        import json
-        return json.loads(response.content)
-    
-    def refine(self, task: str, output: str, feedback: str, context: List) -> str:
-        """Producer refines based on critique."""
-        messages = context + [
-            HumanMessage(content=task),
-            HumanMessage(content=f"Previous output: {output}"),
-            HumanMessage(content=f"Feedback: {feedback}"),
-            HumanMessage(content="Please refine the output.")
-        ]
-        response = self.llm.invoke(messages)
-        return response.content
-    
-    def reflect(self, task: str, criteria: str) -> Dict:
-        """Main reflection loop."""
-        context = []
-        iterations = []
-        
-        for i in range(self.max_iterations):
-            # Produce
-            output = self.produce(task, context)
-            
-            # Critique
-            evaluation = self.critique(output, criteria)
-            iterations.append({
-                "iteration": i + 1,
-                "output": output,
-                "score": evaluation.get("score", 0.0),
-                "feedback": evaluation.get("feedback", "")
-            })
-            
-            # Check stopping condition
-            if evaluation.get("status") == "PASS" or \
-               evaluation.get("score", 0.0) >= self.quality_threshold:
-                break
-            
-            # Refine
-            output = self.refine(task, output, evaluation["feedback"], context)
-            context.append(HumanMessage(content=f"Iteration {i+1} output: {output}"))
-        
-        return {
-            "final_output": output,
-            "iterations": iterations,
-            "total_iterations": len(iterations)
-        }
+def produce(task: str) -> str:
+    response = llm.invoke([HumanMessage(content=task)])
+    return response.content
 
-# Usage
-agent = ReflectionAgent(max_iterations=5, quality_threshold=0.9)
-result = agent.reflect(
-    task="Write a comprehensive blog post about AI agents",
-    criteria="Accuracy, clarity, engagement, completeness"
-)
-print(f"Final output after {result['total_iterations']} iterations")
-print(result['final_output'])
+def critique(output: str, criteria: str) -> dict:
+    prompt = [
+        SystemMessage(content=f"""Evaluate. Return JSON: {{"score": float, "feedback": str, "status": "PASS|FAIL"}}
+        Criteria: {criteria}"""),
+        HumanMessage(content=output)
+    ]
+    chain = prompt | llm | JsonOutputParser()
+    return chain.invoke({})
+
+def reflect(task: str, max_iterations: int = 3) -> str:
+    output = produce(task)
+    for i in range(max_iterations):
+        eval_result = critique(output, "quality, accuracy")
+        if eval_result.get("status") == "PASS":
+            break
+        output = llm.invoke([
+            HumanMessage(content=task),
+            HumanMessage(content=f"Previous: {output}"),
+            HumanMessage(content=f"Feedback: {eval_result['feedback']}\nRefine:")
+        ]).content
+    return output
+
+result = reflect("Write a blog post about AI agents")
+print(result)
 ```
 
 **Explanation:**
@@ -218,53 +168,45 @@ This advanced example implements a full ReflectionAgent class with structured ev
 #### LangGraph
 ```python
 from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
 from typing import TypedDict
+
+llm = ChatOpenAI(temperature=0.1)
 
 class ReflectionState(TypedDict):
     task: str
     output: str
     critique: str
     iteration: int
-    max_iterations: int
 
 def produce_node(state: ReflectionState) -> ReflectionState:
-    # Producer generates output
     output = llm.invoke(f"Task: {state['task']}").content
     return {**state, "output": output}
 
 def critique_node(state: ReflectionState) -> ReflectionState:
-    # Critic evaluates
-    critique = llm.invoke(
-        f"Evaluate: {state['output']}\nIf perfect, say 'PERFECT'"
-    ).content
+    critique = llm.invoke(f"Evaluate. If perfect say 'PERFECT': {state['output']}").content
     return {**state, "critique": critique}
 
 def should_continue(state: ReflectionState) -> str:
-    if "PERFECT" in state["critique"] or \
-       state["iteration"] >= state["max_iterations"]:
+    if "PERFECT" in state["critique"] or state["iteration"] >= 3:
         return "end"
     return "refine"
 
 def refine_node(state: ReflectionState) -> ReflectionState:
-    # Refine based on critique
-    output = llm.invoke(
-        f"Refine based on: {state['critique']}\n{state['output']}"
-    ).content
+    output = llm.invoke(f"Refine: {state['critique']}\n{state['output']}").content
     return {**state, "output": output, "iteration": state["iteration"] + 1}
 
-# Build graph
 graph = StateGraph(ReflectionState)
 graph.add_node("produce", produce_node)
 graph.add_node("critique", critique_node)
 graph.add_node("refine", refine_node)
-
 graph.set_entry_point("produce")
 graph.add_edge("produce", "critique")
-graph.add_conditional_edges("critique", should_continue, {
-    "end": END,
-    "refine": "refine"
-})
+graph.add_conditional_edges("critique", should_continue, {"end": END, "refine": "refine"})
 graph.add_edge("refine", "produce")
+
+result = graph.invoke({"task": "Write a function", "output": "", "critique": "", "iteration": 0})
+print(result["output"])
 ```
 
 #### Google ADK
@@ -288,7 +230,7 @@ reviewer = LlmAgent(
     output_key="review_output"
 )
 
-# Reflection pipeline
+# Pattern: Reflection pipeline
 review_pipeline = SequentialAgent(
     name="WriteAndReview",
     sub_agents=[generator, reviewer]

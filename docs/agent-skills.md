@@ -1,4 +1,4 @@
-# Pattern: Progressive Skill Disclosure 
+# Pattern: Tool Discovery 
 
 ## Motivation
 

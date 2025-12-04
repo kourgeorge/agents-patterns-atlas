@@ -1,4 +1,4 @@
-# Leverage External Memory (Filesystem as Context)
+# Pattern: Filesystem as Context
 
 ## Motivation
 

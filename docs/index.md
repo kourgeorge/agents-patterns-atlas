@@ -1,23 +1,24 @@
 # About This Book
 
-This interactive book is a comprehensive guide to building intelligent, goal-oriented AI systems. As we transition from the era of Generative AI—where models simply respond to prompts—to the era of Agentic AI—where systems actively pursue objectives and interact with their environment—developers need practical patterns and principles to construct reliable, scalable agentic systems. This book provides exactly that: a hands-on collection of **30+ essential design patterns** that cover everything from foundational workflow patterns like prompt chaining and routing, to advanced capabilities such as multi-agent collaboration, memory management, and safety mechanisms.
+This interactive book is a comprehensive guide to building intelligent, goal-oriented AI agnts. 
+As we transition from the era of Generative AI—where models simply respond to prompts—to the era of Agentic AI—where systems actively pursue objectives and interact with their environment—developers need practical patterns and principles to construct reliable, scalable agentic systems. This book provides exactly that: a hands-on collection of **essential design patterns** that cover everything from foundational workflow patterns like prompt chaining and routing, to advanced capabilities such as multi-agent collaboration, memory management, and safety mechanisms.
+
+These design patterns were extracted through careful analysis and dissection of real-world agent implementations, including systems like IBM's CUGA (Configurable Generalist Agent) and LangChain's Deep Agents. By examining how successful agent architectures are constructed, we've identified reusable patterns, design components, and principles that can be applied across different agentic systems. This pattern extraction approach allows us to learn from the best practices of existing systems and codify them into transferable knowledge that can accelerate the development of new agentic applications.
 
 Each pattern is presented with clear explanations, practical guidelines for when to use it, and real-world examples that demonstrate how to implement these concepts in production systems. Whether you're building simple single-agent workflows or complex multi-agent architectures, this book serves as both a reference guide and a practical handbook for navigating the rapidly evolving landscape of agentic AI development.
 
 ## Book Structure
 
-The book is organized into **10 parts** containing **34 modules**:
+The book is organized into **8 parts** containing **27 modules**:
 
 1. **Introduction & Foundations** (4 modules) - Core concepts, context, and design pattern fundamentals
 2. **Core Workflow** (4 modules) - Fundamental patterns for building agent workflows
 3. **Tools** (4 modules) - Designing the Agent-Computer Interface
 4. **Reasoning & Planning** (3 modules) - Enabling agents to plan and reason effectively
 5. **Context** (3 modules) - Managing the finite context window and optimizing context usage
-6. **Memory** (3 modules) - Managing persistent and external memory for agents
+6. **Memory** (4 modules) - Managing persistent and external memory for agents, including knowledge retrieval
 7. **Multi-Agent Systems** (2 modules) - Scaling up with multiple agents working together
-8. **Advanced Capabilities** (5 modules) - Learning, protocols, goal management, and human interaction
-9. **Knowledge & Communication** (2 modules) - Retrieving knowledge and enabling agent communication
-10. **Optimization & Safety** (4 modules) - Optimizing performance and ensuring safe operation
+8. **Human input and Recovery** (3 modules) - Learning, adaptation, and human interaction
 
 The patterns are organized to build concepts progressively, but you can also use this book as a reference, jumping to patterns that address specific challenges you face in your agent development projects.
 
@@ -37,9 +38,9 @@ The patterns are organized to build concepts progressively, but you can also use
 
 **Part 3: Tools**
 - Pattern: Tool Use - Designing the Agent-Computer Interface (ACI)
-- Pattern: Constrained Tool Use - Managing tool availability through programmatic constraints
-- Pattern: The SKILL.md Pattern - Organizing specialized agent capabilities using SKILL.md files
 - Pattern: Shortlisting - Analyzing large sets of available tools to select the most relevant subset
+- Pattern: Constrained Tool Use - Managing tool availability through programmatic constraints
+- Pattern: Tool Discovery - Organizing specialized agent capabilities using SKILL.md files
 
 **Part 4: Reasoning & Planning**
 - Reasoning Techniques - Chain-of-Thought, ReAct Loops, and Tree-of-Thought strategies
@@ -55,27 +56,16 @@ The patterns are organized to build concepts progressively, but you can also use
 - Memory Management - Overview of memory types and strategies for agents, including persistent memory and external storage
 - Pattern: Recitation - Maintaining goal alignment in long-horizon tasks through persistent plans
 - Pattern: Filesystem as Context - Treating external persistent storage as unlimited extension of working memory
+- Pattern: Knowledge Retrieval (RAG) - Accessing external knowledge bases through Retrieval-Augmented Generation
 
 **Part 7: Multi-Agent Systems**
 - Multi-Agent Architectures - Orchestrator-Workers, Evaluator-Optimizers, and Swarm patterns
 - Pattern: Orchestrator-Worker (Coordinator) - Central coordination of specialized workers
 
-**Part 8: Advanced Capabilities**
+**Part 8: Human input and Recovery**
 - Learning and Adaptation - Continuous improvement through experience
-- Model Context Protocol (MCP) - Standardized protocol for tool and data access
-- Goal Setting and Monitoring - Establishing objectives and tracking progress
 - Pattern: Exception Handling and Recovery - Robust error handling mechanisms
 - Pattern: Human-in-the-Loop - Integrating human oversight and feedback
-
-**Part 9: Knowledge & Communication**
-- Pattern: Knowledge Retrieval (RAG) - Accessing external knowledge bases
-- Pattern: Inter-Agent Communication (A2A) - Agent-to-agent coordination protocols
-
-**Part 10: Optimization & Safety**
-- Resource-Aware Optimization - Efficiency and cost management
-- Guardrails/Safety Patterns - Safety mechanisms and compliance
-- Evaluation and Monitoring - Performance assessment and anomaly detection
-- Exploration and Discovery - Novel solution finding and unknown discovery
 
 ### Each Pattern Module Includes
 
@@ -139,7 +129,7 @@ The code examples are designed to clearly illustrate each pattern's core logic a
 
 By the end of this book, you will:
 
-* Understand the fundamental concepts behind 30+ essential agentic design patterns
+* Understand the fundamental concepts behind essential agentic design patterns
 * Possess practical knowledge and code examples to apply them effectively
 * Have a common language for discussing agent architecture with your team
 * Be able to build more intelligent, capable, and autonomous systems
@@ -147,7 +137,7 @@ By the end of this book, you will:
 * Know how patterns work together to create sophisticated agentic systems
 * Master the progression from simple workflows to complex multi-agent architectures
 * Learn to manage context, memory, and state effectively in agentic systems
-* Gain expertise in safety, monitoring, and optimization for production deployments
+* Understand how to integrate human input and build robust recovery mechanisms
 
 ## A Note on the Rapidly Evolving Landscape
 
@@ -192,6 +182,10 @@ Much of the content in this book is based on **"Agentic Design Patterns: A Hands
 
 Liu, Yue, et al. "Agent Design Pattern Catalogue: A Collection of Architectural Patterns for Foundation Model Based Agents." *Journal of Systems and Software*, vol. 220, 2025, p. 112278. Available at: https://www.sciencedirect.com/science/article/pii/S0164121224003224
 
+### Preprints
+
+Marreed, Sami, et al. "Towards enterprise-ready computer using generalist agent." *arXiv preprint arXiv:2503.01861* (2025). Available at: https://arxiv.org/abs/2503.01861
+
 ### Online Articles and Blog Posts
 
 Ji, Yichao 'Peak'. "Context Engineering for AI Agents: Lessons from Building Manus." *Manus Blog*, July 18, 2025. Available at: https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus
@@ -203,3 +197,9 @@ Anthropic. "How We Built Our Multi-Agent Research System." *Anthropic Engineerin
 Anthropic. "Building Effective AI Agents." *Anthropic Engineering Blog*, December 19, 2024. Available at: https://www.anthropic.com/engineering/building-effective-agents
 
 Google Cloud. "Choose a Design Pattern for Your Agentic AI System." *Google Cloud Architecture Center*, 2025. Available at: https://docs.cloud.google.com/architecture/choose-design-pattern-agentic-ai-system
+
+IBM Research. "Introducing CUGA: The enterprise-ready configurable generalist agent." *IBM Research Blog*, October 15, 2025. Available at: https://research.ibm.com/blog/cuga-agent-framework
+
+CUGA Project. "CUGA Agent Framework." *GitHub Repository*. Available at: https://github.com/cuga-project/cuga-agent
+
+LangChain. "Deep Agents overview." *LangChain Documentation*. Available at: https://docs.langchain.com/oss/python/deepagents/overview

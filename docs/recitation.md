@@ -1,4 +1,4 @@
-# Persistent Task List (Recitation)
+# Pattern: Recitation
 
 ## Motivation
 

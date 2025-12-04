@@ -1,4 +1,4 @@
-# Orchestrator-Worker (Coordinator) Pattern
+# Pattern: Orchestrator-Worker (Coordinator)
 
 ## Motivation
 
@@ -124,16 +124,7 @@ For each subtask, determine:
 Return a JSON list of subtasks with keys: description, worker_type, input_needed, expected_output."""
     
     response = llm.invoke(decomposition_prompt)
-    
-    # Parse response (in production, use structured output)
-    try:
-        subtasks = json.loads(response.content)
-    except:
-        # Fallback parsing
-        subtasks = [
-            {"description": "Research the topic", "worker_type": "research", "input_needed": goal},
-            {"description": "Write summary", "worker_type": "write", "input_needed": "research results"}
-        ]
+    subtasks = json.loads(response.content)
     
     # Save plan to state (for recitation pattern)
     plan = f"Goal: {goal}\nSubtasks: {len(subtasks)}\n" + "\n".join([f"- {t['description']}" for t in subtasks])

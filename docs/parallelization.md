@@ -1,4 +1,4 @@
-# Parallelization
+# Pattern: Parallelization
 
 ## Motivation
 
@@ -112,37 +112,22 @@ This example demonstrates parallel execution using LangChain's RunnableParallel.
 
 ### Advanced Example
 ```python
-import asyncio
-from typing import Dict, List
 from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableParallel
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-async def process_multiple_topics(topics: List[str]) -> Dict[str, Dict]:
-    """Process multiple topics in parallel with error handling."""
-    
-    # Create parallel chains for each topic
-    chains = {}
-    for topic in topics:
-        chains[topic] = RunnableParallel({
-            "summary": (lambda t: f"Summarize: {t}") | llm | StrOutputParser(),
-            "analysis": (lambda t: f"Analyze: {t}") | llm | StrOutputParser(),
-        })
-    
-    # Execute all in parallel with error handling
-    tasks = [chain.ainvoke(topic) for topic, chain in chains.items()]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    
-    # Combine results
-    return {
-        topic: result if not isinstance(result, Exception) else {"error": str(result)}
-        for topic, result in zip(topics, results)
-    }
+def process_topic(topic: str):
+    chain = RunnableParallel({
+        "summary": ChatPromptTemplate.from_template("Summarize: {topic}") | llm | StrOutputParser(),
+        "analysis": ChatPromptTemplate.from_template("Analyze: {topic}") | llm | StrOutputParser(),
+    })
+    return chain.invoke({"topic": topic})
 
-# Usage
-topics = ["AI", "blockchain", "quantum computing"]
-results = asyncio.run(process_multiple_topics(topics))
+result = process_topic("artificial intelligence")
+print(result)
 ```
 
 **Explanation:**
@@ -159,7 +144,6 @@ class ParallelState(TypedDict):
     input: str
     result_a: str
     result_b: str
-    result_c: str
 
 def task_a(state: ParallelState) -> ParallelState:
     return {**state, "result_a": f"Processed A: {state['input']}"}
@@ -167,20 +151,15 @@ def task_a(state: ParallelState) -> ParallelState:
 def task_b(state: ParallelState) -> ParallelState:
     return {**state, "result_b": f"Processed B: {state['input']}"}
 
-def task_c(state: ParallelState) -> ParallelState:
-    return {**state, "result_c": f"Processed C: {state['input']}"}
-
-# Build graph with parallel execution
 graph = StateGraph(ParallelState)
 graph.add_node("task_a", task_a)
 graph.add_node("task_b", task_b)
-graph.add_node("task_c", task_c)
-
-# All three tasks start from the same entry point
 graph.set_entry_point("task_a")
 graph.add_edge("task_a", "task_b")
-graph.add_edge("task_a", "task_c")
-# Both b and c converge before END
+graph.add_edge("task_b", END)
+
+result = graph.invoke({"input": "test", "result_a": "", "result_b": ""})
+print(result)
 ```
 
 #### Google ADK

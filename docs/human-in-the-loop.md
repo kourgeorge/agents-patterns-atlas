@@ -1,4 +1,4 @@
-# Human-in-the-Loop
+# Pattern: Human-in-the-Loop
 
 ## Motivation
 

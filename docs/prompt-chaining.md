@@ -1,4 +1,4 @@
-# Prompt Chaining
+# Pattern: Prompt Chaining
 
 ## Motivation
 
@@ -71,45 +71,25 @@ Note: `langchain-openai` can be substituted with the appropriate package for a d
 
 ### Basic Example
 ```python
-import os
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-# Initialize the Language Model
 llm = ChatOpenAI(temperature=0)
 
-# --- Prompt 1: Extract Information ---
 prompt_extract = ChatPromptTemplate.from_template(
-    "Extract the technical specifications from the following text:\n\n{text_input}"
+    "Extract the technical specifications from: {text_input}"
 )
 
-# --- Prompt 2: Transform to JSON ---
 prompt_transform = ChatPromptTemplate.from_template(
-    "Transform the following specifications into a JSON object with 'cpu', 'memory', and 'storage' as keys:\n\n{specifications}"
+    "Transform into JSON with 'cpu', 'memory', 'storage': {specifications}"
 )
 
-# --- Build the Chain using LCEL ---
-# The StrOutputParser() converts the LLM's message output to a simple string.
 extraction_chain = prompt_extract | llm | StrOutputParser()
+full_chain = {"specifications": extraction_chain} | prompt_transform | llm | StrOutputParser()
 
-# The full chain passes the output of the extraction chain into the 'specifications'
-# variable for the transformation prompt.
-full_chain = (
-    {"specifications": extraction_chain}
-    | prompt_transform
-    | llm
-    | StrOutputParser()
-)
-
-# --- Run the Chain ---
-input_text = "The new laptop model features a 3.5 GHz octa-core processor, 16GB of RAM, and a 1TB NVMe SSD."
-
-# Execute the chain with the input text dictionary.
-final_result = full_chain.invoke({"text_input": input_text})
-
-print("\n--- Final JSON Output ---")
-print(final_result)
+result = full_chain.invoke({"text_input": "3.5 GHz CPU, 16GB RAM, 1TB SSD"})
+print(result)
 ```
 
 **Explanation:**
@@ -125,7 +105,6 @@ from typing import List
 
 llm = ChatOpenAI(temperature=0)
 
-# Define structured output for trend extraction
 class Trend(BaseModel):
     trend_name: str = Field(description="Name of the trend")
     supporting_data: str = Field(description="Data point supporting the trend")
@@ -133,48 +112,22 @@ class Trend(BaseModel):
 class TrendsResponse(BaseModel):
     trends: List[Trend]
 
-# Step 1: Summarize document
-summarize_prompt = ChatPromptTemplate.from_template(
-    "Summarize the key findings of the following market research report:\n\n{report_text}"
-)
+summarize_chain = ChatPromptTemplate.from_template(
+    "Summarize key findings: {report_text}"
+) | llm | StrOutputParser()
 
-# Step 2: Extract trends with structured output
-extract_trends_prompt = ChatPromptTemplate.from_template(
-    "Using the following summary, identify the top three emerging trends and extract specific data points that support each trend:\n\n{summary}\n\nReturn the trends in JSON format."
-)
+extract_chain = ChatPromptTemplate.from_template(
+    "Extract top 3 trends from: {summary}"
+) | llm | JsonOutputParser(pydantic_object=TrendsResponse)
 
-# Step 3: Generate email
-email_prompt = ChatPromptTemplate.from_template(
-    "Draft a concise email to the marketing team that outlines the following trends and their supporting data:\n\n{trends_json}"
-)
+email_chain = ChatPromptTemplate.from_template(
+    "Draft email about: {trends_json}"
+) | llm | StrOutputParser()
 
-# Build chains
-summarize_chain = summarize_prompt | llm | StrOutputParser()
-extract_chain = extract_trends_prompt | llm | JsonOutputParser(pydantic_object=TrendsResponse)
-email_chain = email_prompt | llm | StrOutputParser()
-
-# Full workflow
-def process_report(report_text: str):
-    # Step 1: Summarize
-    summary = summarize_chain.invoke({"report_text": report_text})
-    
-    # Step 2: Extract trends
-    trends_data = extract_chain.invoke({"summary": summary})
-    trends_json = trends_data.json() if hasattr(trends_data, 'json') else str(trends_data)
-    
-    # Step 3: Generate email
-    email = email_chain.invoke({"trends_json": trends_json})
-    
-    return {
-        "summary": summary,
-        "trends": trends_data,
-        "email": email
-    }
-
-# Example usage
-report = "Market research shows 73% of consumers prefer personalized experiences..."
-result = process_report(report)
-print(result["email"])
+summary = summarize_chain.invoke({"report_text": "Market research shows 73% prefer personalized experiences..."})
+trends = extract_chain.invoke({"summary": summary})
+email = email_chain.invoke({"trends_json": str(trends)})
+print(email)
 ```
 
 **Explanation:**
@@ -185,70 +138,45 @@ This advanced example demonstrates a three-step workflow for processing a market
 #### LangGraph
 ```python
 from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
 from typing import TypedDict
+
+llm = ChatOpenAI(temperature=0)
 
 class ChainState(TypedDict):
     input_text: str
     extracted: str
     transformed: str
-    final_output: str
 
 def extract_step(state: ChainState) -> ChainState:
-    # Extract information
     result = llm.invoke(f"Extract specs from: {state['input_text']}")
     return {**state, "extracted": result.content}
 
 def transform_step(state: ChainState) -> ChainState:
-    # Transform to JSON
     result = llm.invoke(f"Transform to JSON: {state['extracted']}")
     return {**state, "transformed": result.content}
 
-def finalize_step(state: ChainState) -> ChainState:
-    # Final processing
-    result = llm.invoke(f"Finalize: {state['transformed']}")
-    return {**state, "final_output": result.content}
-
-# Build graph
 graph = StateGraph(ChainState)
 graph.add_node("extract", extract_step)
 graph.add_node("transform", transform_step)
-graph.add_node("finalize", finalize_step)
-
 graph.set_entry_point("extract")
 graph.add_edge("extract", "transform")
-graph.add_edge("transform", "finalize")
-graph.add_edge("finalize", END)
+graph.add_edge("transform", END)
 
-# Execute
-result = graph.invoke({"input_text": "Laptop specs: 3.5GHz CPU, 16GB RAM, 1TB SSD"})
+result = graph.invoke({"input_text": "3.5GHz CPU, 16GB RAM, 1TB SSD"})
+print(result["transformed"])
 ```
 
 #### Google ADK
 ```python
 from google.adk.agents import Agent
-from google.adk.tools import FunctionTool
 
-# Define tools for each step
-extract_tool = FunctionTool(
-    name="extract_specs",
-    description="Extract technical specifications from text",
-    func=lambda text: extract_specifications(text)
-)
-
-transform_tool = FunctionTool(
-    name="transform_to_json",
-    description="Transform specifications to JSON",
-    func=lambda specs: transform_specs(specs)
-)
-
-# Create agent with chained workflow
 agent = Agent(
     name="SpecProcessor",
     model="gemini-2.0-flash",
-    instruction="""Process technical specifications in two steps:
-    1. Extract specifications from input text
-    2. Transform extracted specs to JSON format""",
-    tools=[extract_tool, transform_tool]
+    instruction="""Process specifications in steps:
+    1. Extract from input text
+    2. Transform to JSON format"""
 )
 ```
 

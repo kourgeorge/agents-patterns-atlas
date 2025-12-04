@@ -96,6 +96,7 @@ We can understand agentic patterns by mapping them to the core components of an 
 An agent is useless if it cannot remember previous actions or retrieve relevant knowledge.
 * **Context Window:** The immediate "short-term" working memory.
 * **History Management:** Mechanisms to summarize or truncate long conversations to fit within the window.
+* **Memory Management:** Strategies for persistent memory and external storage to extend memory beyond immediate context.
 * **Retrieval (RAG):** Long-term memory. This allows the agent to query vector databases to access documentation or past experiences, grounding its decisions in data rather than hallucinations.
 
 ### 2. Reasoning & Planning (The Brain)
@@ -201,7 +202,9 @@ Give agents enough autonomy to be effective, but maintain appropriate oversight 
 
 ## Why Design Patterns Matter
 
-Design patterns are battle-tested templates offering proven approaches to standard design and implementation challenges. In agentic systems, they address fundamental questions:
+Design patterns are battle-tested templates offering proven approaches to standard design and implementation challenges. The patterns presented in this book were extracted through careful analysis and dissection of real-world agent implementations, including systems like IBM's CUGA (Cognitive Understanding and Generation Agent). By examining how successful agent architectures are constructed, we've identified reusable patterns, design components, and principles that can be applied across different agentic systems. This pattern extraction methodology allows us to learn from proven implementations and codify their best practices into transferable knowledge.
+
+In agentic systems, these patterns address fundamental questions:
 
 * How do you structure sequential operations?
 * How do you manage state and context?
@@ -231,7 +234,16 @@ The patterns in this book provide the foundation for building these future syste
 
 ## Next Steps
 
-Now that you understand the foundations of agentic systems, you're ready to explore the 21 design patterns. Each pattern module provides clear explanations, practical guidance, real-world applications, and hands-on code examples.
+Now that you understand the foundations of agentic systems, you're ready to explore the design patterns organized across 8 parts. Each pattern module provides clear explanations, practical guidance, real-world applications, and hands-on code examples.
+
+The book is structured to guide you from foundational workflow patterns through advanced capabilities:
+- **Core Workflow** patterns for building reliable agent workflows
+- **Tools** for designing effective Agent-Computer Interfaces
+- **Reasoning & Planning** techniques for strategic problem-solving
+- **Context** management for optimizing limited context windows
+- **Memory** strategies for persistent and external memory
+- **Multi-Agent Systems** for scaling with multiple agents
+- **Human input and Recovery** for learning, adaptation, and error handling
 
 Remember the guiding principles: start simple, prioritize transparency, craft good interfaces, design for failure, and balance autonomy with control. These principles, combined with the patterns you'll learn, will enable you to build robust, reliable, and effective agentic systems.
 

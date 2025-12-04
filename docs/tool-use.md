@@ -1,4 +1,4 @@
-# Tool Use & Execution
+# Pattern: Tool Use
 
 ## Motivation
 
@@ -223,202 +223,93 @@ This minimizes token consumption by avoiding full dumps of large data into the c
 
 ### Code Examples
 
-#### LangChain Implementation
+#### LangGraph Implementation
 
 ```python
-import os
-import asyncio
-import nest_asyncio
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.tools import tool as langchain_tool
-from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain_core.tools import tool
+from langgraph.prebuilt import create_react_agent
 
-# Initialize the language model
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-# Define a Tool
-@langchain_tool
+@tool
 def search_information(query: str) -> str:
-    """
-    Provides factual information on a given topic. Use this tool to
-    find answers to phrases like 'capital of France' or 'weather in London?'.
-    """
-    print(f"\n--Tool Called: search_information with query: '{query}' ---")
-    
-    # Simulate a search tool with predefined results
-    simulated_results = {
+    """Provides factual information on a given topic."""
+    results = {
         "weather in london": "The weather in London is currently cloudy with a temperature of 15°C.",
         "capital of france": "The capital of France is Paris.",
-        "population of earth": "The estimated population of Earth is around 8 billion people.",
-        "tallest mountain": "Mount Everest is the tallest mountain above sea level.",
-        "default": f"Simulated search result for '{query}': No specific information found."
     }
-    
-    result = simulated_results.get(query.lower(), simulated_results["default"])
-    print(f"--- TOOL RESULT: {result} ---")
-    return result
+    return results.get(query.lower(), f"Information about: {query}")
 
-tools = [search_information]
+agent = create_react_agent(
+    llm,
+    [search_information],
+    state_modifier="You are a helpful assistant."
+)
 
-# Create a Tool-Calling Agent
-agent_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful assistant."),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}"),
-])
-
-agent = create_tool_calling_agent(llm, tools, agent_prompt)
-agent_executor = AgentExecutor(agent=agent, verbose=True, tools=tools)
-
-async def run_agent_with_tool(query: str):
-    """Invokes the agent executor with a query and prints the final response."""
-    print(f"\n--Running Agent with Query: '{query}' ---")
-    try:
-        response = await agent_executor.ainvoke({"input": query})
-        print("\n--Final Agent Response ---")
-        print(response["output"])
-    except Exception as e:
-        print(f"\nAn error occurred during agent execution: {e}")
-
-async def main():
-    """Runs all agent queries concurrently."""
-    tasks = [
-        run_agent_with_tool("What is the capital of France?"),
-        run_agent_with_tool("What's the weather like in London?"),
-        run_agent_with_tool("Tell me something about dogs.")
-    ]
-    await asyncio.gather(*tasks)
-
-nest_asyncio.apply()
-asyncio.run(main())
+response = agent.invoke({
+    "messages": [{"role": "user", "content": "What is the capital of France?"}]
+})
+print(response["messages"][-1].content)
 ```
 
 #### CrewAI Implementation
 
 ```python
-import os
 from crewai import Agent, Task, Crew
 from crewai.tools import tool
-import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s - %(message)s')
-
-# Define a Tool
 @tool("Stock Price Lookup Tool")
 def get_stock_price(ticker: str) -> float:
-    """
-    Fetches the latest simulated stock price for a given stock ticker symbol.
-    Returns the price as a float. Raises a ValueError if the ticker is not found.
-    """
-    logging.info(f"Tool Call: get_stock_price for ticker '{ticker}'")
-    
-    simulated_prices = {
-        "AAPL": 178.15,
-        "GOOGL": 1750.30,
-        "MSFT": 425.50,
-    }
-    
-    price = simulated_prices.get(ticker.upper())
-    if price is not None:
-        return price
-    else:
-        raise ValueError(f"Simulated price for ticker '{ticker.upper()}' not found.")
+    """Fetches the latest simulated stock price for a given stock ticker symbol."""
+    prices = {"AAPL": 178.15, "GOOGL": 1750.30, "MSFT": 425.50}
+    return prices.get(ticker.upper(), 0.0)
 
-# Define the Agent
-financial_analyst_agent = Agent(
-    role='Senior Financial Analyst',
-    goal='Analyze stock data using provided tools and report key prices.',
-    backstory="You are an experienced financial analyst adept at using data sources to find stock information.",
-    verbose=True,
+agent = Agent(
+    role='Financial Analyst',
+    goal='Analyze stock data using provided tools.',
+    backstory="You are an experienced financial analyst.",
     tools=[get_stock_price],
-    allow_delegation=False,
-)
-
-# Define the Task
-analyze_aapl_task = Task(
-    description=(
-        "What is the current simulated stock price for Apple (ticker: AAPL)? "
-        "Use the 'Stock Price Lookup Tool' to find it. "
-        "If the ticker is not found, you must report that you were unable to retrieve the price."
-    ),
-    expected_output=(
-        "A single, clear sentence stating the simulated stock price for AAPL. "
-        "For example: 'The simulated stock price for AAPL is $178.15.'"
-    ),
-    agent=financial_analyst_agent,
-)
-
-# Formulate the Crew
-financial_crew = Crew(
-    agents=[financial_analyst_agent],
-    tasks=[analyze_aapl_task],
     verbose=True
 )
 
-# Run the Crew
-def main():
-    """Main function to run the crew."""
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("ERROR: The OPENAI_API_KEY environment variable is not set.")
-        return
-    
-    print("\n## Starting the Financial Crew...")
-    result = financial_crew.kickoff()
-    print("\n## Crew execution finished.")
-    print("\nFinal Result:\n", result)
+task = Task(
+    description="What is the current stock price for Apple (ticker: AAPL)?",
+    expected_output="The simulated stock price for AAPL.",
+    agent=agent
+)
 
-if __name__ == "__main__":
-    main()
+crew = Crew(agents=[agent], tasks=[task], verbose=True)
+result = crew.kickoff()
+print(result)
 ```
 
 #### Google ADK Implementation
 
 ```python
-import asyncio
 from google.adk.agents import Agent as ADKAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.adk.tools import google_search
 from google.genai import types
-import nest_asyncio
 
-# Define variables
-APP_NAME = "Google Search_agent"
-USER_ID = "user1234"
-SESSION_ID = "1234"
-
-# Define Agent with access to search tool
-root_agent = ADKAgent(
-    name="basic_search_agent",
+agent = ADKAgent(
+    name="search_agent",
     model="gemini-2.0-flash-exp",
     description="Agent to answer questions using Google Search.",
-    instruction="I can answer your questions by searching the internet. Just ask me anything!",
-    tools=[google_search]  # Google Search is a pre-built tool
+    instruction="I can answer your questions by searching the internet.",
+    tools=[google_search]
 )
 
-# Agent Interaction
-async def call_agent(query):
-    """Helper function to call the agent with a query."""
-    session_service = InMemorySessionService()
-    session = await session_service.create_session(
-        app_name=APP_NAME,
-        user_id=USER_ID,
-        session_id=SESSION_ID
-    )
-    
-    runner = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service)
-    content = types.Content(role='user', parts=[types.Part(text=query)])
-    
-    events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
-    
-    for event in events:
-        if event.is_final_response():
-            final_response = event.content.parts[0].text
-            print("Agent Response: ", final_response)
+session_service = InMemorySessionService()
+runner = Runner(agent=agent, app_name="search_app", session_service=session_service)
 
-nest_asyncio.apply()
-asyncio.run(call_agent("what's the latest ai news?"))
+content = types.Content(role='user', parts=[types.Part(text="what's the latest ai news?")])
+events = runner.run(user_id="user1", session_id="session1", new_message=content)
+
+for event in events:
+    if event.is_final_response():
+        print(event.content.parts[0].text)
 ```
 
 ## Key Takeaways
@@ -428,7 +319,7 @@ asyncio.run(call_agent("what's the latest ai news?"))
 - **Idempotency** is essential: tool calls should produce the same observable side effect regardless of execution count.
 - **Tool definitions** must be clear, detailed, and include boundaries and negative examples to guide proper usage.
 - **Input/output validation** adds crucial security and robustness layers between the LLM and external systems.
-- **Frameworks** like LangChain, CrewAI, and Google ADK provide abstractions that simplify tool integration and execution.
+- **Frameworks** like LangGraph, CrewAI, and Google ADK provide abstractions that simplify tool integration and execution.
 - **Google ADK** includes pre-built tools like Google Search, Code Execution, and Vertex AI Search that can be directly integrated.
 - **Tool Use** transforms language models from text generators into agents capable of real-world action and up-to-date information retrieval.
 
@@ -443,7 +334,7 @@ asyncio.run(call_agent("what's the latest ai news?"))
 
 ## References
 
-1. LangChain Documentation (Tools): https://python.langchain.com/docs/integrations/tools/
+1. LangGraph Documentation (Tool Calling): https://langchain-ai.github.io/langgraph/how-tos/tool-calling/
 2. Google Agent Developer Kit (ADK) Documentation (Tools): https://google.github.io/adk-docs/tools/
 3. OpenAI Function Calling Documentation: https://platform.openai.com/docs/guides/function-calling
 4. CrewAI Documentation (Tools): https://docs.crewai.com/concepts/tools

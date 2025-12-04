@@ -1,4 +1,4 @@
-# Context Compression: Managing the Finite Window
+# Pattern: Context Compression
 
 ## Motivation
 
