@@ -2,6 +2,8 @@
 
 A static documentation website built with MkDocs and Material theme, presenting the "AI Agents: Patterns, Principles & Practices" book. This site is designed to be hosted on GitHub Pages.
 
+🌐 **Live Site**: [https://kourgeorge.github.io/agents-patterns-atlas/](https://kourgeorge.github.io/agents-patterns-atlas/)
+
 ## Overview
 
 This repository contains the source files and configuration for a documentation website that presents an interactive guide to building intelligent, goal-oriented AI systems. The book covers 25+ essential design patterns organized into 9 comprehensive parts.
@@ -114,7 +116,7 @@ If you need to manually trigger a deployment:
 
 Once deployed, the site will be available at:
 ```
-https://georgekour.github.io/ai-patterns/
+https://kourgeorge.github.io/agents-patterns-atlas/
 ```
 
 (Update this URL if your repository name or username is different)
@@ -128,12 +130,6 @@ The main configuration file is `mkdocs.yml`. Key settings include:
 - **Navigation**: Organized by book parts and modules
 - **Plugins**: Search functionality enabled
 
-## Source Book
-
-**Title:** Agentic Design Patterns: A Hands-On Guide to Building Intelligent Systems  
-**Author:** Antonio Gulli  
-**Publisher:** Springer  
-**ISBN:** 978-3032014018
 
 This documentation is an adaptation and expansion of the original book, organized as an interactive guide.
 
