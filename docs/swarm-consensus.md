@@ -2,109 +2,109 @@
 
 ## Motivation
 
-A flock of birds coordinates without a leader, each bird following simple local rules that produce elegant group behavior. Ant colonies solve complex problems through indirect communication—ants leave pheromone trails that guide others. These biological systems demonstrate that sophisticated coordination can emerge from decentralized, local interactions rather than centralized control.
+Multiple experts discussing a problem can reach better solutions than any individual expert working alone. Through natural language dialogue, debate, and consensus-building, groups of LLM agents can surface insights, catch errors, and converge on high-quality solutions that exceed what a single agent could achieve.
 
-The Swarm/Consensus Architecture pattern captures this principle: autonomous agents coordinate through local interactions, consensus mechanisms, or emergent behavior, without requiring a central orchestrator. This pattern is essential when centralized coordination is impractical, undesirable, or impossible—whether due to fault tolerance requirements, network partitions, scalability needs, or the desire for emergent behaviors that exceed what centralized planning can achieve.
+The Swarm/Consensus Architecture pattern enables autonomous LLM agents to coordinate through natural language discussion, debate, voting, or consensus mechanisms, without requiring a central orchestrator. This pattern is essential when multiple perspectives are valuable, when errors need to be caught through cross-verification, or when collective intelligence can improve reasoning quality beyond individual capabilities.
 
 ## Pattern Overview
 
-**What it is:** A decentralized multi-agent architecture where autonomous agents coordinate through local interactions, consensus algorithms, voting mechanisms, or indirect communication (stigmergy). Agents make decisions independently based on local information and shared state, with global coordination emerging from these local interactions.
+**What it is:** A decentralized multi-agent architecture where autonomous LLM agents coordinate through natural language discussion, debate, voting mechanisms, or shared knowledge bases. Agents make decisions independently based on their reasoning, engage in dialogue with other agents, and reach collective decisions through consensus.
 
-**When to use:** When centralized coordination is impractical or undesirable—fault tolerance is critical, network partitions are common, systems must scale to many agents, or emergent behaviors are desired. Also valuable when agents have partial information and must reach collective decisions.
+**When to use:** When multiple perspectives improve solution quality, when cross-verification is needed to catch errors, when reasoning benefits from debate and discussion, or when collective intelligence can outperform individual agents. Also valuable when agents have different viewpoints that should be reconciled.
 
-**Why it matters:** Decentralized coordination provides fault tolerance (no single point of failure), scalability (coordination overhead doesn't grow linearly with agent count), and enables emergent behaviors that centralized systems cannot achieve. It mirrors biological systems that solve complex problems through simple local rules.
+**Why it matters:** Natural language consensus provides error correction (multiple agents catch mistakes), improved reasoning quality (debate surfaces hidden assumptions), diversity of perspectives (different agents explore different approaches), and collective intelligence (group performance exceeds individual capabilities). Research shows that when LLM agents debate and reconcile their reasoning, performance significantly improves on math problems and factual QA.
 
-Unlike orchestrator-worker patterns that rely on central coordination, swarm/consensus architectures distribute decision-making across agents. This creates systems that are more resilient to failures, can scale to large numbers of agents, and can exhibit emergent intelligence that exceeds the sum of individual agent capabilities.
+Unlike orchestrator-worker patterns that rely on central coordination, swarm/consensus architectures distribute decision-making across agents. Agents engage in peer-to-peer communication, enabling collaborative problem-solving, error detection, and collective reasoning that centralized systems cannot achieve.
 
 ### Key Concepts
 
-- **Stigmergy:** Indirect communication through shared environment modification. Agents leave markers (pheromones, state updates) that influence others' behavior, enabling coordination without direct communication.
+- **Natural Language Discussion:** Agents communicate through natural language dialogue, debate, negotiation, or discussion to share perspectives, critique reasoning, and build consensus.
 
-- **Consensus Algorithms:** Mechanisms for agents to agree on shared state or decisions despite failures or network partitions. Includes voting, averaging, and Byzantine fault-tolerant consensus.
+- **Consensus Mechanisms:** Mechanisms for agents to agree on decisions or solutions through voting, iterative discussion, or convergence to shared understanding. Includes majority voting, weighted aggregation, and iterative refinement until agreement.
 
-- **Emergent Coordination:** Complex global behaviors that emerge from simple local rules. Agents follow local rules, producing sophisticated group behaviors without explicit global planning.
+- **Peer-to-Peer Coordination:** Agents interact as equals without central authority, enabling open dialogue where any agent can critique others or propose solutions.
 
-- **Local vs. Global Optimization:** Agents optimize locally (their immediate context) while contributing to global objectives. The system balances individual agent goals with collective outcomes.
+- **Collective Intelligence:** Group performance exceeds individual capabilities through collaboration, debate, and synthesis of multiple perspectives.
 
-- **Decentralized Decision-Making:** Agents make decisions independently based on local information, shared state, and communication with neighbors, rather than receiving directives from a central coordinator.
+- **Error Detection and Correction:** Multiple agents cross-verify each other's reasoning, catching errors, hallucinations, or logical flaws that a single agent might miss.
 
-- **Fault Tolerance:** System continues operating despite agent failures, network partitions, or malicious agents, achieved through redundancy and consensus mechanisms.
+- **Convergence:** Systems converge to stable solutions through iterative discussion, voting rounds, or consensus algorithms. Convergence criteria determine when agents have reached sufficient agreement.
 
 ### How It Works
 
-Swarm/Consensus architectures operate through several coordination mechanisms:
+LLM-based swarm/consensus architectures operate through several coordination mechanisms:
 
-1. **Shared State (Stigmergy):** Agents read and modify shared state (blackboard, knowledge base, environment). Changes influence other agents' behavior, creating indirect coordination. For example, research agents deposit findings in a shared knowledge base; other agents read and build upon these findings.
+1. **Natural Language Discussion:** Agents engage in multi-turn dialogues, sharing perspectives, asking questions, and building on each other's insights. For example, research agents discuss findings, debate interpretations, and converge on shared understanding.
 
-2. **Consensus Mechanisms:** Agents must agree on decisions or shared state:
+2. **Consensus Mechanisms:** Agents agree on decisions or solutions:
    - **Voting:** Agents vote on options; majority or weighted voting determines outcome
-   - **Averaging Consensus:** Agents iteratively average values with neighbors, converging to global average
-   - **Byzantine Consensus:** Reach agreement despite faulty or malicious agents using algorithms like PBFT or Raft
+   - **Iterative Discussion:** Agents discuss and refine solutions until convergence
+   - **Consensus Through Dialogue:** Agents reach agreement through natural language negotiation and reconciliation
 
-3. **Local Interactions:** Agents interact primarily with neighbors or local subset, rather than all agents. This enables scalability and reduces communication overhead.
+3. **Peer Interactions:** Agents interact directly with each other without central coordinator, enabling open dialogue and equal participation. This enables scalability and reduces coordination overhead.
 
-4. **Emergent Behavior:** Agents follow simple local rules (e.g., "follow strongest pheromone trail," "align with neighbors," "vote based on local information"). Complex global behaviors emerge from these interactions.
+4. **Error Cross-Verification:** Agents critique each other's reasoning, pointing out errors, logical flaws, or inconsistencies. This collaborative verification improves accuracy.
 
-5. **Convergence:** Systems converge to stable states through iterative updates, voting rounds, or consensus algorithms. Convergence criteria determine when coordination is complete.
+5. **Convergence:** Systems converge to stable solutions through iterative updates, discussion rounds, or consensus algorithms. Convergence criteria (agreement threshold, stability, timeout) determine when coordination is complete.
 
 ## When to Use This Pattern
 
 ### ✅ Use when:
 
-- **Fault tolerance is critical:** System must continue operating despite agent failures or network partitions
-- **Scalability requirements:** Need to coordinate large numbers of agents where centralized coordination becomes bottleneck
-- **Network partitions expected:** Agents operate in unreliable networks where centralized coordination may fail
-- **Emergent behaviors desired:** Want behaviors that emerge from local interactions rather than explicit planning
-- **Partial information:** Agents have partial, local information and must reach collective decisions
-- **Decentralized infrastructure:** System architecture is inherently decentralized (edge computing, IoT, distributed systems)
-- **No single point of control:** Political, organizational, or technical constraints prevent central coordination
+- **Multiple perspectives valuable:** Problem benefits from diverse viewpoints and approaches
+- **Error detection critical:** Need cross-verification to catch mistakes, hallucinations, or logical errors
+- **Reasoning quality important:** Debate and discussion improve solution quality by surfacing hidden assumptions
+- **Collective intelligence beneficial:** Group performance can exceed individual capabilities
+- **No central authority needed:** Decentralized coordination is sufficient and desirable
+- **Natural language negotiation:** Agents need to negotiate, bargain, or build consensus through dialogue
+- **Redundant verification:** Critical decisions benefit from multiple independent evaluations
 
 ### ❌ Avoid when:
 
-- **Strong consistency required:** Need guaranteed consistency that centralized coordination provides
-- **Deterministic outcomes needed:** Require predictable, deterministic coordination rather than emergent behaviors
-- **Low coordination overhead:** Centralized coordination is feasible and more efficient
-- **Small agent count:** Few agents where coordination overhead of consensus exceeds benefits
+- **Strong coordination required:** Need guaranteed coordination that centralized systems provide
+- **Deterministic outcomes needed:** Require predictable, deterministic coordination rather than emergent consensus
+- **Low latency critical:** Discussion and consensus introduce latency that violates timing requirements
+- **Simple problems:** Tasks that don't benefit from multiple perspectives or debate
+- **Resource constraints:** Computational or cost constraints make multiple agents impractical
 - **Tight coupling:** Agents have strong dependencies requiring explicit coordination
-- **Real-time constraints:** Consensus algorithms introduce latency that violates timing requirements
 
 ### Decision Guidelines
 
-Use Swarm/Consensus Architecture when the benefits of decentralization (fault tolerance, scalability, emergent behaviors) outweigh the costs (coordination overhead, eventual consistency, complexity). Consider: agent count (more agents = more benefit), failure rates (high failures = need fault tolerance), network reliability (unreliable = decentralized better), and consistency requirements (eventual consistency acceptable = consensus viable). For small systems with reliable networks, centralized coordination may be simpler and more efficient.
+Use Swarm/Consensus Architecture when the benefits of multiple perspectives, error detection, and collective intelligence outweigh the costs (coordination overhead, latency, complexity). Consider: problem complexity (complex = benefit from multiple perspectives), error tolerance (low tolerance = need cross-verification), reasoning requirements (difficult reasoning = benefit from debate), and coordination needs (decentralized sufficient = consensus viable). For simple problems with reliable single agents, centralized coordination may be simpler and more efficient.
 
 ## Practical Applications & Use Cases
 
-Swarm/Consensus architectures excel in scenarios requiring fault tolerance, scalability, or emergent coordination:
+LLM-based swarm/consensus architectures excel in scenarios requiring multiple perspectives, error detection, or collective reasoning:
 
-### Distributed Research Agents
+### Consensus Through Discussion
 
-Multiple research agents independently explore problem spaces, deposit findings in shared knowledge base, and converge on solutions through consensus voting. Agents work in parallel, building on each other's discoveries without central coordination.
+Multiple LLM agents discuss a question and converge on a joint answer, using debate and agreement as a means of verification. Research by Yilun Du et al. (2023) showed that when models debated and reconciled their reasoning, it significantly enhanced performance on math word problems and factual QA—reducing errors and hallucinations compared to a lone model.
 
-**Example:** Research system where agents independently investigate different aspects of a question, share findings through a shared knowledge base, and vote on the most important insights to include in final report.
+**Example:** "Society of Minds" approach where several instances of an LLM each propose their own solution, then critique and revise in light of others' arguments, aiming to reach a consensus through iterative discussion.
 
-### Swarm Robotics
+### Peer-to-Peer Research Teams
 
-Robots coordinate through local interactions and shared state, enabling collective behaviors like formation control, distributed sensing, and collaborative manipulation.
+Research agents independently investigate different aspects of a question, share findings through natural language discussion, debate interpretations, and converge on solutions through consensus. Agents work in parallel, building on each other's discoveries without central coordination.
 
-**Example:** Drone swarm for search and rescue where drones share location and findings, use consensus to decide search areas, and coordinate coverage without central control.
-
-### Distributed Optimization
-
-Agents collaboratively solve optimization problems through local interactions, using swarm intelligence algorithms like ant colony optimization or particle swarm optimization.
-
-**Example:** Vehicle routing where agents (representing routes) adjust based on pheromone trails (shared state indicating route quality), converging on optimal solutions through local updates.
+**Example:** Research system where agents independently investigate different aspects, share findings through discussion, debate the importance of insights, and vote on the most important findings to include in final report.
 
 ### Collective Decision-Making
 
-Agents vote or reach consensus on decisions, enabling distributed governance, collaborative filtering, or group intelligence systems.
+Agents vote or reach consensus on decisions through discussion and negotiation, enabling distributed governance, collaborative evaluation, or group intelligence systems.
 
-**Example:** Distributed voting system where agents independently evaluate options, share opinions, and reach consensus through iterative voting rounds.
+**Example:** Multiple agents independently evaluate options, discuss pros and cons through natural language, and reach consensus through iterative voting rounds or discussion until agreement.
 
-### Distributed Sensing Networks
+### Multi-Agent Fact-Checking
 
-Sensor networks where agents coordinate to cover areas, detect events, or aggregate data through local interactions and consensus.
+Multiple agents independently verify claims, discuss evidence, and reach consensus on accuracy. This cross-verification catches errors that a single agent might miss.
 
-**Example:** Environmental monitoring network where sensors share readings, use consensus to detect anomalies, and coordinate coverage without central server.
+**Example:** Fact-checking system where agents independently research claims, share evidence, debate credibility, and vote on accuracy through discussion.
+
+### Natural Language Negotiation
+
+Agents engage in multi-turn bargaining, alliance formation, and consensus-building through natural language, as demonstrated by CICERO in Diplomacy. Agents negotiate terms, make promises, and adjust strategies based on responses.
+
+**Example:** Cooperative negotiation system where agents discuss terms, negotiate solutions, build alliances, and reach agreements through natural language dialogue.
 
 ## Implementation
 
@@ -112,15 +112,11 @@ Sensor networks where agents coordinate to cover areas, detect events, or aggreg
 
 ```bash
 pip install langchain langchain-openai langgraph
-# For consensus algorithms
-pip install pydantic
-# For simulation/testing
-pip install mesa  # Agent-based modeling
 ```
 
-### Basic Example: Consensus-Based Research Agents
+### Basic Example: Consensus Through Discussion
 
-This example demonstrates research agents that coordinate through shared knowledge base and consensus voting:
+This example demonstrates research agents that coordinate through natural language discussion and reach consensus:
 
 ```python
 from langchain_openai import ChatOpenAI
@@ -130,257 +126,324 @@ import json
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
-class SharedKnowledgeBase:
-    """Shared state for stigmergy-based coordination."""
-    def __init__(self):
-        self.findings = []
-        self.votes = defaultdict(list)  # topic -> [votes]
+class DiscussionAgent:
+    """LLM agent that participates in consensus-building discussion."""
     
-    def add_finding(self, agent_id: str, topic: str, finding: str):
-        """Agent deposits finding in shared knowledge base."""
-        self.findings.append({
-            "agent_id": agent_id,
-            "topic": topic,
-            "finding": finding
-        })
-    
-    def get_findings(self, topic: str = None) -> List[Dict]:
-        """Retrieve findings, optionally filtered by topic."""
-        if topic:
-            return [f for f in self.findings if f["topic"] == topic]
-        return self.findings
-    
-    def vote(self, agent_id: str, topic: str, importance: int):
-        """Agent votes on topic importance (1-10)."""
-        self.votes[topic].append({
-            "agent_id": agent_id,
-            "importance": importance
-        })
-    
-    def get_consensus(self, topic: str) -> float:
-        """Calculate average importance (consensus) for topic."""
-        if topic not in self.votes or not self.votes[topic]:
-            return 0.0
-        votes = [v["importance"] for v in self.votes[topic]]
-        return sum(votes) / len(votes)
-
-class ResearchAgent:
-    """Autonomous research agent that coordinates through shared state."""
-    def __init__(self, agent_id: str, specialization: str, knowledge_base: SharedKnowledgeBase):
+    def __init__(self, agent_id: str, perspective: str):
         self.agent_id = agent_id
-        self.specialization = specialization
-        self.kb = knowledge_base
+        self.perspective = perspective  # e.g., "technical", "user-focused", "business"
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
+        self.opinions = []
     
-    def research(self, query: str) -> str:
-        """Agent conducts research on assigned aspect."""
-        # Read existing findings from shared knowledge base
-        existing_findings = self.kb.get_findings()
-        context = "\n".join([f"{f['topic']}: {f['finding']}" for f in existing_findings[-5:]])
-        
-        prompt = f"""You are a research agent specializing in {self.specialization}.
+    def propose_solution(self, query: str) -> str:
+        """Agent proposes initial solution from their perspective."""
+        prompt = f"""You are an expert agent with a {self.perspective} perspective.
 
 Query: {query}
 
-Existing findings from other agents:
-{context}
-
-Conduct research on your specialized aspect. Provide key findings."""
+From your {self.perspective} perspective, propose a solution or answer. Explain your reasoning."""
         
-        result = self.llm.invoke(prompt)
-        finding = result.content
-        
-        # Deposit finding in shared knowledge base (stigmergy)
-        self.kb.add_finding(self.agent_id, self.specialization, finding)
-        
-        return finding
+        response = self.llm.invoke(prompt)
+        solution = response.content
+        self.opinions.append({"type": "proposal", "content": solution})
+        return solution
     
-    def vote_on_importance(self, topics: List[str]):
-        """Agent votes on topic importance based on local evaluation."""
-        for topic in topics:
-            # Agent evaluates importance locally
-            prompt = f"""Evaluate the importance of this research topic: {topic}
+    def critique(self, query: str, other_solutions: List[str]) -> str:
+        """Agent critiques other agents' solutions."""
+        solutions_text = "\n\n".join([f"Solution {i+1}:\n{sol}" for i, sol in enumerate(other_solutions)])
+        
+        prompt = f"""You are an expert agent with a {self.perspective} perspective.
 
-Rate importance from 1-10 based on:
-- Relevance to query
-- Quality of findings
-- Uniqueness of contribution
+Query: {query}
 
-Return only a number 1-10."""
-            
-            result = self.llm.invoke(prompt)
-            try:
-                importance = int(result.content.strip())
-                self.kb.vote(self.agent_id, topic, importance)
-            except:
-                pass
+Other agents proposed these solutions:
+{solutions_text}
 
-def swarm_research(query: str, num_agents: int = 3) -> Dict[str, Any]:
-    """Swarm of research agents coordinate to answer query."""
-    # Initialize shared knowledge base
-    kb = SharedKnowledgeBase()
+Critique these solutions. Point out:
+- Strengths and weaknesses
+- Potential errors or issues
+- Missing considerations
+- How they could be improved
+
+Provide your critique."""
+        
+        response = self.llm.invoke(prompt)
+        critique = response.content
+        self.opinions.append({"type": "critique", "content": critique})
+        return critique
     
-    # Create specialized agents
-    specializations = ["technical analysis", "market trends", "user impact"]
+    def revise(self, query: str, all_opinions: List[Dict]) -> str:
+        """Agent revises their solution based on discussion."""
+        opinions_text = "\n\n".join([
+            f"{op['agent']} ({op['type']}):\n{op['content']}" 
+            for op in all_opinions
+        ])
+        
+        prompt = f"""You are an expert agent with a {self.perspective} perspective.
+
+Query: {query}
+
+Discussion so far:
+{opinions_text}
+
+Based on this discussion, revise your solution. Incorporate valid critiques and insights from others."""
+        
+        response = self.llm.invoke(prompt)
+        revised = response.content
+        self.opinions.append({"type": "revision", "content": revised})
+        return revised
+    
+    def vote(self, query: str, solutions: List[str]) -> int:
+        """Agent votes on best solution (returns index)."""
+        solutions_text = "\n\n".join([
+            f"Solution {i+1}:\n{sol}" for i, sol in enumerate(solutions)
+        ])
+        
+        prompt = f"""You are an expert agent with a {self.perspective} perspective.
+
+Query: {query}
+
+Solutions to vote on:
+{solutions_text}
+
+Which solution is best? Return only the number (1, 2, 3, etc.)"""
+        
+        response = self.llm.invoke(prompt)
+        try:
+            vote = int(response.content.strip())
+            return min(max(1, vote), len(solutions)) - 1  # Ensure valid index
+        except:
+            return 0
+
+def consensus_through_discussion(query: str, num_rounds: int = 3) -> Dict[str, Any]:
+    """Multiple agents reach consensus through discussion."""
+    # Create agents with different perspectives
+    perspectives = ["technical", "user-focused", "business"]
     agents = [
-        ResearchAgent(f"agent_{i}", specializations[i % len(specializations)], kb)
-        for i in range(num_agents)
+        DiscussionAgent(f"agent_{i}", perspectives[i % len(perspectives)])
+        for i in range(3)
     ]
     
-    # Phase 1: Agents research in parallel (stigmergy)
-    findings = []
+    # Phase 1: Initial proposals
+    solutions = []
     for agent in agents:
-        finding = agent.research(query)
-        findings.append(finding)
+        solution = agent.propose_solution(query)
+        solutions.append(solution)
     
-    # Phase 2: Agents vote on importance (consensus)
-    topics = list(set([f["topic"] for f in kb.get_findings()]))
+    discussion_history = []
+    
+    # Phase 2: Iterative discussion
+    for round_num in range(num_rounds):
+        # Agents critique others
+        critiques = []
+        for i, agent in enumerate(agents):
+            other_solutions = [sol for j, sol in enumerate(solutions) if j != i]
+            critique = agent.critique(query, other_solutions)
+            critiques.append({
+                "agent": agent.agent_id,
+                "type": "critique",
+                "content": critique
+            })
+        
+        discussion_history.extend(critiques)
+        
+        # Agents revise based on critiques
+        all_opinions = [
+            {"agent": f"agent_{i}", "type": "proposal", "content": sol}
+            for i, sol in enumerate(solutions)
+        ] + critiques
+        
+        new_solutions = []
+        for i, agent in enumerate(agents):
+            revised = agent.revise(query, all_opinions)
+            new_solutions.append(revised)
+        
+        solutions = new_solutions
+        discussion_history.extend([
+            {"agent": agent.agent_id, "type": "revision", "content": sol}
+            for agent, sol in zip(agents, solutions)
+        ])
+    
+    # Phase 3: Voting to reach consensus
+    votes = []
     for agent in agents:
-        agent.vote_on_importance(topics)
+        vote = agent.vote(query, solutions)
+        votes.append(vote)
     
-    # Phase 3: Calculate consensus
-    consensus_scores = {topic: kb.get_consensus(topic) for topic in topics}
+    # Determine consensus (most voted solution)
+    vote_counts = defaultdict(int)
+    for vote in votes:
+        vote_counts[vote] += 1
     
-    # Phase 4: Synthesize based on consensus
-    top_topics = sorted(consensus_scores.items(), key=lambda x: x[1], reverse=True)[:3]
+    consensus_index = max(vote_counts.items(), key=lambda x: x[1])[0]
+    consensus_solution = solutions[consensus_index]
     
-    synthesis_prompt = f"""Synthesize research findings into final answer.
+    # Phase 4: Final synthesis
+    synthesis_prompt = f"""Synthesize the discussion into a final consensus answer.
 
 Query: {query}
 
-Top findings (by consensus):
-{json.dumps([{"topic": t, "finding": kb.get_findings(t)[0]["finding"]} for t, _ in top_topics], indent=2)}
+Final solutions after discussion:
+{json.dumps(solutions, indent=2)}
 
-Provide comprehensive answer."""
+Votes: {dict(vote_counts)}
+
+Create a comprehensive final answer that incorporates the best insights from all perspectives."""
     
     final_result = llm.invoke(synthesis_prompt)
     
     return {
         "query": query,
-        "findings": findings,
-        "consensus_scores": consensus_scores,
+        "solutions": solutions,
+        "votes": votes,
+        "consensus_index": consensus_index,
+        "consensus_solution": consensus_solution,
+        "discussion_history": discussion_history,
         "final_answer": final_result.content
     }
 
 # Usage
-result = swarm_research("What are the latest trends in AI agent architectures?")
+result = consensus_through_discussion(
+    "What are the best practices for designing multi-agent systems?"
+)
 print(result["final_answer"])
 ```
 
 **Explanation:**
-This example demonstrates swarm coordination: agents research independently, deposit findings in shared knowledge base (stigmergy), vote on importance (consensus), and system synthesizes based on consensus scores. No central orchestrator coordinates agents; coordination emerges from shared state and voting.
+This example demonstrates consensus through discussion: agents propose solutions, critique each other, revise based on feedback, and vote on the best solution. The iterative discussion allows agents to surface errors, explore different perspectives, and converge on high-quality solutions.
 
-### Advanced Example: Byzantine Fault-Tolerant Consensus
+### Advanced Example: Society of Minds (Peer-to-Peer Discussion)
 
-This example shows consensus with fault tolerance:
+This example shows a peer-to-peer discussion where all agents are equal and engage in open dialogue:
 
 ```python
-from typing import List, Dict, Optional
-from enum import Enum
-import random
-
-class AgentState(Enum):
-    NORMAL = "normal"
-    FAULTY = "faulty"  # May send incorrect messages
-    BYZANTINE = "byzantine"  # May send malicious messages
-
-class ConsensusAgent:
-    """Agent participating in Byzantine fault-tolerant consensus."""
-    def __init__(self, agent_id: str, state: AgentState = AgentState.NORMAL):
+class PeerDiscussionAgent:
+    """Agent that participates in peer-to-peer discussion."""
+    
+    def __init__(self, agent_id: str, persona: str):
         self.agent_id = agent_id
-        self.state = state
-        self.proposed_value = None
-        self.received_proposals = {}
-        self.decided_value = None
+        self.persona = persona  # Different reasoning styles
+        self.llm = ChatOpenAI(model="gpt-4o", temperature=0.7)  # Higher temp for diversity
     
-    def propose(self, value: Any) -> Any:
-        """Agent proposes value for consensus."""
-        if self.state == AgentState.NORMAL:
-            self.proposed_value = value
-            return value
-        elif self.state == AgentState.FAULTY:
-            # Faulty agent proposes random value
-            self.proposed_value = random.choice(["A", "B", "C"])
-            return self.proposed_value
-        elif self.state == AgentState.BYZANTINE:
-            # Byzantine agent proposes malicious value
-            self.proposed_value = "MALICIOUS"
-            return self.proposed_value
-    
-    def receive_proposal(self, from_agent: str, value: Any):
-        """Receive proposal from another agent."""
-        if self.state == AgentState.NORMAL:
-            self.received_proposals[from_agent] = value
-    
-    def decide(self, all_proposals: Dict[str, Any], f: int) -> Optional[Any]:
-        """Reach consensus using simple majority, tolerating f faulty agents."""
-        if self.state != AgentState.NORMAL:
-            return None
-        
-        # Count votes for each value
-        vote_counts = {}
-        for agent_id, value in all_proposals.items():
-            if value not in vote_counts:
-                vote_counts[value] = 0
-            vote_counts[value] += 1
-        
-        # Find value with majority (need > f votes to tolerate f faults)
-        for value, count in vote_counts.items():
-            if count > f:
-                self.decided_value = value
-                return value
-        
-        return None  # No consensus reached
+    def participate(self, query: str, discussion: List[Dict]) -> str:
+        """Agent participates in discussion, responding to others."""
+        if not discussion:
+            # First contribution
+            prompt = f"""You are an expert with a {self.persona} reasoning style.
 
-def byzantine_consensus(agents: List[ConsensusAgent], f: int) -> Optional[Any]:
-    """Run Byzantine fault-tolerant consensus."""
-    # Phase 1: Agents propose values
-    proposals = {}
-    for agent in agents:
-        proposal = agent.propose("A")  # All propose "A" normally
-        proposals[agent.agent_id] = proposal
-    
-    # Phase 2: Agents receive all proposals
-    for agent in agents:
-        for other_id, value in proposals.items():
-            if other_id != agent.agent_id:
-                agent.receive_proposal(other_id, value)
-    
-    # Phase 3: Agents decide
-    decisions = {}
-    for agent in agents:
-        decision = agent.decide(proposals, f)
-        if decision:
-            decisions[agent.agent_id] = decision
-    
-    # Check if consensus reached (all normal agents agree)
-    normal_decisions = [d for aid, d in decisions.items() 
-                       if agents[[a.agent_id for a in agents].index(aid)].state == AgentState.NORMAL]
-    
-    if len(set(normal_decisions)) == 1:
-        return normal_decisions[0]
-    
-    return None
+Query: {query}
 
-# Usage: 5 agents, tolerate 1 Byzantine fault
-agents = [
-    ConsensusAgent("agent_0", AgentState.NORMAL),
-    ConsensusAgent("agent_1", AgentState.NORMAL),
-    ConsensusAgent("agent_2", AgentState.NORMAL),
-    ConsensusAgent("agent_3", AgentState.NORMAL),
-    ConsensusAgent("agent_4", AgentState.BYZANTINE),  # One Byzantine agent
-]
+Provide your initial thoughts and solution approach."""
+        else:
+            # Respond to ongoing discussion
+            discussion_text = "\n\n".join([
+                f"{msg['agent']}: {msg['content']}" 
+                for msg in discussion[-5:]  # Last 5 messages
+            ])
+            
+            prompt = f"""You are an expert with a {self.persona} reasoning style.
 
-consensus_value = byzantine_consensus(agents, f=1)
-print(f"Consensus reached: {consensus_value}")
+Query: {query}
+
+Discussion so far:
+{discussion_text}
+
+Contribute to the discussion. You can:
+- Agree or disagree with others
+- Point out errors or issues
+- Provide additional insights
+- Propose solutions
+- Ask clarifying questions
+
+Keep your contribution concise and focused."""
+        
+        response = self.llm.invoke(prompt)
+        return response.content
+    
+    def check_convergence(self, discussion: List[Dict]) -> bool:
+        """Check if agents are converging (simplified)."""
+        if len(discussion) < 6:
+            return False
+        
+        # Check if recent messages show agreement patterns
+        recent = [msg['content'].lower() for msg in discussion[-3:]]
+        agreement_words = ['agree', 'correct', 'yes', 'right', 'consensus', 'same']
+        
+        agreement_count = sum(1 for msg in recent for word in agreement_words if word in msg)
+        return agreement_count >= 2
+
+def society_of_minds(query: str, max_rounds: int = 10) -> Dict[str, Any]:
+    """Peer-to-peer discussion among equal agents."""
+    personas = [
+        "analytical and detail-oriented",
+        "creative and out-of-the-box thinking",
+        "pragmatic and solution-focused"
+    ]
+    
+    agents = [
+        PeerDiscussionAgent(f"agent_{i}", personas[i % len(personas)])
+        for i in range(3)
+    ]
+    
+    discussion = []
+    convergence_threshold = 3
+    convergence_count = 0
+    
+    for round_num in range(max_rounds):
+        # Each agent participates
+        for agent in agents:
+            contribution = agent.participate(query, discussion)
+            discussion.append({
+                "agent": agent.agent_id,
+                "round": round_num,
+                "content": contribution
+            })
+        
+        # Check for convergence
+        if any(agent.check_convergence(discussion) for agent in agents):
+            convergence_count += 1
+            if convergence_count >= convergence_threshold:
+                break
+        else:
+            convergence_count = 0
+    
+    # Synthesize final answer from discussion
+    discussion_text = "\n\n".join([
+        f"{msg['agent']} (Round {msg['round']}): {msg['content']}"
+        for msg in discussion
+    ])
+    
+    synthesis_prompt = f"""Synthesize this peer discussion into a final consensus answer.
+
+Query: {query}
+
+Discussion:
+{discussion_text}
+
+Create a comprehensive answer that incorporates the best insights from all perspectives and represents the group's consensus."""
+    
+    final_result = llm.invoke(synthesis_prompt)
+    
+    return {
+        "query": query,
+        "discussion": discussion,
+        "rounds": round_num + 1,
+        "final_answer": final_result.content
+    }
+
+# Usage
+result = society_of_minds(
+    "How should LLM agents handle conflicting information from different sources?"
+)
+print(result["final_answer"])
 ```
 
 **Explanation:**
-This example demonstrates Byzantine fault-tolerant consensus where agents must agree on a value despite some agents being faulty or malicious. The algorithm tolerates f faulty agents in a system of 3f+1 agents, ensuring normal agents reach consensus even when Byzantine agents try to disrupt it.
+This example demonstrates a "Society of Minds" approach where agents engage in peer-to-peer discussion without hierarchy. All agents are equal, can critique others, and contribute freely. The system checks for convergence based on agreement patterns and synthesizes a final answer from the discussion.
 
 ### Framework-Specific Examples
 
-#### LangGraph: Swarm Coordination
+#### LangGraph: Consensus Discussion Graph
 
 ```python
 from langgraph.graph import StateGraph, END
@@ -389,126 +452,179 @@ from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
-class SwarmState(TypedDict):
+class ConsensusState(TypedDict):
     query: str
-    shared_knowledge: List[Dict]
-    agent_findings: Dict[str, str]
-    votes: Dict[str, List[int]]
-    consensus: Dict[str, float]
-    final_output: str
+    solutions: List[str]
+    discussion: List[Dict]
+    votes: List[int]
+    consensus_reached: bool
+    final_answer: str
 
-def agent_research(state: SwarmState) -> SwarmState:
-    """Agent conducts research and updates shared knowledge."""
-    agent_id = "agent_1"
+def propose_solutions(state: ConsensusState) -> ConsensusState:
+    """Each agent proposes initial solution."""
     query = state["query"]
-    shared_knowledge = state.get("shared_knowledge", [])
+    solutions = []
     
-    # Read shared knowledge (stigmergy)
-    context = "\n".join([f"{k['topic']}: {k['finding']}" for k in shared_knowledge[-3:]])
+    for i in range(3):
+        prompt = f"""Propose a solution to: {query}
+        
+Provide your solution and reasoning."""
+        response = llm.invoke(prompt)
+        solutions.append(response.content)
     
-    prompt = f"""Research this query: {query}
+    return {**state, "solutions": solutions}
 
-Existing knowledge:
-{context}
+def discuss_solutions(state: ConsensusState) -> ConsensusState:
+    """Agents discuss and critique solutions."""
+    query = state["query"]
+    solutions = state["solutions"]
+    discussion = state.get("discussion", [])
+    
+    solutions_text = "\n\n".join([
+        f"Solution {i+1}:\n{sol}" for i, sol in enumerate(solutions)
+    ])
+    
+    prompt = f"""Query: {query}
 
-Provide key findings."""
+Solutions to discuss:
+{solutions_text}
+
+Provide a critique discussing strengths, weaknesses, and potential improvements."""
     
-    result = llm.invoke(prompt)
-    finding = result.content
+    response = llm.invoke(prompt)
+    discussion.append({
+        "type": "critique",
+        "content": response.content
+    })
     
-    # Update shared knowledge
-    new_knowledge = shared_knowledge + [{"agent": agent_id, "finding": finding}]
-    agent_findings = state.get("agent_findings", {})
-    agent_findings[agent_id] = finding
+    return {**state, "discussion": discussion}
+
+def vote_on_solutions(state: ConsensusState) -> ConsensusState:
+    """Agents vote on best solution."""
+    query = state["query"]
+    solutions = state["solutions"]
+    votes = []
+    
+    solutions_text = "\n\n".join([
+        f"Solution {i+1}:\n{sol}" for i, sol in enumerate(solutions)
+    ])
+    
+    for _ in range(3):  # 3 agents voting
+        prompt = f"""Query: {query}
+
+Solutions:
+{solutions_text}
+
+Vote for the best solution (1, 2, or 3). Return only the number."""
+        response = llm.invoke(prompt)
+        try:
+            vote = int(response.content.strip())
+            votes.append(min(max(1, vote), len(solutions)) - 1)
+        except:
+            votes.append(0)
+    
+    # Check consensus (all agree or majority)
+    vote_counts = {}
+    for vote in votes:
+        vote_counts[vote] = vote_counts.get(vote, 0) + 1
+    
+    majority_vote = max(vote_counts.items(), key=lambda x: x[1])[0]
+    consensus_reached = vote_counts[majority_vote] >= 2  # Majority
     
     return {
         **state,
-        "shared_knowledge": new_knowledge,
-        "agent_findings": agent_findings
+        "votes": votes,
+        "consensus_reached": consensus_reached
     }
 
-def agent_vote(state: SwarmState) -> SwarmState:
-    """Agent votes on findings importance."""
-    agent_id = "agent_1"
-    findings = state.get("agent_findings", {})
-    votes = state.get("votes", {})
+def synthesize_answer(state: ConsensusState) -> ConsensusState:
+    """Synthesize final consensus answer."""
+    query = state["query"]
+    solutions = state["solutions"]
+    discussion = state.get("discussion", [])
+    votes = state["votes"]
     
-    # Vote on each finding
-    for finding_id, finding in findings.items():
-        prompt = f"""Rate importance of this finding (1-10): {finding[:100]}..."""
-        result = llm.invoke(prompt)
-        try:
-            vote = int(result.content.strip())
-            if finding_id not in votes:
-                votes[finding_id] = []
-            votes[finding_id].append(vote)
-        except:
-            pass
+    discussion_text = "\n\n".join([
+        f"{msg['type']}: {msg['content']}" for msg in discussion
+    ])
     
-    return {**state, "votes": votes}
+    prompt = f"""Synthesize consensus answer.
 
-def calculate_consensus(state: SwarmState) -> SwarmState:
-    """Calculate consensus scores from votes."""
-    votes = state.get("votes", {})
-    consensus = {}
+Query: {query}
+
+Solutions: {json.dumps(solutions, indent=2)}
+Discussion: {discussion_text}
+Votes: {votes}
+
+Create final consensus answer."""
     
-    for finding_id, vote_list in votes.items():
-        if vote_list:
-            consensus[finding_id] = sum(vote_list) / len(vote_list)
+    response = llm.invoke(prompt)
     
-    return {**state, "consensus": consensus}
+    return {**state, "final_answer": response.content}
+
+def should_continue(state: ConsensusState) -> str:
+    """Determine next step."""
+    if not state.get("solutions"):
+        return "propose"
+    elif not state.get("discussion"):
+        return "discuss"
+    elif not state.get("consensus_reached", False):
+        return "vote"
+    else:
+        return "synthesize"
 
 # Build graph
-graph = StateGraph(SwarmState)
-graph.add_node("research", agent_research)
-graph.add_node("vote", agent_vote)
-graph.add_node("consensus", calculate_consensus)
+graph = StateGraph(ConsensusState)
+graph.add_node("propose", propose_solutions)
+graph.add_node("discuss", discuss_solutions)
+graph.add_node("vote", vote_on_solutions)
+graph.add_node("synthesize", synthesize_answer)
 
-graph.set_entry_point("research")
-graph.add_edge("research", "vote")
-graph.add_edge("vote", "consensus")
-graph.add_edge("consensus", END)
+graph.set_entry_point("propose")
+graph.add_conditional_edges("propose", lambda s: "discuss")
+graph.add_conditional_edges("discuss", lambda s: "vote")
+graph.add_conditional_edges("vote", should_continue)
+graph.add_edge("synthesize", END)
 
 # Execute
-result = graph.invoke({"query": "Latest AI trends"})
+result = graph.invoke({"query": "Best practices for LLM agent design"})
+print(result["final_answer"])
 ```
 
 ## Key Takeaways
 
-- **Core Concept:** Swarm/Consensus Architecture enables decentralized coordination through local interactions, shared state, and consensus mechanisms, without requiring central orchestrator.
+- **Core Concept:** Swarm/Consensus Architecture enables decentralized coordination through natural language discussion, debate, and consensus mechanisms, without requiring central orchestrator.
 
-- **Key Benefits:** Fault tolerance (no single point of failure), scalability (coordination doesn't bottleneck), and emergent behaviors that exceed centralized planning capabilities.
+- **Key Benefits:** Error detection through cross-verification, improved reasoning quality through debate, diversity of perspectives, and collective intelligence that exceeds individual capabilities.
 
-- **Coordination Mechanisms:** Stigmergy (indirect communication through shared state), consensus algorithms (voting, averaging, Byzantine fault tolerance), and local interactions enable global coordination.
+- **Coordination Mechanisms:** Natural language discussion (agents engage in dialogue), consensus algorithms (voting, iterative refinement), and peer-to-peer interactions enable collaborative problem-solving.
 
-- **Trade-offs:** Decentralized coordination provides fault tolerance and scalability but introduces coordination overhead, eventual consistency, and complexity compared to centralized systems.
+- **Trade-offs:** Decentralized coordination provides multiple perspectives and error detection but introduces coordination overhead, latency from discussion, and complexity compared to centralized systems.
 
-- **Best Practice:** Design simple local rules that produce desired global behaviors. Use consensus algorithms appropriate for failure model (crash failures vs. Byzantine failures).
+- **Best Practice:** Design discussion protocols that encourage productive debate while preventing infinite loops. Use convergence criteria to determine when consensus is reached.
 
-- **Common Pitfall:** Over-engineering consensus when simpler mechanisms suffice. Not all systems need Byzantine fault tolerance; simple voting may be sufficient.
+- **Common Pitfall:** Agents may converge prematurely or fall into groupthink. Design prompts to maintain healthy dissent and only converge when justified.
 
-- **Emergent Intelligence:** Complex behaviors emerge from simple local rules. Design for emergence rather than trying to explicitly program all coordination.
+- **Collective Intelligence:** Multiple agents discussing and debating can achieve better solutions than any individual agent. Research shows significant improvements in reasoning tasks.
 
 ## Related Patterns
 
 This pattern works well with:
-- **Pattern: Orchestrator-Worker** - Hybrid systems combine centralized coordination for high-level planning with decentralized execution
-- **Pattern: Parallelization** - Swarm agents naturally execute in parallel, coordinating through shared state
-- **Memory Management** - Shared knowledge bases and state management enable stigmergy-based coordination
-- **Pattern: Reflection** - Agents can reflect on shared state and adjust behavior based on collective outcomes
+- **Pattern: Multi-Agent Debate** - Structured debate frameworks with adversarial agents and judges; debate is a key consensus mechanism
+- **Pattern: Orchestrator-Worker** - Hybrid systems combine centralized coordination with decentralized consensus for verification
+- **Pattern: Planner-Checker** - Consensus can be used by checker agents to verify plans or execution outcomes
+- **Pattern: Parallelization** - Consensus agents naturally execute in parallel, coordinating through discussion
+- **Memory Management** - Shared knowledge bases enable agents to build on each other's findings
 
 This pattern is often combined with:
 - **Multi-Agent Architectures** - Swarm/Consensus is a fundamental multi-agent coordination pattern
-- **Tool Use** - Agents use tools to interact with shared environment, enabling stigmergy
-- **Planning** - Agents can plan locally while contributing to global objectives
+- **Natural Language Negotiation** - Agents negotiate and build consensus through dialogue
+- **Tool Use** - Agents use tools to gather information that informs discussion
 
 ## References
 
-- Swarm Intelligence: From Natural to Artificial Systems (Bonabeau, Dorigo, Theraulaz)
-- Byzantine Fault Tolerance: Practical Byzantine Fault Tolerance (Castro & Liskov)
-- Consensus Algorithms: Raft Consensus Algorithm (Ongaro & Ousterhout)
-- Stigmergy: The Stigmergic Approach to Swarm Intelligence (Parunak)
-- Multi-Agent Systems: An Introduction to Multiagent Systems (Wooldridge)
+- **Consensus Through Discussion:** Improving Factuality and Reasoning in Language Models through Multiagent Debate (Du et al., 2023) - https://arxiv.org/abs/2305.14325
+- **Society of Minds:** Multiple LLM instances discussing and converging on solutions
+- **Natural Language Negotiation:** CICERO - Achieving human-level performance in Diplomacy through negotiation
 - LangGraph Multi-Agent: https://langchain-ai.github.io/langgraph/how-tos/multi-agent/
-- Mesa Agent-Based Modeling: https://mesa.readthedocs.io/
-
+- Multi-Agent Collaboration Mechanisms: A Survey of LLMs - https://arxiv.org/html/2501.06322v1
