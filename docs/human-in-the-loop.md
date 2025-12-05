@@ -229,7 +229,14 @@ state: AgentState = {
     "sender": "PlannerAgent",
     "tool_call": None
 }
-command = await SuggestHumanActions.node_handler(state)
+import asyncio
+
+
+async def main():
+    command = await SuggestHumanActions.node_handler(state)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 **WaitForResponse Node:**
@@ -291,7 +298,14 @@ state: AgentState = {
     "sender": "ActionAgent",
     "tool_call": {"name": "execute_task", "args": {"task": "process"}}
 }
-state = await InterruptToolNode.node_handler(state)
+import asyncio
+
+
+async def main():
+    state = await InterruptToolNode.node_handler(state)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 **Action Handlers:**
@@ -357,8 +371,53 @@ command = handler.handle(state, "PlannerAgent")
 
 ```python
 import asyncio
+from typing import TypedDict, Optional, Dict, Any
 from langgraph.types import Command
 from langchain_core.messages import AIMessage
+
+# Mock type definitions for demonstration
+class AgentState(TypedDict):
+    messages: list
+    hitl_action: Optional[Any]
+    hitl_response: Optional[Any]
+    sender: str
+    tool_call: Optional[Dict]
+    next_action: Dict
+
+class FollowUpAction:
+    def __init__(self, action_id: str, action_name: str, description: str, type: str, button_text: str):
+        self.action_id = action_id
+        self.action_name = action_name
+        self.description = description
+        self.type = type
+        self.button_text = button_text
+    
+    def model_dump_json(self) -> str:
+        return f'{{"action_id": "{self.action_id}", "description": "{self.description}"}}'
+    
+    def model_dump(self) -> Dict:
+        return {
+            "action_id": self.action_id,
+            "action_name": self.action_name,
+            "description": self.description,
+            "type": self.type
+        }
+
+class ActionType:
+    CONFIRMATION = "confirmation"
+
+class ActionResponse:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+class ActionHandler:
+    def handle(self, state: AgentState, sender: str) -> Command:
+        return Command(update=state, goto="ExecuteTool")
+
+def interrupt(action_data: Dict) -> Dict:
+    """Mock interrupt function - in real implementation, this pauses workflow."""
+    # Simulated human response
+    return {"action_id": action_data.get("action_id"), "response": "approved"}
 
 def requires_approval(action: dict) -> bool:
     """Determine if action requires human approval."""
@@ -440,7 +499,11 @@ async def example_workflow():
         command = await suggest_actions_node(state)
         print(f"Suggested actions, routing to: {command.goto}")
 
-# Run: asyncio.run(example_workflow())
+async def main():
+    await example_workflow()
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 **Explanation:**

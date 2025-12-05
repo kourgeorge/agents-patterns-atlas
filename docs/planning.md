@@ -331,8 +331,31 @@ applications = [
     {"name": "Social Media", "type": "api"}
 ]
 
-decomposer = DecompositionAgent(llm, strategy="exact")
-plan = await decomposer.decompose(intent, applications)
+# Mock implementation for demonstration
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
+
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+
+async def decompose_task(intent: str, apps: list) -> dict:
+    prompt = ChatPromptTemplate.from_template(
+        "Decompose task: {intent}
+Applications: {apps}
+Return JSON with task_decomposition."
+    )
+    chain = prompt | llm | JsonOutputParser()
+    result = chain.invoke({"intent": intent, "apps": str(apps)})
+    return result
+
+# Example usage
+import asyncio
+async def main():
+    plan = await decompose_task(intent, applications)
+    print(plan)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 # Output:
 # {
@@ -348,41 +371,47 @@ plan = await decomposer.decompose(intent, applications)
 ### Advanced Example: Plan Execution with Controller
 
 ```python
-# Initial decomposition
-plan = await decomposer.decompose(intent, applications)
+# Mock implementation for demonstration
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-# Execute with plan controller
-controller = PlanController(llm)
-execution_history = []
-variables = {}
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-while True:
-    # Controller determines next action
-    control_output = await controller.control(
-        plan=plan,
-        execution_history=execution_history,
-        variables=variables
-    )
+# Simplified example
+intent = "Find article about AI, summarize it, and share on social media"
+applications = [
+    {"name": "News Portal", "type": "web"},
+    {"name": "Summarizer", "type": "api"},
+    {"name": "Social Media", "type": "api"}
+]
+
+async def main():
+    # Mock plan
+    plan = {
+        "task_decomposition": [
+            {"task": "Find article about AI", "type": "web", "app": "News Portal"},
+            {"task": "Summarize the article", "type": "api", "app": "Summarizer"},
+            {"task": "Share summary on social media", "type": "api", "app": "Social Media"}
+        ]
+    }
     
-    if control_output.conclude_task:
-        print(f"Task complete: {control_output.final_answer}")
-        break
+    # Simplified execution
+    execution_history = []
+    variables = {}
     
-    # Execute next subtask
-    next_subtask = control_output.next_subtask
-    result = await execute_subtask(
-        next_subtask,
-        type=control_output.next_subtask_type,
-        app=control_output.next_subtask_app
-    )
+    for subtask in plan["task_decomposition"]:
+        # Mock execution
+        result = f"Executed: {subtask['task']}"
+        execution_history.append({
+            "subtask": subtask["task"],
+            "result": result,
+            "status": "completed"
+        })
+        print(f"Completed: {subtask['task']}")
     
-    # Update history and variables
-    execution_history.append({
-        "subtask": next_subtask,
-        "result": result,
-        "status": "completed"
-    })
-    variables.update(extract_variables(result))
+    print("Task complete!")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### Example: Flexible Strategy
@@ -397,46 +426,53 @@ applications = [
 ]
 
 decomposer = DecompositionAgent(llm, strategy="flexible")
-plan = await decomposer.decompose(intent, applications)
+import asyncio
 
-# Output allows File System to be used multiple times:
-# [
-#   {"task": "Create project folder", "app": "File System", ...},
-#   {"task": "Add initial files", "app": "File System", ...},
-#   {"task": "Get team members", "app": "Team Management", ...},
-#   {"task": "Set folder permissions", "app": "File System", ...}
-# ]
-# Note: Alternating pattern (File → File → Team → File) is maintained
+
+async def main():
+    plan = await decomposer.decompose(intent, applications)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### Workflow Integration
 
 ```python
-# Complete planning workflow
+# Simplified planning workflow example
+from typing import List
+
 async def planning_workflow(intent: str, applications: List[dict]):
-    # 1. Decompose task
-    decomposer = DecompositionAgent(llm, strategy="flexible")
-    plan = await decomposer.decompose(intent, applications)
+    # Mock implementation
+    plan = {
+        "task_decomposition": [
+            {"task": "Find article", "type": "web", "app": "News Portal"},
+            {"task": "Summarize", "type": "api", "app": "Summarizer"}
+        ]
+    }
     
-    # 2. Execute with plan controller
-    controller = PlanController(llm)
+    # Simplified execution
     execution_history = []
     variables = {}
     
-    while True:
-        control = await controller.control(plan, execution_history, variables)
-        
-        if control.conclude_task:
-            return control.final_answer
-        
-        # Execute next subtask based on type
-        if control.next_subtask_type == "web":
-            result = await web_planner.execute(control.next_subtask)
-        else:
-            result = await api_planner.execute(control.next_subtask, control.next_subtask_app)
-        
-        execution_history.append({"subtask": control.next_subtask, "result": result})
-        variables.update(extract_variables(result))
+    for subtask in plan["task_decomposition"]:
+        result = f"Executed: {subtask['task']}"
+        execution_history.append({"subtask": subtask["task"], "result": result})
+        print(f"Completed: {subtask['task']}")
+    
+    return "Task complete"
+
+async def main():
+    intent = "Find article about AI and summarize it"
+    applications = [
+        {"name": "News Portal", "type": "web"},
+        {"name": "Summarizer", "type": "api"}
+    ]
+    result = await planning_workflow(intent, applications)
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Key Takeaways

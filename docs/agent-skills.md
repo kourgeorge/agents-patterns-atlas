@@ -447,9 +447,10 @@ This advanced implementation provides filesystem tools that agents can use to in
 #### Deep Agents Integration
 
 ```python
-# Deep Agents automatically handles SKILL.md files
+# Example skill directory structure
 # Skills are organized in directories:
 
+"""
 skills/
 ├── data_analysis/
 │   ├── SKILL.md
@@ -461,12 +462,29 @@ skills/
     ├── SKILL.md
     └── templates/
         └── template1.md
+"""
 
-# Deep Agents framework:
+# Deep Agents framework workflow:
 # 1. Reads SKILL.md frontmatter at startup
 # 2. Includes skill metadata in agent system prompt
 # 3. Agent uses filesystem tools to read full SKILL.md when needed
 # 4. Agent can navigate skill directories for additional files
+
+# Example SKILL.md structure:
+skill_example = """
+---
+name: Data Analysis
+description: Analyze datasets and generate insights
+tools: [pandas, numpy, matplotlib]
+---
+
+# Data Analysis Skill
+
+This skill enables the agent to analyze datasets...
+"""
+
+print("Skill directory structure example:")
+print(skill_example)
 ```
 
 #### LangChain Agent with Skills

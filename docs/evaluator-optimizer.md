@@ -197,6 +197,51 @@ Code:
 Evaluate the code for:
 1. Correctness: Does it meet the requirements?
 2. Code quality: Is it clean, readable, and maintainable?
+3. Best practices: Does it follow Python conventions?
+
+Return JSON with:
+- "status": one of {[s.value for s in EvaluationStatus]}
+- "score": float between 0.0 and 1.0
+- "feedback": detailed feedback string
+- "improvements": list of specific improvement suggestions
+"""
+        result = self.llm.invoke(prompt)
+        # Parse JSON response
+        import json
+        return json.loads(result.content)
+
+# Evaluator-Optimizer loop
+def evaluator_optimizer_loop(requirements: str, max_iterations: int = 5) -> str:
+    """Run evaluator-optimizer pattern."""
+    generator = CodeGenerator()
+    reviewer = CodeReviewer()
+    
+    code = generator.generate(requirements)
+    
+    for i in range(max_iterations):
+        evaluation = reviewer.evaluate(code, requirements)
+        status = evaluation.get("status", EvaluationStatus.NEEDS_IMPROVEMENT.value)
+        
+        if status == EvaluationStatus.PERFECT.value:
+            break
+        
+        feedback = evaluation.get("feedback", "")
+        code = generator.generate(requirements, feedback)
+    
+    return code
+
+# Example usage
+if __name__ == "__main__":
+    requirements = "Create a function that calculates the factorial of a number"
+    final_code = evaluator_optimizer_loop(requirements)
+    print(final_code)
+```python
+{code}
+```
+
+Evaluate the code for:
+1. Correctness: Does it meet the requirements?
+2. Code quality: Is it clean, readable, and maintainable?
 3. Best practices: Does it follow Python best practices?
 4. Error handling: Are errors handled appropriately?
 5. Performance: Are there performance issues?

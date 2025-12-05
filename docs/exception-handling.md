@@ -177,7 +177,13 @@ async def risky_operation():
         raise TransientError("Temporary failure")
     return "Success"
 
-result = await execute_with_retry(risky_operation, max_retries=3)
+# Example usage
+async def main():
+    result = await execute_with_retry(risky_operation, max_retries=3)
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### Pattern 2: Error Detection in Output
@@ -297,14 +303,19 @@ async def execute_tool_with_reconnect(
         return await tool.ainvoke(tool_call.get("args", {}))  # Retry
 
 # Usage
-tool = Tool("example_tool")
-await tool.setup()
-tool.session = None  # Simulate connection loss
+async def main():
+    tool = Tool("example_tool")
+    await tool.setup()
+    tool.session = None  # Simulate connection loss
 
-result = await execute_tool_with_reconnect(
-    tool,
-    {"args": {"param": "value"}}
-)
+    result = await execute_tool_with_reconnect(
+        tool,
+        {"args": {"param": "value"}}
+    )
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### Pattern 5: Structured Output Validation with Retry
@@ -499,8 +510,13 @@ def is_transient_error(error: Exception) -> bool:
     """Check if error is transient."""
     return isinstance(error, (ConnectionError, TimeoutError))
 
-handler = RetryHandler(max_retries=3)
-result = await handler.execute_with_retry(example_operation, is_transient_error)
+async def main():
+    handler = RetryHandler(max_retries=3)
+    result = await handler.execute_with_retry(example_operation, is_transient_error)
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 **Error Recovery:**
@@ -704,7 +720,8 @@ async def main():
     )
     print(f"Result: {result}")
 
-# Run: asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### Example: Error Detection in Output
@@ -786,7 +803,14 @@ state: AgentState = {
 }
 
 error_msg = "Error: Invalid data format"
-command = await handle_subtask_error(state, error_msg)
+import asyncio
+
+
+async def main():
+    command = await handle_subtask_error(state, error_msg)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### Advanced Example: Comprehensive Error Handling
@@ -1022,12 +1046,16 @@ async def call_api_with_error_handling(
     return response
 
 # Usage
-result = await call_api_with_error_handling(
-    "my_app",
-    "get_data",
-    {"param": "value"}
-)
-print(f"Result: {result}")
+async def main():
+    result = await call_api_with_error_handling(
+        "my_app",
+        "get_data",
+        {"param": "value"}
+    )
+    print(f"Result: {result}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Key Takeaways

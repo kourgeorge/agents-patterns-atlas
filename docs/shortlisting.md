@@ -371,12 +371,40 @@ available_tools = [
 
 # Shortlist for a task
 task = "Get the top account by revenue"
-shortlister = ShortlisterAgent(llm, prompt_template)
-result = await shortlister.shortlist(task, available_tools)
+# Mock implementation for demonstration
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
 
-# Output: ranked list with scores and reasoning
-for tool in result.result:
-    print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+
+# Simplified shortlisting example
+async def shortlist_tools(task: str, tools: list) -> ShortlistOutput:
+    prompt = ChatPromptTemplate.from_template(
+        "Select relevant tools for: {task}
+Tools: {tools}
+Return JSON with tool names and scores."
+    )
+    chain = prompt | llm | JsonOutputParser()
+    result = chain.invoke({"task": task, "tools": str(tools)})
+    # Mock result for demonstration
+    return ShortlistOutput(
+        thoughts=["get_accounts needed to retrieve all accounts"],
+        result=[
+            ToolDetails(name="get_accounts", relevance_score=0.9, reasoning="Retrieves all accounts with revenue"),
+            ToolDetails(name="get_account_by_id", relevance_score=0.7, reasoning="Can get specific account after filtering")
+        ]
+    )
+
+# Example usage
+import asyncio
+async def main():
+    result = await shortlist_tools(task, available_tools)
+    for tool in result.result:
+        print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 **Expected Output:**
@@ -411,9 +439,47 @@ available_tools = [
 
 task = "Find products matching 'laptop' and add the cheapest one to my cart"
 
-result = await shortlister.shortlist(task, available_tools)
-# Identifies: search_products (high) - finds products
-#            add_to_cart (high) - product_id can come from search_products output
+# Mock shortlisting example
+from pydantic import BaseModel, Field
+from typing import List
+
+class ToolDetails(BaseModel):
+    name: str
+    relevance_score: float = Field(ge=0.0, le=1.0)
+    reasoning: str
+
+class ShortlistOutput(BaseModel):
+    thoughts: List[str]
+    result: List[ToolDetails]
+
+async def shortlist_tools(task: str, tools: list) -> ShortlistOutput:
+    """Mock shortlisting function."""
+    # In real implementation, this would use LLM
+    return ShortlistOutput(
+        thoughts=["Need to search first, then add to cart"],
+        result=[
+            ToolDetails(
+                name="search_products",
+                relevance_score=0.95,
+                reasoning="Required to find products matching 'laptop'"
+            ),
+            ToolDetails(
+                name="add_to_cart",
+                relevance_score=0.85,
+                reasoning="Needed to add cheapest product to cart after search"
+            )
+        ]
+    )
+
+import asyncio
+
+async def main():
+    result = await shortlist_tools(task, available_tools)
+    for tool in result.result:
+        print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### Memory-Enhanced Shortlisting
@@ -489,9 +555,16 @@ def filter_tools(all_tools: dict, shortlisted_names: List[str]) -> dict:
     }
 
 # Usage after shortlisting
-result = await shortlister.shortlist(task, available_tools)
+import asyncio
+
+
+async def main():
+    result = await shortlister.shortlist(task, available_tools)
 shortlisted_names = [t.name for t in result.result]
 filtered_tools = ShortlisterAgent.filter_tools(all_tools, shortlisted_names)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 **Benefits:**
@@ -504,9 +577,33 @@ filtered_tools = ShortlisterAgent.filter_tools(all_tools, shortlisted_names)
 **LangGraph Example:**
 
 ```python
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, END
+from typing import TypedDict, List, Dict, Any
 
-def shortlist_node(state):
+# Mock type definitions
+class AgentState(TypedDict):
+    task: str
+    all_tools: List[Dict[str, Any]]
+    shortlisted: List[Dict[str, Any]]
+
+# Mock implementations
+class ShortlisterAgent:
+    def __init__(self, llm, prompt_template):
+        self.llm = llm
+        self.prompt_template = prompt_template
+    
+    async def shortlist(self, task: str, available_tools: List[Dict]) -> Any:
+        # Mock result
+        class Result:
+            def __init__(self):
+                self.result = [{"name": tool["name"]} for tool in available_tools[:3]]
+        return Result()
+
+llm = None  # Would be initialized in real implementation
+prompt_template = None
+
+async def shortlist_node(state: AgentState) -> AgentState:
+    """Shortlist node in workflow."""
     shortlister = ShortlisterAgent(llm, prompt_template)
     result = await shortlister.shortlist(
         task=state["task"],
@@ -514,9 +611,25 @@ def shortlist_node(state):
     )
     return {**state, "shortlisted": result.result}
 
-graph = StateGraph(AgentState)
-graph.add_node("shortlist", shortlist_node)
-graph.add_edge("shortlist", "plan")
+# Example usage
+if __name__ == "__main__":
+    graph = StateGraph(AgentState)
+    graph.add_node("shortlist", shortlist_node)
+    graph.add_edge("shortlist", END)
+    
+    # Example state
+    initial_state: AgentState = {
+        "task": "Find products",
+        "all_tools": [{"name": "search"}, {"name": "filter"}],
+        "shortlisted": []
+    }
+    
+    import asyncio
+    async def run_example():
+        result = await graph.ainvoke(initial_state)
+        print(f"Shortlisted: {result['shortlisted']}")
+    
+    asyncio.run(run_example())
 ```
 
 **General Pattern:**
