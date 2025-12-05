@@ -49,3 +49,15 @@
     padding: 0.4rem 0.6rem;
 }
 
+/* Compact list spacing for content */
+.md-typeset ul,
+.md-typeset ol {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.md-typeset li {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+    line-height: 1.5;
+}
