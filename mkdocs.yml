@@ -82,7 +82,8 @@ nav:
     - "Pattern: Tool Discovery": agent-skills.md
 - Reasoning & Planning:
     - Reasoning Techniques: reasoning-techniques.md
-    - "Pattern: Planning": planning.md
+    - Planning Strategies: planning-strategies.md
+    - "Pattern: Task Decomposition Planning": task-decomposition.md
     - "Pattern: Prioritization": prioritization.md
 - Context:
     - Context Engineering: context-compression.md

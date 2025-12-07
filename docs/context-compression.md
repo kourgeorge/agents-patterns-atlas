@@ -44,6 +44,42 @@ Effective context engineering optimizes all three dimensions simultaneously.
 
 Modern LLM inference uses Key-Value (KV) caches to optimize repeated processing of the same prompt prefix. When the prompt prefix changes (even by a single token), the cache is invalidated, dramatically increasing latency and cost. Context engineering strategies that maintain stable, append-only context structures maximize KV-cache reuse, directly improving performance.
 
+### Context Rot: The Effective Context Window
+
+A critical but often overlooked challenge is **Context Rot**—the phenomenon where an LLM's performance degrades as the context window fills up, even if the total token count is well within the technical limit. For example, a model may advertise a 1 million token context window, but its **effective context window**—where the model performs at high quality—is often much smaller.
+
+**Current Reality:** As of 2025, most models have effective context windows of less than 256k tokens, even when they technically support much larger limits. The "effective context window" is the real constraint, not the advertised technical limit.
+
+This means agents must be designed to operate efficiently well below the technical token limit to maintain reasoning quality. Context engineering strategies must address Context Rot proactively, not just react to hard token limits.
+
+#### Mitigation Strategies: Compaction vs Summarization
+
+Context reduction is essential to prevent Context Rot. Two distinct methods have emerged as standards, with **reversibility** prioritized over compression:
+
+**Context Compaction (Reversible):**
+
+Context compaction strips out information that is redundant because it exists in the environment. The key feature is reversibility: if the agent needs to access the information later, it can use a tool to retrieve it.
+
+- **Example:** If an agent writes a 500-line code file, the chat history should not contain the entire file content. Instead, it should only contain a lightweight reference like `Output saved to /src/main.py`. If the agent needs to read or modify the file later, it can use a `read_file` tool.
+
+- **When to use:** For information that exists in external systems (files, databases, APIs) and can be retrieved on-demand.
+
+**Summarization (Lossy):**
+
+Summarization uses an LLM to condense conversation history, including tool calls and messages. This is typically triggered at a Context Rot threshold (e.g., 128k tokens). When summarizing, keep the most recent tool calls in their raw, full-detail format to maintain the model's "rhythm" and formatting style.
+
+- **Example:** If context exceeds 128k tokens, summarize the oldest 20 turns using a structured JSON format, while keeping the last 3 turns completely raw to preserve the model's momentum and prevent output quality degradation.
+
+- **When to use:** For conversation history that cannot be externalized and must remain in context.
+
+**Strategy Preference:**
+
+The preferred approach follows this hierarchy: **Raw > Compaction > Summarization**. Only use summarization when compaction no longer yields enough space. This ensures maximum information retention and minimal information loss.
+
+**Pre-Rot Threshold Monitoring:**
+
+Don't wait for the API to throw an error. Define a "pre-rot threshold"—if a model has a 1M token context window, performance often degrades around 256k tokens. Monitor token count and implement compaction or summarization cycles before hitting the "rot" zone to maintain reasoning quality. This proactive approach prevents performance degradation rather than reacting to failures.
+
 ## Core Concepts in Context Engineering
 
 Context engineering encompasses several key concepts and techniques:
@@ -60,7 +96,8 @@ Externalization is covered in detail in the **Pattern: Filesystem as Context** m
 ### Compression Strategies
 
 For information that must remain in context, compression techniques reduce token usage while preserving essential information:
-- **Summarization:** Condensing conversation history or documents into compact representations
+- **Context Compaction (Reversible):** Removing redundant information that exists in the environment, maintaining references for on-demand retrieval
+- **Summarization (Lossy):** Using LLMs to condense conversation history or documents into compact representations while preserving recent context in raw format
 - **Pruning:** Removing or truncating less critical information
 - **Selective retention:** Keeping only the most relevant or recent content
 
@@ -146,9 +183,13 @@ Use metadata summaries to maintain awareness without full values:
 
 ## Common Challenges and Solutions
 
+### Challenge: Context Rot (Performance Degradation Before Token Limits)
+
+**Solution:** Define pre-rot thresholds and implement proactive context reduction. Use Context Compaction for reversible reduction (externalizing to filesystem), then Summarization for lossy compression when compaction is insufficient. Monitor token counts and trigger reduction cycles before hitting effective context window limits.
+
 ### Challenge: Context Growing Over Time
 
-**Solution:** Implement automatic context editing with threshold-based triggers. Use server-side clearing for tool results or client-side compaction for full history replacement.
+**Solution:** Implement automatic context editing with threshold-based triggers. Use server-side clearing for tool results or client-side compaction for full history replacement. Combine with externalization strategies to prevent accumulation.
 
 ### Challenge: Large Tool Results
 
@@ -226,6 +267,55 @@ Context engineering integrates with other agent capabilities:
 
 6. **KV-cache optimization matters:** Maintaining stable, append-only context structures directly improves latency and reduces costs.
 
+7. **The effective context window is the real constraint:** Context Rot occurs well before technical token limits. Design agents to operate efficiently below advertised limits to maintain reasoning quality.
+
+8. **Reversibility over compression:** Prefer Context Compaction (reversible) over Summarization (lossy) when possible. Only compress when externalization is not feasible.
+
+## Best Practices
+
+Based on lessons learned from building production agent systems (Manus, LangChain, and others), here are key best practices for context engineering:
+
+### Don't Train Your Own Models (Yet)
+
+We are living the "Bitter Lesson" era. The harness you build today will likely be obsolete when the next frontier model drops. If you spend weeks fine-tuning models or training RL policies on specific action spaces, you lock yourself into a local optimum. Instead, use Context Engineering as a flexible interface that adapts to rapidly improving models. Focus your engineering effort on context management, not model training.
+
+### Define Pre-Rot Thresholds
+
+Don't wait for API errors. Monitor token count and implement compaction or summarization cycles proactively. For models with 1M token limits, assume effective context of < 256k tokens. Set thresholds conservatively and trigger context reduction before hitting the rot zone.
+
+### Security and Manual Confirmation
+
+When giving agents browser or shell access, sandbox isolation isn't enough. Implement additional safeguards:
+- Enforce rules that tokens not leave the sandbox
+- Use human-in-the-loop interrupts for manual confirmation before proceeding with high-risk operations
+- Validate all tool calls before execution in production environments
+
+### The "Intern Test" for Evaluation
+
+Static benchmarks like GAIA saturated quickly and didn't align with user satisfaction. Focus on tasks that are computationally verifiable:
+- Did the code compile?
+- Did the file exist after the command ran?
+- Can the sub-agent verify the output of the parent?
+
+Use binary success/fail metrics on real environments rather than subjective LLM-as-a-Judge scores. This provides more reliable feedback for system improvement.
+
+### Embrace Iterative Refinement
+
+Production agent systems evolve rapidly. Manus was rewritten five times in six months. LangChain re-architected Open Deep Research four times. This is normal and expected. As models get smarter, your harness should change accordingly. If your harness is getting more complex while models improve, you are likely over-engineering. Focus on simplification and removing unnecessary complexity.
+
+### The Key Insight: Remove, Don't Add
+
+The biggest performance gains in production systems didn't come from adding complex RAG pipelines or fancy routing logic. Gains came from **removing things**. As models get stronger, don't build more scaffolding—get out of the model's way. 
+
+**Context Engineering is not about adding more context.** It's about finding the minimal effective context required for the next step. Every token should earn its place in the context window. If information can be retrieved on-demand, externalize it. If it's not immediately needed, don't include it.
+
+This philosophy of minimal effective context leads to:
+- Lower costs
+- Faster processing
+- Better reasoning quality
+- More maintainable systems
+- Easier adaptation to new models
+
 ## Next Steps
 
 This chapter provided a high-level overview of context engineering as a domain. For detailed implementation guidance, see:
@@ -241,3 +331,10 @@ For related patterns covering externalization and long-term memory, see the **Me
 - **Memory Management** - Conceptual overview of memory types
 
 Effective context engineering is essential for building production-ready agentic systems. Understanding these concepts and patterns will enable you to build agents that operate efficiently within context limits, maintain focus on critical information, and scale to handle complex, long-horizon tasks.
+
+## References
+
+- Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
+- Context Engineering for AI Agents: Lessons from Building Manus
+- Manus AI Agent Harness learnings from Peak Ji
+- LangChain Open Deep Research re-architecture examples

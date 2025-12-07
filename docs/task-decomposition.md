@@ -48,6 +48,8 @@ However, it is crucial to recognize the trade-off between flexibility and predic
 - **Exact Strategy:** One subtask per application (enforces strict application boundaries, predictable and deterministic).
 - **Flexible Strategy:** Logical decomposition based on workflow requirements (allows multiple subtasks per application, must alternate between different apps).
 
+For detailed information on decomposition strategies, see the [Planning Strategies](../planning-strategies/module.md) module.
+
 **Single vs. Multi-Application Handling:**
 - **Single Application:** If only one application is involved, return the intent verbatim as a single subtask (no decomposition needed).
 - **Multi-Application:** Decompose into subtasks based on the chosen strategy, ensuring all applications contribute meaningfully.
@@ -115,6 +117,8 @@ The agent breaks down the goal into high-level subtasks using one of two strateg
 - More adaptable to complex workflows
 - Example: May use App A → App B → App A if the workflow requires it
 - **Application Selection:** Choose the most suitable application for each subtask based on capabilities
+
+For comprehensive details on these strategies, including examples and best practices, see the [Planning Strategies](../planning-strategies/module.md) module.
 
 **2.3 Decomposition Rules**
 
@@ -224,6 +228,8 @@ Use planning when the benefits of adaptability and goal discovery outweigh the c
 
 **Choosing Decomposition Strategy:**
 
+For detailed guidance on choosing between Exact and Flexible strategies, including when to use each and their characteristics, see the [Planning Strategies](../planning-strategies/module.md) module.
+
 **Use Exact Strategy when:**
 - Each application has a distinct, well-defined role
 - Task naturally maps to one operation per application
@@ -260,181 +266,6 @@ Task decomposition planning is essential for autonomous systems that need to coo
 - **E-commerce Operations:** Decompose tasks like "research product, compare prices, purchase, and update wishlist" across shopping sites, price comparison services, payment systems, and user profile services.
 
 - **Project Management Automation:** Break down high-level projects into task sequences that coordinate project management tools, communication platforms, file storage, and reporting systems.
-
-## Task Decomposition Strategies
-
-### Exact Strategy: One Subtask Per Application
-
-**When to Use:** When each application has a distinct, well-defined role and the task naturally maps to one operation per application.
-
-**Characteristics:**
-- Generates exactly the same number of subtasks as applications provided
-- Each application gets exactly one subtask
-- Enforces strict application boundaries
-- Predictable and deterministic
-
-**Example:**
-```python
-# Input: 3 applications
-applications = [
-    {"name": "News Portal", "type": "web"},
-    {"name": "Summarizer", "type": "api"},
-    {"name": "Social Media", "type": "api"}
-]
-
-# Task: "Find article about AI, summarize it, and share on social media"
-
-# Output: Exactly 3 subtasks
-subtasks = [
-    {"task": "Find article about AI", "type": "web", "app": "News Portal"},
-    {"task": "Summarize the article", "type": "api", "app": "Summarizer"},
-    {"task": "Share summary on social media", "type": "api", "app": "Social Media"}
-]
-```
-
-**Benefits:**
-- Clear task boundaries
-- Easy to parallelize (each app handles one subtask)
-- Predictable execution flow
-- Well-suited for multi-domain tasks
-
-### Flexible Strategy: Logical Decomposition
-
-**When to Use:** When the workflow requires multiple operations within the same application, or when logical task flow doesn't align with strict one-per-app boundaries.
-
-**Characteristics:**
-- Decomposes based on logical workflow requirements
-- Allows multiple subtasks per application
-- Subtasks must alternate between different applications (no consecutive same-app)
-- More adaptable to complex workflows
-
-**Example:**
-```python
-# Input: 2 applications
-applications = [
-    {"name": "File System", "type": "api"},
-    {"name": "Team Management", "type": "api"}
-]
-
-# Task: "Create project folder, add files, get team list, set permissions"
-
-# Output: Logical decomposition (File System used twice)
-subtasks = [
-    {"task": "Create project folder", "type": "api", "app": "File System"},
-    {"task": "Add initial documentation files", "type": "api", "app": "File System"},
-    {"task": "Retrieve team members list", "type": "api", "app": "Team Management"},
-    {"task": "Configure folder permissions for team", "type": "api", "app": "File System"}
-]
-# Note: File System → File System → Team Management → File System (alternating pattern)
-```
-
-**Benefits:**
-- Adapts to task complexity
-- Supports multi-step workflows within applications
-- More natural task flow
-- Better for sequential operations
-
-### Type-Aware Decomposition
-
-Tasks are classified by type to enable specialized planning:
-
-- **`web` type:** Browser-based interactions, UI navigation, form filling
-- **`api` type:** Service calls, data retrieval, programmatic operations
-
-Each subtask includes type information so the appropriate planner handles it:
-- Web planner for browser interactions
-- API planner for service calls
-
-### Multi-Application Handling
-
-When multiple applications are involved:
-
-**Exact Strategy:**
-- All applications must be utilized
-- One subtask per application
-- Applications are used in logical sequence
-
-**Flexible Strategy:**
-- Applications are selected based on subtask requirements
-- Applications can be reused if workflow requires it
-- Focus on logical workflow over strict app boundaries
-
-## Decomposition Best Practices & Common Patterns
-
-### High-Level Abstraction Examples
-
-**✅ Good (High-Level):**
-- "Find and extract the content of the most recent article about 'Quantum Computing' from TechNews Portal"
-- "Generate a brief summary of the Quantum Computing article content"
-- "Post the generated article summary to the Social Posting Platform"
-
-**❌ Bad (Low-Level):**
-- "Click on search bar, type 'Quantum Computing', press Enter, find first result, click on it, extract text content"
-- "Call POST /api/summarize endpoint with article content in JSON payload"
-- "Navigate to social media, click compose, paste summary, click post button"
-
-### Context Preservation Examples
-
-**✅ Good (Preserves Context):**
-- Intent: "Add the 3 most expensive products to my wishlist"
-- Subtask: "Identify and add the 3 most expensive products to my wishlist on the Shopping App"
-  - Note: "my wishlist" is preserved, not changed to "the wishlist"
-
-**❌ Bad (Loses Context):**
-- Intent: "Add the 3 most expensive products to my wishlist"
-- Subtask: "Identify and add the 3 most expensive products to the wishlist"
-  - Note: "my" is lost, changing the meaning
-
-### Dependency Handling Examples
-
-**✅ Good (Explicit Dependencies):**
-- Subtask 1: "Retrieve the email thread sent yesterday regarding participation in the whiteboard tool subscription and extract the names/emails of teammates who responded positively."
-- Subtask 2: "Resolve the contact information of each confirmed participant (name/email) into phone numbers or Venmo handles"
-  - Note: Explicitly references "confirmed participant (name/email)" from previous step
-- Subtask 3: "Calculate each participant's equal share of the $120 subscription cost (i.e., $30 per person including the user), and send a public Venmo payment request to each participant with the description 'Whiteboard Tool Subscription'."
-  - Note: Uses "each participant" from previous steps and includes calculation details
-
-**❌ Bad (Implicit Dependencies):**
-- Subtask 1: "Get email thread"
-- Subtask 2: "Resolve contact information"
-  - Note: Unclear what contact information or from where
-- Subtask 3: "Send payment requests"
-  - Note: Unclear to whom, for what amount, or why
-
-### Answer Expectation Handling
-
-**✅ Good (Explicit Answer):**
-- Intent: "How much money have I sent or received to my roommates on Venmo since March 1st of this year?"
-- Subtask: "Calculate the total amount of money sent to and received from the identified roommates on Venmo since March 1st of this year"
-  - Note: Explicitly states what will be calculated and delivered
-
-**❌ Bad (Missing Answer):**
-- Intent: "How much money have I sent or received to my roommates on Venmo since March 1st of this year?"
-- Subtask: "Retrieve Venmo transactions for roommates"
-  - Note: Doesn't indicate that a calculation/total will be provided
-
-### List/Iteration Handling
-
-**✅ Good (For Each Pattern):**
-- "For each coworker whose share is noted in the retrieved note and has not yet paid, make a payment request with the description 'Work Dinner'"
-- "For each Friday listed, schedule an email to the product team at 8 AM with subject 'Reminder: Product Sync Today' and use the template as the email body."
-
-**❌ Bad (Unclear Iteration):**
-- "Make payment requests for coworkers"
-  - Note: Unclear which coworkers, what amount, or what conditions
-
-### Single Application Pattern
-
-**✅ Good (No Decomposition):**
-- Intent: "Star the top five most starred repos in Gitlab"
-- Applications: [{"name": "Gitlab", "type": "web"}]
-- Output: Single subtask with intent verbatim
-  - "Star the top five most starred repos in Gitlab" (type='web', app='Gitlab')
-
-**❌ Bad (Unnecessary Decomposition):**
-- Intent: "Star the top five most starred repos in Gitlab"
-- Output: Multiple subtasks like "Search for repos", "Sort by stars", "Select top 5", "Star each repo"
-  - Note: Single application can handle this atomically
 
 ## Implementation
 
@@ -853,7 +684,7 @@ if __name__ == "__main__":
   - **Single Application:** Return intent verbatim as one subtask (no decomposition needed).
   - **Multi-Application:** Decompose based on chosen strategy, ensuring all applications contribute meaningfully.
 
-- **Decomposition Strategies:** Choose the right strategy based on task characteristics:
+- **Decomposition Strategies:** Choose the right strategy based on task characteristics. See the [Planning Strategies](../planning-strategies/module.md) module for detailed guidance:
   - **Exact Strategy:** One subtask per application - predictable, clear boundaries, good for multi-domain tasks where each app has a distinct role.
   - **Flexible Strategy:** Logical decomposition - adaptable, supports complex workflows, allows multiple operations per app (with alternating constraint).
 
@@ -871,7 +702,7 @@ if __name__ == "__main__":
 - **Best Practice:** 
   - Use task analysis to gather relevant information about available applications before decomposition.
   - For single-application tasks, skip decomposition and return intent verbatim.
-  - Choose decomposition strategy based on whether you need predictability (exact) or flexibility (flexible).
+  - Choose decomposition strategy based on whether you need predictability (exact) or flexibility (flexible). See [Planning Strategies](../planning-strategies/module.md) for detailed guidance.
 
 - **Common Pitfall:** 
   - Over-decomposing simple tasks adds unnecessary complexity; use direct execution for single-application tasks.

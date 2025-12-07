@@ -221,6 +221,72 @@ For large tool outputs, use a two-step process:
 
 This minimizes token consumption by avoiding full dumps of large data into the context.
 
+#### 6. Hierarchical Action Spaces: Managing Tool Complexity
+
+Providing an LLM with 100+ tools leads to **Context Confusion**, where the model hallucinates parameters, calls the wrong tool, or becomes overwhelmed by choice. This is a failure mode where the LLM cannot distinguish between instructions, data, and structural markers due to too much information competing for attention.
+
+**The Three-Level Hierarchical Action Space:**
+
+Organize tools into a hierarchical structure that progressively reveals complexity, keeping the core action space small and manageable:
+
+**Level 1 (Atomic - ~20 Core Tools):**
+
+The model sees approximately 20 core, stable tools that form the foundation of agent capabilities. These should be:
+- **Essential and frequently used:** Core operations like `file_write`, `file_read`, `browser_navigate`, `bash`, `search`
+- **Stable:** Tool definitions rarely change, maximizing KV-cache efficiency
+- **Cache-friendly:** Consistent usage patterns enable better prompt caching
+
+Example core tools:
+- `file_write` - Write content to files
+- `file_read` - Read files with optional line ranges
+- `browser_navigate` - Navigate web pages
+- `bash` - Execute shell commands
+- `search` - Semantic or keyword search
+
+**Level 2 (Sandbox Utilities):**
+
+Instead of creating a specific tool for every utility (e.g., `grep`, `ffmpeg`, `curl`), instruct the model to use the `bash` tool (from Level 1) to call utilities via CLI. This keeps tool definitions out of the context window while still providing access to system capabilities.
+
+**Example:** Instead of defining a `grep_file` tool:
+- Use the `bash` tool with instruction: "You can use bash to call grep: `bash('grep -r pattern /path/to/dir')`"
+- Systems like Manus use `mcp-cli <command>` pattern, keeping CLI utilities accessible without cluttering tool definitions
+
+**Level 3 (Code/Packages):**
+
+For complex logic chains requiring multiple steps (e.g., "Fetch city name → Get city ID → Get weather data"), don't make 3 separate LLM roundtrips. Instead:
+- Provide libraries or functions that handle the complete logic chain
+- Let the agent write a dynamic script using the `bash` or code execution tool
+- Encapsulate multi-step operations into single function calls
+
+**Example:** Instead of three tools (`get_city_id`, `fetch_weather_by_id`, `format_weather_response`):
+- Provide a single `get_weather_for_city(city_name: str)` function that handles the entire chain internally
+- Or enable the agent to write a Python script that does all three steps in one execution
+
+**Why This Works:**
+
+- **Reduces Context Confusion:** ~20 core tools are manageable for the model to reason about
+- **KV-Cache Optimization:** Stable core tools enable better prompt caching
+- **Flexibility:** Level 2 and 3 provide access to specialized capabilities without bloating the core action space
+- **Scalability:** New utilities and capabilities can be added without modifying core tool definitions
+
+**Critical Warning: Don't Use RAG for Tool Definitions**
+
+Fetching tool definitions dynamically per step based on semantic similarity often fails. This approach:
+- Creates shifting context that breaks KV-cache (different tools appear/disappear between turns)
+- Confuses the model with "hallucinated" tools that were present in turn 1 but disappeared in turn 2
+- Increases latency through additional retrieval steps
+- Makes tool usage unpredictable and harder to debug
+
+**Best Practice:**
+
+Maintain a stable, hierarchical tool set. Use the three-level structure to balance capability with clarity. Tools should be visible and consistent throughout a conversation, not dynamically retrieved based on similarity. If tools must change, do so at session boundaries, not mid-conversation.
+
+**Relationship to Other Patterns:**
+
+- **Pattern: Shortlisting** - Can be used to select from Level 1 core tools, but the core set should remain small and stable
+- **Pattern: Constrained Tool Use** - Logit masking can enforce Level 1/2/3 boundaries, ensuring the model only sees appropriate tools for the current context
+- **Context Confusion** - Hierarchical organization directly addresses this failure mode by limiting cognitive load
+
 ### Code Examples
 
 #### LangGraph Implementation
@@ -319,6 +385,8 @@ for event in events:
 - **Idempotency** is essential: tool calls should produce the same observable side effect regardless of execution count.
 - **Tool definitions** must be clear, detailed, and include boundaries and negative examples to guide proper usage.
 - **Input/output validation** adds crucial security and robustness layers between the LLM and external systems.
+- **Hierarchical Action Spaces** prevent Context Confusion by organizing tools into three levels: ~20 core atomic tools (stable, cache-friendly), sandbox utilities (via bash/CLI), and code/packages (encapsulated logic chains).
+- **Avoid dynamic RAG-based tool retrieval** - it breaks KV-cache, creates shifting contexts, and confuses models with tools that appear and disappear.
 - **Frameworks** like LangGraph, CrewAI, and Google ADK provide abstractions that simplify tool integration and execution.
 - **Google ADK** includes pre-built tools like Google Search, Code Execution, and Vertex AI Search that can be directly integrated.
 - **Tool Use** transforms language models from text generators into agents capable of real-world action and up-to-date information retrieval.
@@ -338,3 +406,4 @@ for event in events:
 2. Google Agent Developer Kit (ADK) Documentation (Tools): https://google.github.io/adk-docs/tools/
 3. OpenAI Function Calling Documentation: https://platform.openai.com/docs/guides/function-calling
 4. CrewAI Documentation (Tools): https://docs.crewai.com/concepts/tools
+5. Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2

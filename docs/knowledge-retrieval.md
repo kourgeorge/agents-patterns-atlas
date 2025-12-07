@@ -42,11 +42,221 @@ Chunking is the process of breaking down large documents into smaller, more mana
 
 The primary method is **vector search**, which uses embeddings and semantic distance to find chunks that are conceptually similar to the user's question. An older, but still valuable, technique is **BM25**, a keyword-based algorithm that ranks chunks based on term frequency without understanding semantic meaning. To get the best of both worlds, **hybrid search** approaches are often used, combining the keyword precision of BM25 with the contextual understanding of semantic search. This fusion allows for more robust and accurate retrieval, capturing both literal matches and conceptual relevance.
 
+**Example: Hybrid Search Implementation**
+
+```python
+from typing import List, Dict, Tuple
+
+class HybridSearchRAG:
+    """
+    Hybrid RAG system combining BM25 (keyword-based) and semantic search
+    for robust retrieval that captures both literal matches and conceptual relevance.
+    """
+    
+    def hybrid_search(
+        self,
+        query: str,
+        top_k: int = 5,
+        bm25_weight: float = 0.4,
+        semantic_weight: float = 0.6
+    ) -> List[Tuple[int, float, Dict]]:
+        """
+        Combine BM25 and semantic search using weighted scores.
+        BM25 captures exact keyword matches, while semantic search
+        finds conceptually similar content even with different wording.
+        """
+        # Get results from both methods
+        bm25_results = self.bm25_search(query, top_k * 2)
+        semantic_results = self.semantic_search(query, top_k * 2)
+        
+        # Normalize scores to [0, 1] range
+        max_bm25 = max(score for _, score in bm25_results) if bm25_results else 1.0
+        max_semantic = max(score for _, score in semantic_results) if semantic_results else 1.0
+        
+        # Combine normalized scores
+        combined_scores = {}
+        for idx, bm25_score in bm25_results:
+            norm_bm25 = bm25_score / max_bm25 if max_bm25 > 0 else 0.0
+            combined_scores[idx] = combined_scores.get(idx, 0.0) + bm25_weight * norm_bm25
+        
+        for idx, semantic_score in semantic_results:
+            norm_semantic = semantic_score / max_semantic if max_semantic > 0 else 0.0
+            combined_scores[idx] = combined_scores.get(idx, 0.0) + semantic_weight * norm_semantic
+        
+        # Sort by combined score and return top_k
+        sorted_results = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
+        return sorted_results[:top_k]
+```
+
 ### **Vector Databases**
 
 A vector database is a specialized type of database designed to store and query embeddings efficiently. After documents are chunked and converted into embeddings, these high-dimensional vectors are stored in a vector database. Traditional retrieval techniques, like keyword-based search, are excellent at finding documents containing exact words from a query but lack a deep understanding of language. They wouldn't recognize that "furry feline companion" means "cat." This is where vector databases excel. They are built specifically for semantic search. By storing text as numerical vectors, they can find results based on conceptual meaning, not just keyword overlap. When a user's query is also converted into a vector, the database uses highly optimized algorithms (like **HNSW - Hierarchical Navigable Small World**) to rapidly search through millions of vectors and find the ones that are "closest" in meaning. This approach is far superior for RAG because it uncovers relevant context even if the user's phrasing is completely different from the source documents. In essence, while other techniques search for words, vector databases search for meaning.
 
 This technology is implemented in various forms, from managed databases like **Pinecone** and **Weaviate** to open-source solutions such as **Chroma DB**, **Milvus**, and **Qdrant**. Even existing databases can be augmented with vector search capabilities, as seen with **Redis**, **Elasticsearch**, and **Postgres** (using the pgvector extension). The core retrieval mechanisms are often powered by libraries like Meta AI's **FAISS** or Google Research's **ScaNN**, which are fundamental to the efficiency of these systems.
+
+### **Basic RAG Implementation**
+
+The following example demonstrates a basic RAG system with document chunking, embedding generation, and vector similarity search:
+
+```python
+from typing import List, Dict, Tuple
+import numpy as np
+from dataclasses import dataclass
+
+@dataclass
+class Document:
+    """Represents a document chunk with its content and metadata."""
+    content: str
+    metadata: Dict = None
+    embedding: np.ndarray = None
+
+class SimpleRAGSystem:
+    """
+    Basic RAG system demonstrating core concepts:
+    - Document chunking
+    - Embedding generation
+    - Vector similarity search
+    """
+    
+    def __init__(self, embedding_model=None):
+        self.documents: List[Document] = []
+        self.embedding_model = embedding_model or self._simple_embedding
+        
+    def add_documents(self, texts: List[str], metadata: List[Dict] = None):
+        """Add documents to the knowledge base."""
+        if metadata is None:
+            metadata = [{}] * len(texts)
+            
+        for text, meta in zip(texts, metadata):
+            embedding = self.embedding_model(text)
+            doc = Document(content=text, metadata=meta, embedding=embedding)
+            self.documents.append(doc)
+    
+    def retrieve(self, query: str, top_k: int = 3) -> List[Tuple[Document, float]]:
+        """Retrieve most relevant documents using semantic similarity."""
+        query_embedding = self.embedding_model(query)
+        
+        similarities = []
+        for doc in self.documents:
+            similarity = np.dot(query_embedding, doc.embedding)
+            similarities.append((doc, similarity))
+        
+        similarities.sort(key=lambda x: x[1], reverse=True)
+        return similarities[:top_k]
+    
+    def query(self, query: str, top_k: int = 3) -> str:
+        """Complete RAG pipeline: retrieve relevant context and format for LLM."""
+        results = self.retrieve(query, top_k)
+        
+        context_parts = []
+        for i, (doc, score) in enumerate(results, 1):
+            context_parts.append(
+                f"[Context {i}] (Relevance: {score:.3f})\n{doc.content}\n"
+            )
+        
+        context = "\n".join(context_parts)
+        return f"""Based on the following context, answer the question.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+```
+
+### **Vector Database Integration**
+
+For production systems, vector databases provide scalable storage and efficient querying. This example shows integration with Chroma DB:
+
+```python
+from typing import List, Dict, Optional
+import chromadb
+from chromadb.config import Settings
+
+class VectorDatabaseRAG:
+    """RAG system using Chroma DB vector database for production-ready semantic search."""
+    
+    def __init__(self, collection_name: str = "knowledge_base", persist_directory: str = "./chroma_db"):
+        self.client = chromadb.PersistentClient(
+            path=persist_directory,
+            settings=Settings(anonymized_telemetry=False)
+        )
+        self.collection = self.client.get_or_create_collection(
+            name=collection_name,
+            metadata={"hnsw:space": "cosine"}
+        )
+    
+    def add_documents(
+        self,
+        texts: List[str],
+        embeddings: List[List[float]],
+        metadatas: Optional[List[Dict]] = None,
+        ids: Optional[List[str]] = None
+    ):
+        """Add documents to the vector database."""
+        if metadatas is None:
+            metadatas = [{}] * len(texts)
+        if ids is None:
+            ids = [f"doc_{i}" for i in range(len(texts))]
+        
+        self.collection.add(
+            embeddings=embeddings,
+            documents=texts,
+            metadatas=metadatas,
+            ids=ids
+        )
+    
+    def retrieve(
+        self,
+        query_embedding: List[float],
+        top_k: int = 5,
+        where: Optional[Dict] = None
+    ) -> Dict:
+        """Retrieve relevant documents using semantic search."""
+        return self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k,
+            where=where
+        )
+```
+
+### **Hybrid Search: Combining BM25 and Semantic Search**
+
+Hybrid search combines the precision of keyword matching (BM25) with the contextual understanding of semantic search:
+
+```python
+class HybridSearchRAG:
+    """
+    Hybrid RAG system combining BM25 (keyword-based) and semantic search
+    for robust retrieval that captures both literal matches and conceptual relevance.
+    """
+    
+    def hybrid_search(
+        self,
+        query: str,
+        top_k: int = 5,
+        bm25_weight: float = 0.4,
+        semantic_weight: float = 0.6
+    ) -> List[Tuple[int, float, Dict]]:
+        """
+        Combine BM25 and semantic search using weighted scores.
+        
+        Args:
+            query: Search query
+            top_k: Number of results to return
+            bm25_weight: Weight for BM25 scores (default 0.4)
+            semantic_weight: Weight for semantic scores (default 0.6)
+        """
+        # Get results from both methods
+        bm25_results = self.bm25_search(query, top_k * 2)
+        semantic_results = self.semantic_search(query, top_k * 2)
+        
+        # Normalize and combine scores
+        # ... (implementation combines normalized BM25 and semantic scores)
+        
+        return combined_results
+```
 
 ---
 
@@ -95,6 +305,106 @@ Third, an agent can perform multi-step reasoning to synthesize complex answers. 
 ### **Identifying Knowledge Gaps and Using External Tools**
 
 Fourth, an agent can identify knowledge gaps and use external tools. Suppose a user asks, "What was the market's immediate reaction to our new product launched yesterday?" The agent searches the internal knowledge base, which is updated weekly, and finds no relevant information. Recognizing this gap, it can then activate a tool—such as a live web-search API—to find recent news articles and social media sentiment. The agent then uses this freshly gathered external information to provide an up-to-the-minute answer, overcoming the limitations of its static internal database.
+
+### **Agentic RAG Implementation**
+
+The following example demonstrates an Agentic RAG system that actively evaluates, validates, and refines retrieved information:
+
+```python
+from typing import List, Dict, Tuple, Optional
+from dataclasses import dataclass
+from datetime import datetime
+
+@dataclass
+class RetrievedDocument:
+    """Document with metadata for agentic evaluation."""
+    content: str
+    source: str
+    timestamp: Optional[str] = None
+    confidence: float = 1.0
+    metadata: Dict = None
+
+class AgenticRAGSystem:
+    """
+    Agentic RAG system that actively evaluates, validates, and refines
+    retrieved information before passing to LLM.
+    """
+    
+    def retrieve_and_validate(
+        self,
+        query: str,
+        top_k: int = 5
+    ) -> List[RetrievedDocument]:
+        """Retrieve documents and validate their quality and relevance."""
+        raw_results = self.retrieval_system.retrieve(query, top_k * 2)
+        
+        # Agentic validation: filter and rank
+        validated = []
+        for doc, score in raw_results:
+            if score > 0.3:  # Minimum relevance threshold
+                validated.append(RetrievedDocument(
+                    content=doc.content,
+                    source=doc.metadata.get('source', 'unknown'),
+                    timestamp=doc.metadata.get('timestamp'),
+                    confidence=score,
+                    metadata=doc.metadata
+                ))
+        
+        return validated[:top_k]
+    
+    def reconcile_conflicts(
+        self,
+        documents: List[RetrievedDocument],
+        query: str
+    ) -> List[RetrievedDocument]:
+        """
+        Identify and resolve conflicts between retrieved documents.
+        Prioritizes more authoritative or recent sources.
+        """
+        # Sort by timestamp (newest first) and source authority
+        sorted_docs = sorted(
+            documents,
+            key=lambda d: (
+                self._source_authority(d.source),
+                self._parse_timestamp(d.timestamp) if d.timestamp else datetime.min
+            ),
+            reverse=True
+        )
+        
+        # Deduplicate and return prioritized documents
+        return self._deduplicate(sorted_docs)
+    
+    def query_with_agentic_reasoning(
+        self,
+        query: str,
+        use_external_tools: bool = False
+    ) -> str:
+        """
+        Complete Agentic RAG pipeline with reasoning layer:
+        1. Multi-step retrieval if needed
+        2. Reconcile conflicts
+        3. Check for knowledge gaps
+        4. Use external tools if gap detected
+        5. Format context with source validation
+        """
+        # Retrieve and validate
+        documents = self.retrieve_and_validate(query, top_k=5)
+        
+        # Reconcile conflicts
+        documents = self.reconcile_conflicts(documents, query)
+        
+        # Check for knowledge gaps
+        documents, has_gap = self.identify_knowledge_gaps(documents, query)
+        
+        # Use external tools if gap detected
+        if has_gap and use_external_tools:
+            external_docs = self._fetch_external_info(query)
+            documents.extend(external_docs)
+            documents = self.reconcile_conflicts(documents, query)
+        
+        # Format context with source validation
+        return self._format_agentic_context(documents, query)
+```
 
 ---
 

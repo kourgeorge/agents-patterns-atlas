@@ -310,11 +310,104 @@ current_plan = recitation.read_and_recite()
 # recitation.update_todo(updated_plan)
 ```
 
+## Alternative Approach: Planner Sub-Agent with Structured Output
+
+While the traditional Recitation pattern uses filesystem-based `todo.md` files that are constantly rewritten and appended to context, there is a more token-efficient alternative that has shown significant improvements in production systems.
+
+**The Problem with Persistent Todo.md Files:**
+
+In early versions of systems like Manus, plans were maintained through `todo.md` files that were constantly rewritten and appended to context at every turn. This approach:
+- Consumes tokens in every single turn (~30% token overhead in early Manus versions)
+- Requires parsing and updating markdown files
+- Adds complexity to the conversation history
+- May become verbose as plans evolve
+
+**The Alternative: Planner Sub-Agent Pattern**
+
+Instead of maintaining a persistent `todo.md` file, use a dedicated Planner sub-agent that returns a structured Plan object. This follows the **Agent-as-Tool** pattern, where planning becomes a deterministic function call rather than a persistent conversation state.
+
+**How It Works:**
+
+1. **Planner as Tool:** The main agent invokes a `call_planner(goal="...")` tool when it needs to create or update a plan
+2. **Structured Output:** The Planner sub-agent returns a structured Plan object (e.g., JSON schema) with clear task breakdown
+3. **On-Demand Injection:** The Plan object is injected into context only when explicitly needed, rather than consuming tokens in every turn
+4. **Deterministic Interface:** The Planner follows the Agent-as-Tool pattern, enabling cacheable, predictable planning operations
+
+**Benefits:**
+
+- **Token Efficiency:** Plans consume tokens only when actively used, not in every turn (~30% token savings demonstrated)
+- **Structured Data:** JSON-structured plans are easier to parse and validate than markdown
+- **Modularity:** Planner can be swapped, updated, or versioned independently
+- **Cache Optimization:** Deterministic planner calls enable better caching strategies
+- **Clearer Separation:** Planning logic is isolated from execution logic
+
+**When to Use Each Approach:**
+
+**Use Traditional Recitation (todo.md) when:**
+- Plans need to be human-readable and editable
+- You want to track plan evolution through filesystem history
+- Plans are part of the agent's persistent state that should survive sessions
+- You need simple, text-based plan representation
+
+**Use Planner Sub-Agent when:**
+- Token efficiency is critical
+- Plans are used infrequently or only at specific decision points
+- You want structured, validated plan schemas
+- Planning logic should be modular and swappable
+- You're following the Agent-as-Tool pattern for consistency
+
+**Implementation Example:**
+
+```python
+from typing import List, Dict, Any
+from pydantic import BaseModel
+
+class Task(BaseModel):
+    id: str
+    description: str
+    status: str  # "pending", "in_progress", "completed"
+    dependencies: List[str] = []
+
+class Plan(BaseModel):
+    goal: str
+    tasks: List[Task]
+    current_task_id: str
+    progress: float  # 0.0 to 1.0
+
+def call_planner(goal: str, current_state: Dict[str, Any] = None) -> Plan:
+    """
+    Planner sub-agent that creates a structured plan.
+    Returns a Plan object that can be injected into context when needed.
+    """
+    # Planner agent analyzes goal and current state
+    # Returns structured Plan object
+    return Plan(
+        goal=goal,
+        tasks=[
+            Task(id="1", description="Research topic X", status="pending"),
+            Task(id="2", description="Draft outline", status="pending", dependencies=["1"]),
+            Task(id="3", description="Write sections", status="pending", dependencies=["2"]),
+        ],
+        current_task_id="1",
+        progress=0.0
+    )
+
+# Main agent uses planner on-demand
+plan = call_planner("Write research paper on AI agents")
+# Plan is injected into context only when needed, not every turn
+```
+
+**Key Insight:**
+
+Both approaches are valid. The choice depends on your system's priorities: traditional Recitation emphasizes simplicity and human-readability, while the Planner sub-agent approach prioritizes token efficiency and modularity. Many production systems evolve from the traditional approach to the Planner sub-agent pattern as they optimize for scale.
+
 ## Key Takeaways
 
 - **Core Concept:** Recitation is a context engineering strategy used to actively manage the LLM's finite context window by biasing its attention toward high-level goals.
 
 - **Best Practice:** The plan should be frequently overwritten or appended to the end of the prompt to maximize the effect of recency bias.
+
+- **Alternative Approach:** Using a Planner sub-agent that returns structured Plan objects can save ~30% tokens compared to persistent `todo.md` files, as plans are injected only when needed rather than every turn.
 
 - **Common Pitfall:** Avoid using this pattern for simple, single-turn tasks where the overhead outweighs the benefits. Also, ensure the plan doesn't become too verbose, as it adds to token costs.
 
@@ -338,12 +431,16 @@ This pattern is often combined with:
 
 - **Goal Setting and Monitoring:** Recitation ensures that goals set at the beginning remain visible and actionable throughout execution.
 
+- **Agent-as-Tool Pattern:** The alternative Planner sub-agent approach follows the Agent-as-Tool pattern, treating planning as a deterministic function call rather than persistent conversation state.
+
 ## References
 
 - Agentic AI System Design Patterns
 - Context Engineering for AI Agents: Lessons from Building Manus
+- Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
 - Implementing deepagents: a technical walkthrough
 - Deep Agents
 - How agents can use filesystems for context engineering
 - Agentic Design Patterns Engineering Playbook
+- Manus AI Agent Harness learnings from Peak Ji
 

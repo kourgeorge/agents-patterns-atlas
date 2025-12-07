@@ -975,6 +975,148 @@ code = programmer.execute_task(f"Implement based on design", design)
 **Explanation:**
 This example demonstrates MetaGPT's approach of encoding Standard Operating Procedures directly into agent prompts. Each agent follows a structured procedure that ensures consistent, expert-level performance. The SOP guides the agent's behavior and decision-making process.
 
+## Context Management in Orchestrator-Worker Systems
+
+Effective context management is critical for orchestrator-worker systems to avoid Context Pollution and maintain efficiency. The orchestrator must balance between providing sufficient context for workers to function effectively and minimizing token overhead.
+
+### The Core Principle: Minimal Effective Context
+
+**"Share memory by communicating, don't communicate by sharing memory."**
+
+This principle, adapted from GoLang concurrency design, is fundamental to orchestrator-worker context management. Instead of sharing entire context histories with workers, orchestrators should pass only the minimal information needed for each task.
+
+### Discrete Tasks vs Complex Reasoning
+
+**Discrete Tasks with Clear Inputs/Outputs:**
+
+For tasks with clear, well-defined inputs and outputs (e.g., "Search this documentation for X", "Generate a report from this data"), spin up a fresh worker agent with:
+- Clean, isolated context
+- Only the specific instruction and necessary input data
+- No shared conversation history
+- Structured output schema for the result
+
+**Example:** A search worker doesn't need to see the orchestrator's planning process or other workers' results. It only needs:
+- The search query
+- The documentation to search
+- Expected output format
+
+**Complex Reasoning That Requires Full Context:**
+
+Only share full memory/context history when the worker MUST understand the entire problem trajectory. For example:
+- **Debugging agents** that need to see previous error attempts to avoid repeating mistakes
+- **Iterative refinement workers** that build upon previous iterations
+- **Review agents** that need to understand the full decision-making process
+
+Even in these cases, minimize shared context to only the essential trajectory, not entire conversation histories.
+
+### Context Isolation Strategies
+
+**1. Save Plans to External Memory:**
+
+Before spawning workers, orchestrators should save their plans to external memory (e.g., filesystem). This enables:
+- Workers to reference the plan without it consuming orchestrator context
+- Plan persistence across agent invocations
+- Better context separation between orchestrator and workers
+
+**2. Pass Structured Instructions:**
+
+Instead of sharing raw context, orchestrators should provide:
+- Clear task descriptions
+- Specific input requirements
+- Expected output schemas
+- Relevant constraints or guidelines
+
+**3. Isolate Worker Contexts:**
+
+Each worker operates with its own context window, containing only:
+- Worker-specific system instructions
+- The assigned task and inputs
+- Required output format
+- No unnecessary orchestrator context or other workers' results
+
+**4. Use Structured Communication:**
+
+Workers return structured results (JSON, validated schemas) rather than free-form text, enabling:
+- Easy parsing and integration
+- Reduced context overhead when passing results between agents
+- Clear contracts between orchestrator and workers
+
+### Avoiding Context Pollution
+
+**Don't Share Context Unless Necessary:**
+
+- Avoid duplicating orchestrator context across all workers
+- Don't pass full conversation histories to workers for discrete tasks
+- Use external memory for shared state that multiple agents need
+
+**Treat Shared Context as Expensive:**
+
+- Shared context is an expensive dependency that should be minimized
+- Forking context between agents breaks KV-cache, increasing latency and cost
+- Each agent processing different context prefixes invalidates caches for others
+
+**Prefer Structured Handoffs:**
+
+- Use structured messages and schemas instead of raw context sharing
+- Pass specific instructions rather than full histories
+- Externalize large data and pass only references
+
+### Example: Context-Efficient Delegation
+
+```python
+def delegate_to_worker(self, subtask: Dict, minimal_context: Dict) -> str:
+    """
+    Delegate subtask with minimal, isolated context.
+    Avoids Context Pollution by only sharing essential information.
+    """
+    # Isolated context for worker - only what's needed
+    worker_context = {
+        "task_description": subtask["description"],
+        "input_data": subtask.get("input_data", ""),
+        "expected_output": subtask["expected_output"],
+        "constraints": subtask.get("constraints", [])
+    }
+    
+    # Don't pass orchestrator's full planning context
+    # Don't pass other workers' results
+    # Don't pass full conversation history
+    
+    # Spawn worker with clean context
+    worker_prompt = f"""You are a {subtask['worker_type']} agent.
+
+Task: {worker_context['task_description']}
+
+Input: {worker_context['input_data']}
+
+Expected Output: {worker_context['expected_output']}
+
+Constraints: {worker_context['constraints']}
+
+Complete this task and return a structured result."""
+    
+    # Worker executes with minimal context
+    result = self.llm.invoke(worker_prompt)
+    
+    # Return structured result (not full context)
+    return result.content
+```
+
+### Benefits of Context-Efficient Management
+
+- **Reduced Token Overhead:** Workers operate with minimal context, reducing token consumption
+- **Better KV-Cache Efficiency:** Isolated contexts enable better caching
+- **Improved Scalability:** Systems can handle more workers without context bloat
+- **Lower Costs:** Reduced token usage directly translates to lower API costs
+- **Faster Execution:** Smaller contexts process faster
+- **Clearer Separation:** Isolated contexts improve system modularity and debuggability
+
+### Relationship to Other Patterns
+
+- **Context Pollution:** This section directly addresses Context Pollution prevention
+- **Agent-as-Tool:** Structured worker interfaces follow the Agent-as-Tool pattern
+- **Filesystem as Context:** External memory stores shared plans and data
+- **Context Compression:** Orchestrators compress worker results before integration
+
 ## Key Takeaways
 
 - **Core Concept:** The Orchestrator-Worker pattern enables dynamic task decomposition where a central orchestrator breaks down goals into subtasks and delegates to specialized workers.
@@ -983,7 +1125,7 @@ This example demonstrates MetaGPT's approach of encoding Standard Operating Proc
 
 - **Dynamic Flexibility:** Unlike fixed workflows, the orchestrator determines subtasks at runtime, making it adaptable to unpredictable task requirements.
 
-- **Context Management:** The orchestrator can save plans to memory before spawning workers, enabling better context isolation and management.
+- **Context Management:** The orchestrator can save plans to memory before spawning workers, enabling better context isolation and management. Follow the principle "Share memory by communicating, don't communicate by sharing memory" to prevent Context Pollution. Pass minimal effective context to workers, using structured instructions rather than full context histories.
 
 - **Trade-offs:** This pattern increases model calls, latency, token throughput, and operational costs compared to single-agent systems. Use when benefits outweigh costs.
 
@@ -1046,4 +1188,5 @@ This pattern is often combined with:
 - Agentic AI System Design Patterns
 - Multi-Agent Collaboration Mechanisms: A Survey of LLMs - https://arxiv.org/html/2501.06322v1
 - Anthropic's Research System: LeadResearcher and Subagents Architecture
+- Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
 

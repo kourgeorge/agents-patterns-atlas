@@ -53,10 +53,11 @@ Attention Engineering operates through several complementary techniques:
 
 **Context Engineering** is the broader discipline of managing what information appears in the context window to optimize performance, cost, and reasoning quality. It encompasses:
 - Externalization (moving data out)
-- Compression (reducing size)
+- Compression (reducing size), including Context Compaction and Summarization to prevent Context Rot
 - Automatic management (editing/clearing)
 - Attention manipulation (positioning)
 - Metadata separation
+- Preventing Context Pollution and Context Confusion in multi-agent systems
 
 **Attention Engineering** is a specialized pattern within Context Engineering that focuses specifically on manipulating where information appears to bias model attention. It's the "where" and "how to bias attention" aspect of the broader "what goes in the context window" discipline.
 

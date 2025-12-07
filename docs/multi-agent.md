@@ -64,6 +64,7 @@ A triad of agents where a Plan Agent produces a precise multi-step plan, a Tool/
 This pattern is detailed in the **Pattern: Planner-Checker** module.
 
 **Modern Examples:**
+
 - **CoReaAgents (2025):** Defines Plan Agent, Tool Agent, and Reflect Agent working together for complex reasoning tasks
 - **Plan-and-Execute (2025):** Introduces a dedicated planning model that outputs a global directed acyclic graph (DAG) of sub-tasks, with an executor model following the optimized plan
 - **HuggingGPT (2023):** Uses a ChatGPT-based controller to analyze requests, plan subtask sequences, delegate to appropriate AI models, and synthesize results
@@ -75,6 +76,7 @@ Multiple agents engage in structured debate, discussion, or negotiation to impro
 This pattern is detailed in the **Pattern: Multi-Agent Debate** module.
 
 **Modern Examples:**
+
 - **Multi-Agent Debate (MAD) Framework:** Two agent debaters take opposite stances and argue in rounds, with a third agent as a neutral judge monitoring and deciding
 - **Society of Minds:** Multiple LLM instances discuss questions and converge on joint answers through debate and agreement
 - **CICERO (2022):** Achieved human-level performance in Diplomacy through strategic planning combined with natural language negotiation and alliance-forming dialogue
@@ -86,6 +88,51 @@ Autonomous agents coordinate through natural language discussion, voting mechani
 This pattern is detailed in the **Pattern: Swarm/Consensus Architecture** module.
 
 **Example:** Multiple research agents that independently explore a problem space, share findings through natural language discussion, and converge on solutions through consensus voting or iterative agreement.
+
+### Agent-as-Tool Pattern
+
+Instead of anthropomorphizing agents as organizational entities (Manager, Designer, Coder) that chat with each other, the Agent-as-Tool pattern treats agents as deterministic, tool-like functions. This approach flattens complexity, improves modularity, and reduces token overhead.
+
+**Core Concept:**
+
+Don't over-anthropomorphize agents. You don't need an "Org Chart" of agents that maintain persistent conversations. Instead, treat agents as tools that the main agent invokes through structured function calls.
+
+**Implementation:**
+
+For the main model, "Deep Research" or "Plan Task" should be a simple tool call. The main agent invokes `call_planner(goal="...")`, the harness spins up a temporary sub-agent loop, executes the task, and returns a structured result. This allows the main agent to treat sub-agents exactly like deterministic code functions.
+
+**The MapReduce Pattern:**
+
+This pattern enables the main agent to:
+- Define the goal, tools, and output schema (e.g., specific JSON structure) for the sub-agent
+- Invoke the sub-agent as a function call
+- Receive structured results that are instantly usable without further parsing or conversation
+- Treat sub-agents as deterministic, cacheable operations
+
+**Planning Alternative:**
+
+In early versions of systems like Manus, plans were maintained through `todo.md` files that were constantly rewritten and appended to context. This approach wasted tokens (~30% in earlier versions). A better pattern uses a specific Planner sub-agent that returns a structured Plan object. This object is injected into the context only when needed, rather than consuming tokens in every turn.
+
+**Benefits:**
+
+- **Flattened Complexity:** Agents become composable functions rather than persistent organizational entities
+- **Modularity:** Sub-agents can be easily swapped, modified, or versioned
+- **Token Efficiency:** Structured outputs reduce token overhead compared to conversational approaches
+- **Deterministic Interfaces:** Clear input/output contracts enable predictable behavior
+- **Cache Optimization:** Deterministic tool-like calls enable better caching strategies
+
+**When to Use:**
+
+Use Agent-as-Tool for:
+- Discrete tasks with clear inputs and outputs
+- Tasks that can be completed independently
+- Operations that benefit from structured schemas
+- Scenarios where conversational overhead is unnecessary
+
+Prefer conversational multi-agent patterns when:
+- Agents need to negotiate or debate
+- Tasks require iterative refinement through dialogue
+- Complex coordination requires natural language communication
 
 ## Benefits of Multi-Agent Systems
 
@@ -171,6 +218,47 @@ Multi-agent systems are **not** ideal when:
 
 Each agent operates with its own context window, preventing information overload and enabling parallel exploration. This isolation is critical for managing complexity and enabling true parallelization. The orchestrator can save plans to external memory before spawning workers, enabling better context management.
 
+### Context Pollution and Context Confusion
+
+Multi-agent systems face unique context engineering challenges that can degrade performance and reasoning quality:
+
+**Context Pollution:**
+
+Context Pollution occurs when too much irrelevant, redundant, or conflicting information accumulates within an agent's context window, distracting the LLM and degrading reasoning accuracy. In multi-agent systems, this frequently happens when agents share the same context unnecessarily, leading to information overload.
+
+**The Core Principle:** "Share memory by communicating, don't communicate by sharing memory."
+
+This principle, borrowed from GoLang concurrency design, is critical for multi-agent architectures. Instead of sharing entire context histories, agents should communicate through structured messages and specific instructions.
+
+**Strategies to Prevent Context Pollution:**
+
+- **Discrete Tasks with Minimal Context:** For tasks with clear inputs/outputs (e.g., "Search this documentation for X"), spin up a fresh sub-agent with its own clean context and pass only the specific instruction. The sub-agent operates with minimal overhead and returns structured results.
+
+- **Complex Reasoning Exception:** Only share full memory/context history when the sub-agent MUST understand the entire problem trajectory to function effectively. For example, a debugging agent may need to see previous error attempts to avoid repeating mistakes. In such cases, full context sharing is justified, but should still be minimized.
+
+- **Treat Shared Context as Expensive:** Shared context is an expensive dependency that should be minimized. Forking context breaks KV-cache, as each agent processes different context prefixes, invalidating the cache and dramatically increasing latency and cost.
+
+- **KV-Cache Impact:** Sharing the same context among multiple agents pays a massive KV-cache penalty. Each agent invalidates the cache for others, leading to redundant computation and higher costs.
+
+**Context Confusion:**
+
+Context Confusion is a failure mode where an LLM cannot distinguish between instructions, data, and structural markers, or encounters logically incompatible directives. This frequently occurs when:
+
+- System Instructions clash with themselves (e.g., "Always be concise" and "Provide detailed explanations")
+- Too many similar instructions create ambiguity
+- System instructions conflict with user instructions
+- Tool definitions are too numerous or poorly organized (see Hierarchical Action Spaces)
+
+Context Confusion is particularly problematic in multi-agent systems where different agents may have different instructions, tools, and contexts, creating opportunities for logical conflicts when contexts are shared or merged.
+
+**Mitigation Strategies:**
+
+- **Clear Separation:** Maintain clear boundaries between instructions, data, and structural elements
+- **Consistent Instruction Sets:** Ensure instructions are logically consistent and non-contradictory
+- **Minimal Tool Sets:** Limit the number of tools visible to each agent (see Hierarchical Action Spaces pattern)
+- **Context Isolation:** Keep agent contexts separate to prevent instruction conflicts
+- **Structured Communication:** Use structured schemas for inter-agent communication to prevent ambiguity
+
 ### Dynamic Task Decomposition
 
 The orchestrator determines subtasks at runtime based on the input, rather than using fixed workflows. This enables adaptation to unpredictable requirements and open-ended problems. Modern systems use LLM reasoning to dynamically break down goals into appropriate subtasks.
@@ -224,6 +312,10 @@ Multi-agent systems integrate with other agent capabilities:
 
 7. **Dynamic orchestration optimizes resources:** Modern frameworks enable dynamic team composition, spawning specialists as needed and releasing them when tasks complete.
 
+8. **Avoid Context Pollution:** "Share memory by communicating, don't communicate by sharing memory." Minimize context sharing between agents, preferring structured communication over full context duplication to prevent KV-cache invalidation and reduce costs.
+
+9. **Agent-as-Tool reduces complexity:** Treat agents as deterministic functions rather than organizational entities. This flattens complexity, improves modularity, and reduces token overhead compared to persistent conversational approaches.
+
 ## Next Steps
 
 This chapter provided an overview of modern LLM-based multi-agent architectures, key patterns, real-world frameworks, and design considerations. For detailed implementation guidance, see:
@@ -237,3 +329,9 @@ This chapter provided an overview of modern LLM-based multi-agent architectures,
 - **Pattern: Parallelization** - Techniques for parallel agent execution
 
 Modern LLM-based multi-agent architectures enable agents to tackle problems that exceed single-agent capabilities. Understanding when and how to use them, grounded in recent research and supported by proven frameworks, is essential for building sophisticated agentic systems that can handle complex, real-world challenges.
+
+## References
+
+- Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
+- Context Engineering for AI Agents: Lessons from Building Manus
+- Manus AI Agent Harness learnings from Peak Ji
