@@ -2,13 +2,16 @@
 
 ## Introduction
 
-As LLM-based agentic systems tackle increasingly complex problems, a single agent often reaches its limits. Context window constraints, lack of specialization, and the complexity of multifaceted objectives can cause even sophisticated agents to fail. Multi-agent architectures address these limitations by enabling specialized LLM agents to collaborate, each focusing on their domain of expertise and leveraging natural language communication.
-
-This chapter provides an overview of modern LLM-based multi-agent architectures (2021-2025), exploring when and why to use multiple agents, the benefits they provide, and the organizational patterns that enable effective collaboration. For detailed implementation patterns, see the specific pattern modules referenced throughout this chapter.
+As LLM-based agentic systems tackle increasingly complex problems, a single agent often reaches its limits. 
+Context window constraints, lack of specialization, and the complexity of multifaceted objectives can cause even sophisticated agents to fail. 
+Multi-agent architectures address these limitations by enabling specialized LLM agents to collaborate, each focusing on their domain of expertise and leveraging natural language communication.
+This chapter provides an overview of modern LLM-based multi-agent architectures, exploring when and why to use multiple agents, the benefits they provide, and the organizational patterns that enable effective collaboration. 
+For detailed implementation patterns, see the specific pattern modules referenced throughout this chapter.
 
 ## The Case for Multi-Agent Systems
 
-Multi-agent architectures represent a paradigm shift from pursuing a single, all-powerful super-agent toward sophisticated, collaborative systems of specialized LLM agents. The collective strength lies in division of labor, natural language negotiation, and synergy created through coordinated effort.
+Multi-agent architectures represent a paradigm shift from pursuing a single, all-powerful super-agent toward sophisticated, collaborative systems of specialized LLM agents. 
+The collective strength lies in division of labor, natural language negotiation, and synergy created through coordinated effort.
 
 **Why Multiple Agents? An Intuitive Perspective?** 
 When first encountering multi-agent systems, a natural question arises: "Why do I need multiple agents? It's just the same LLM that I'm prompting over and over, or just one computer. Why do I need multiple agents?"
