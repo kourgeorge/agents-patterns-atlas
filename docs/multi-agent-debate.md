@@ -5,7 +5,6 @@
 In legal systems, adversarial proceedings expose flaws and reveal truth through structured argumentation. 
 In scientific discourse, peer review and debate surface errors and refine theories. 
 In human reasoning, considering opposing viewpoints prevents confirmation bias and leads to better decisions.
-
 The Multi-Agent Debate pattern applies this principle to LLM systems: multiple agents argue different positions, critique each other's reasoning, and surface errors through structured adversarial discussion. 
 This pattern is essential when reasoning quality is critical, when hidden assumptions need exposure, or when a single model's initial approach might be flawed.
 
@@ -166,7 +165,7 @@ pip install langchain langchain-openai langgraph
 
 ??? "Basic Example: Adversarial Debate with Judge"
 
-    # This example demonstrates the MAD framework with two adversarial debaters and a judge:
+    This example demonstrates the MAD framework with two adversarial debaters and a judge:
 
     ```python
     from langchain_openai import ChatOpenAI
@@ -374,7 +373,7 @@ This example demonstrates the MAD framework: two debaters take opposing position
 
 ??? "Advanced Example: Peer Debate Without Judge"
 
-    # This example shows a peer-to-peer debate where all agents are equal:
+    This example shows a peer-to-peer debate where all agents are equal:
 
     ```python
     class PeerDebater:

@@ -84,7 +84,6 @@ The Orchestrator-Worker pattern is the most common pattern for complex LLM-based
 Modern orchestrator-worker systems leverage role-based specialization, where each worker agent has a well-defined role with specialized prompts and Standard Operating Procedures (SOPs). 
 This approach, demonstrated by ChatDev and MetaGPT, enables agents to achieve expert-level performance in their domains.
 
-
 **Example Role Structure (MetaGPT-style):**
 
 - **Architect Agent:** Analyzes requirements, designs system architecture, creates technical specifications
@@ -96,7 +95,8 @@ This approach, demonstrated by ChatDev and MetaGPT, enables agents to achieve ex
 
 Dynamic orchestration allows the system to adapt team composition based on task requirements. The orchestrator can spawn new specialist agents as needed and release them when tasks complete, optimizing resource usage.
 
-**Key Principles:**
+Key Principles:
+
 - **Adaptive Team Composition:** Team structure evolves during problem-solving
 - **Agent Lifecycle Management:** Agents are created, activated, and released dynamically
 - **Emergent Behaviors:** System exhibits emergent social behaviors (leadership, cooperation) without explicit programming
@@ -106,7 +106,8 @@ Dynamic orchestration allows the system to adapt team composition based on task 
 
 Managed conversations enable flexible communication patterns where orchestrators coordinate structured dialogues between agents. This approach supports complex problem-solving through multi-turn agent interactions.
 
-**Key Principles:**
+Key Principles:
+
 - **Flexible Communication Patterns:** Developers define custom orchestration patterns
 - **Structured Dialogues:** Agents engage in structured conversations with clear protocols
 - **Multi-Turn Interactions:** Complex problems solved through iterative agent dialogues
@@ -135,7 +136,7 @@ pip install crewai  # Multi-agent orchestration framework
 
 ??? "Basic Example: Orchestrator-Worker Pattern"
 
-    #This example demonstrates a basic orchestrator-worker system where the orchestrator dynamically decomposes tasks and delegates to specialized workers:
+    This example demonstrates a basic orchestrator-worker system where the orchestrator dynamically decomposes tasks and delegates to specialized workers:
 
     ```python
     from langchain_openai import ChatOpenAI
@@ -300,7 +301,7 @@ This example demonstrates the core orchestrator-worker pattern: the orchestrator
 
 ??? "Advanced Example: Hierarchical Orchestrator with Context Management"
 
-    # This advanced example shows nested orchestrators and context management using external memory:
+    This advanced example shows nested orchestrators and context management using external memory:
 
     ```python
     from pathlib import Path
@@ -562,7 +563,8 @@ This advanced example demonstrates hierarchical orchestrators with context manag
     result = runner.run("Create a comprehensive guide on agentic AI patterns")
     ```
 
-    #### LangGraph: Dynamic Orchestration
+??? "LangGraph: Dynamic Orchestration"
+
     ```python
     from langgraph.graph import StateGraph, END
     from typing import TypedDict, List, Dict
@@ -700,7 +702,7 @@ This advanced example demonstrates hierarchical orchestrators with context manag
 
 ??? "ChatDev-Style Role-Based Development Team"
 
-    # This example demonstrates role-based specialization inspired by ChatDev, where specialized agents work together through structured communication:
+    This example demonstrates role-based specialization inspired by ChatDev, where specialized agents work together through structured communication:
 
     ```python
     from langchain_openai import ChatOpenAI
@@ -880,7 +882,7 @@ This example demonstrates ChatDev-style role-based development where specialized
 
 ??? "MetaGPT-Style SOP-Encoded Roles"
 
-    # This example shows how to encode Standard Operating Procedures into agent prompts:
+    This example shows how to encode Standard Operating Procedures into agent prompts:
 
     ```python
     class SOPEncodedAgent:
@@ -1124,9 +1126,6 @@ Workers return structured results (JSON, validated schemas) rather than free-for
 - **Best Practice:** Provide clear, non-overlapping objectives to workers to avoid duplication and ensure complete coverage. Maintain the high-level goal throughout execution.
 - **Common Pitfall:** Over-coordination can add unnecessary overhead. Ensure workers have clear roles and minimal coupling. Avoid using this pattern for simple tasks that a single agent can handle.
 - **Hierarchical Potential:** Workers can themselves become orchestrators for complex subtasks, creating nested multi-agent structures for very complex problems.
-
-## Related Patterns
-
 
 ??? "References"
 
