@@ -46,7 +46,7 @@ Therefore, the decision to use task decomposition versus a simple task-execution
 - **Three-Phase Architecture:** Task Analysis (classify characteristics, match to applications) → Task Decomposition (break down into subtasks, assign to applications) → Plan Control (orchestrate execution, track progress, manage data flow).
 - **Task Analysis Components:** Task classification (updates, memory, loops, location search), application matching (interactive interfaces or programmatic services), intent paraphrasing (for complex/ambiguous intents), navigation path discovery (for interactive applications).
 - **Decomposition Principles:** High-level abstraction (describe "what" not "how"), type-aware assignment (assign interaction types to enable specialized execution), context preservation (maintain user pronouns and identifiers), explicit dependency handling (reference data from previous steps).
-- **Decomposition Strategies:** Exact (one subtask per application, strict boundaries) or Flexible (logical decomposition, multiple subtasks per app with alternating constraint). See [Planning Strategies](../planning-strategies/module.md) for details.
+- **Decomposition Strategies:** Exact (one subtask per application, strict boundaries) or Flexible (logical decomposition, multiple subtasks per app with alternating constraint). See **Planning Strategies** for details.
 - **Application Handling:** Single application returns intent verbatim (no decomposition); multi-application decomposes based on chosen strategy, ensuring all apps contribute meaningfully.
 - **Plan Execution Control:** Progress tracking (monitor subtask status), variable management (track data between subtasks), next action selection (based on dependencies and history), task conclusion (determine when goal is achieved).
 
@@ -618,14 +618,10 @@ Task decomposition planning is essential for autonomous systems that need to coo
 
 ## Related Patterns
 
-This pattern works well with:
+This pattern is related to the following patterns:
 
-- **Goal Setting and Monitoring** - Goals provide the target for planning, monitoring tracks plan execution
 - **Reflection** - Plans can be evaluated and refined through reflection
 - **Routing** - Planning can determine which routes to take in a workflow
-
-This pattern is often combined with:
-
 - **Tool Use** - Plans specify which tools to use and in what sequence
 - **Multi-Agent** - Planning can coordinate multiple agents working on different plan steps
 
