@@ -390,7 +390,7 @@ This pattern is often combined with:
 
 - **Multi-Agent Architectures:** Orchestrators use context editing to manage subagent outputs, keeping summaries while clearing detailed results.
 
-## References
+??? "References"
 
 - Context Engineering for AI Agents: The Complete Guide - https://medium.com/@khanzzirfan/context-engineering-for-ai-agents-the-complete-guide-5047f84595c7
 - Context Engineering Guide - https://www.promptingguide.ai/guides/context-engineering-guide

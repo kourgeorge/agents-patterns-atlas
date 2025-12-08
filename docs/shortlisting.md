@@ -150,61 +150,61 @@ The agent then uses only these shortlisted APIs in subsequent planning and execu
 
 The Shortlisting Pattern consists of three main components: the Shortlister Agent, the Tool Catalog, and the Output Schema.
 
-#### Shortlister Agent
-
 The core agent that performs the analysis:
 
-```python
-from typing import List, Optional
-from pydantic import BaseModel, Field
+??? "Shortlister Agent"
 
-class ToolDetails(BaseModel):
-    """Details for a shortlisted tool."""
-    name: str
-    relevance_score: float = Field(ge=0.0, le=1.0)
-    reasoning: str
+    ```python
+    from typing import List, Optional
+    from pydantic import BaseModel, Field
 
-class ShortlistOutput(BaseModel):
-    """Output from the shortlisting agent."""
-    thoughts: List[str]
-    result: List[ToolDetails]  # Ranked by relevance_score
+    class ToolDetails(BaseModel):
+        """Details for a shortlisted tool."""
+        name: str
+        relevance_score: float = Field(ge=0.0, le=1.0)
+        reasoning: str
 
-class ShortlisterAgent:
-    """Agent that shortlists relevant tools for a given task."""
-    
-    def __init__(self, llm, prompt_template):
-        self.llm = llm
-        self.prompt_template = prompt_template
-    
-    async def shortlist(
-        self, 
-        task: str, 
-        available_tools: List[dict],
-        memory_tips: Optional[str] = None
-    ) -> ShortlistOutput:
-        """Shortlist relevant tools for a task."""
-        # Format tools for analysis
-        tools_json = json.dumps(available_tools, indent=2)
+    class ShortlistOutput(BaseModel):
+        """Output from the shortlisting agent."""
+        thoughts: List[str]
+        result: List[ToolDetails]  # Ranked by relevance_score
+
+    class ShortlisterAgent:
+        """Agent that shortlists relevant tools for a given task."""
         
-        # Invoke LLM with structured output
-        messages = self.prompt_template.format_messages(
-            task=task,
-            available_tools=tools_json,
-            memory=memory_tips or ""
-        )
+        def __init__(self, llm, prompt_template):
+            self.llm = llm
+            self.prompt_template = prompt_template
         
-        response = await self.llm.ainvoke(messages)
-        return ShortlistOutput.model_validate_json(response.content)
-    
-    @staticmethod
-    def filter_tools(all_tools: dict, shortlisted_names: List[str]) -> dict:
-        """Filter tool catalog to only include shortlisted tools."""
-        return {
-            app: {tid: tool for tid, tool in tools.items() 
-                  if tool.get("name") in shortlisted_names}
-            for app, tools in all_tools.items()
-        }
-```
+        async def shortlist(
+            self, 
+            task: str, 
+            available_tools: List[dict],
+            memory_tips: Optional[str] = None
+        ) -> ShortlistOutput:
+            """Shortlist relevant tools for a task."""
+            # Format tools for analysis
+            tools_json = json.dumps(available_tools, indent=2)
+            
+            # Invoke LLM with structured output
+            messages = self.prompt_template.format_messages(
+                task=task,
+                available_tools=tools_json,
+                memory=memory_tips or ""
+            )
+            
+            response = await self.llm.ainvoke(messages)
+            return ShortlistOutput.model_validate_json(response.content)
+        
+        @staticmethod
+        def filter_tools(all_tools: dict, shortlisted_names: List[str]) -> dict:
+            """Filter tool catalog to only include shortlisted tools."""
+            return {
+                app: {tid: tool for tid, tool in tools.items() 
+                    if tool.get("name") in shortlisted_names}
+                for app, tools in all_tools.items()
+            }
+    ```
 
 **Key Design Decisions:**
 - **Structured Output:** Pydantic models ensure consistent, parseable results
@@ -268,65 +268,65 @@ Available Tools:
 
 Shortlisting integrates into agent workflows through a node-based architecture:
 
-**Workflow Integration Pattern:**
+??? "Workflow Integration Pattern"
 
-```python
-from typing import TypedDict, Optional, Literal
+    ```python
+    from typing import TypedDict, Optional, Literal
 
-class AgentState(TypedDict):
-    """State managed across the agent workflow."""
-    task: str
-    available_tools: dict  # Full tool catalog
-    shortlisted_tools: Optional[List[ToolDetails]]
-    history: List[dict]
+    class AgentState(TypedDict):
+        """State managed across the agent workflow."""
+        task: str
+        available_tools: dict  # Full tool catalog
+        shortlisted_tools: Optional[List[ToolDetails]]
+        history: List[dict]
 
-async def shortlist_node(state: AgentState) -> AgentState:
-    """Shortlisting node in the workflow."""
-    shortlister = ShortlisterAgent(llm, prompt_template)
-    
-    # Execute shortlisting
-    result = await shortlister.shortlist(
-        task=state["task"],
-        available_tools=list(state["available_tools"].values())
+    async def shortlist_node(state: AgentState) -> AgentState:
+        """Shortlisting node in the workflow."""
+        shortlister = ShortlisterAgent(llm, prompt_template)
+        
+        # Execute shortlisting
+        result = await shortlister.shortlist(
+            task=state["task"],
+            available_tools=list(state["available_tools"].values())
+        )
+        
+        # Filter catalog to only shortlisted tools
+        shortlisted_names = [t.name for t in result.result]
+        filtered_tools = ShortlisterAgent.filter_tools(
+            state["available_tools"], 
+            shortlisted_names
+        )
+        
+        # Update state
+        return {
+            **state,
+            "shortlisted_tools": result.result,
+            "available_tools": filtered_tools,  # Reduced catalog
+            "history": state["history"] + [{"action": "shortlist", "result": result}]
+        }
+
+    async def planner_node(state: AgentState) -> AgentState:
+        """Planning agent decides when to shortlist."""
+        # Planning logic determines if shortlisting is needed
+        if needs_shortlisting(state):
+            return {"next": "shortlist"}
+        else:
+            return {"next": "execute"}
+
+    # Build workflow graph
+    graph = StateGraph(AgentState)
+    graph.add_node("planner", planner_node)
+    graph.add_node("shortlist", shortlist_node)
+    graph.add_node("execute", execute_node)
+
+    # Conditional routing
+    graph.add_conditional_edges(
+        "planner",
+        lambda s: s.get("next", "execute"),
+        {"shortlist": "shortlist", "execute": "execute"}
     )
-    
-    # Filter catalog to only shortlisted tools
-    shortlisted_names = [t.name for t in result.result]
-    filtered_tools = ShortlisterAgent.filter_tools(
-        state["available_tools"], 
-        shortlisted_names
-    )
-    
-    # Update state
-    return {
-        **state,
-        "shortlisted_tools": result.result,
-        "available_tools": filtered_tools,  # Reduced catalog
-        "history": state["history"] + [{"action": "shortlist", "result": result}]
-    }
-
-async def planner_node(state: AgentState) -> AgentState:
-    """Planning agent decides when to shortlist."""
-    # Planning logic determines if shortlisting is needed
-    if needs_shortlisting(state):
-        return {"next": "shortlist"}
-    else:
-        return {"next": "execute"}
-
-# Build workflow graph
-graph = StateGraph(AgentState)
-graph.add_node("planner", planner_node)
-graph.add_node("shortlist", shortlist_node)
-graph.add_node("execute", execute_node)
-
-# Conditional routing
-graph.add_conditional_edges(
-    "planner",
-    lambda s: s.get("next", "execute"),
-    {"shortlist": "shortlist", "execute": "execute"}
-)
-graph.add_edge("shortlist", "planner")  # Return to planner
-```
+    graph.add_edge("shortlist", "planner")  # Return to planner
+    ```
 
 **Key Integration Points:**
 - **State Management:** Shortlisted tools are stored and filtered from the full catalog
@@ -334,160 +334,160 @@ graph.add_edge("shortlist", "planner")  # Return to planner
 - **Conditional Routing:** Planning agent decides when shortlisting is needed
 - **Iterative Process:** Shortlisting can be triggered multiple times as tasks evolve
 
-### Basic Example
+??? "Basic Example"
 
-```python
-from pydantic import BaseModel, Field
-import json
+    ```python
+    from pydantic import BaseModel, Field
+    import json
 
-# Define output schema
-class ToolDetails(BaseModel):
-    name: str
-    relevance_score: float = Field(ge=0.0, le=1.0)
-    reasoning: str
+    # Define output schema
+    class ToolDetails(BaseModel):
+        name: str
+        relevance_score: float = Field(ge=0.0, le=1.0)
+        reasoning: str
 
-class ShortlistOutput(BaseModel):
-    thoughts: list[str]
-    result: list[ToolDetails]
+    class ShortlistOutput(BaseModel):
+        thoughts: list[str]
+        result: list[ToolDetails]
 
-# Available tools
-available_tools = [
-    {
-        "name": "get_accounts",
-        "description": "Retrieve all accounts with revenue data",
-        "parameters": [],
-        "response_schema": {
-            "type": "array",
-            "items": {"properties": {"id": "string", "revenue": "number"}}
+    # Available tools
+    available_tools = [
+        {
+            "name": "get_accounts",
+            "description": "Retrieve all accounts with revenue data",
+            "parameters": [],
+            "response_schema": {
+                "type": "array",
+                "items": {"properties": {"id": "string", "revenue": "number"}}
+            }
+        },
+        {
+            "name": "get_account_by_id",
+            "description": "Get account details by ID",
+            "parameters": [{"name": "account_id", "required": True}],
+            "response_schema": {"properties": {"id": "string", "revenue": "number"}}
         }
-    },
-    {
-        "name": "get_account_by_id",
-        "description": "Get account details by ID",
-        "parameters": [{"name": "account_id", "required": True}],
-        "response_schema": {"properties": {"id": "string", "revenue": "number"}}
-    }
-]
+    ]
 
-# Shortlist for a task
-task = "Get the top account by revenue"
-# Mock implementation for demonstration
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
+    # Shortlist for a task
+    task = "Get the top account by revenue"
+    # Mock implementation for demonstration
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import JsonOutputParser
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-# Simplified shortlisting example
-async def shortlist_tools(task: str, tools: list) -> ShortlistOutput:
-    prompt = ChatPromptTemplate.from_template(
-        "Select relevant tools for: {task}
-Tools: {tools}
-Return JSON with tool names and scores."
-    )
-    chain = prompt | llm | JsonOutputParser()
-    result = chain.invoke({"task": task, "tools": str(tools)})
-    # Mock result for demonstration
-    return ShortlistOutput(
-        thoughts=["get_accounts needed to retrieve all accounts"],
-        result=[
-            ToolDetails(name="get_accounts", relevance_score=0.9, reasoning="Retrieves all accounts with revenue"),
-            ToolDetails(name="get_account_by_id", relevance_score=0.7, reasoning="Can get specific account after filtering")
-        ]
-    )
+    # Simplified shortlisting example
+    async def shortlist_tools(task: str, tools: list) -> ShortlistOutput:
+        prompt = ChatPromptTemplate.from_template(
+            "Select relevant tools for: {task}
+    Tools: {tools}
+    Return JSON with tool names and scores."
+        )
+        chain = prompt | llm | JsonOutputParser()
+        result = chain.invoke({"task": task, "tools": str(tools)})
+        # Mock result for demonstration
+        return ShortlistOutput(
+            thoughts=["get_accounts needed to retrieve all accounts"],
+            result=[
+                ToolDetails(name="get_accounts", relevance_score=0.9, reasoning="Retrieves all accounts with revenue"),
+                ToolDetails(name="get_account_by_id", relevance_score=0.7, reasoning="Can get specific account after filtering")
+            ]
+        )
 
-# Example usage
-import asyncio
-async def main():
-    result = await shortlist_tools(task, available_tools)
-    for tool in result.result:
-        print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
+    # Example usage
+    import asyncio
+    async def main():
+        result = await shortlist_tools(task, available_tools)
+        for tool in result.result:
+            print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
 
-if __name__ == "__main__":
-    asyncio.run(main())
-```
+    if __name__ == "__main__":
+        asyncio.run(main())
+    ```
 
-**Expected Output:**
-```
-get_accounts: 0.95 - Directly fulfills task, no parameters needed, includes revenue data
-get_account_by_id: 0.60 - Useful after identification, can chain with get_accounts output
-```
+    **Expected Output:**
+    ```
+    get_accounts: 0.95 - Directly fulfills task, no parameters needed, includes revenue data
+    get_account_by_id: 0.60 - Useful after identification, can chain with get_accounts output
+    ```
 
-### Advanced Example: Tool Chaining
+The examplw below demonstrates how shortlisting identifies tools that can be chained together:
 
-Demonstrates how shortlisting identifies tools that can be chained together:
+??? "Advanced Example: Tool Chaining"
 
-```python
-available_tools = [
-    {
-        "name": "search_products",
-        "description": "Search products by keyword",
-        "parameters": [{"name": "keyword", "required": True}],
-        "response_schema": {
-            "items": {"properties": {"product_id": "string", "price": "number"}}
+    ```python
+    available_tools = [
+        {
+            "name": "search_products",
+            "description": "Search products by keyword",
+            "parameters": [{"name": "keyword", "required": True}],
+            "response_schema": {
+                "items": {"properties": {"product_id": "string", "price": "number"}}
+            }
+        },
+        {
+            "name": "add_to_cart",
+            "description": "Add product to cart",
+            "parameters": [
+                {"name": "product_id", "required": True},
+                {"name": "quantity", "required": True}
+            ]
         }
-    },
-    {
-        "name": "add_to_cart",
-        "description": "Add product to cart",
-        "parameters": [
-            {"name": "product_id", "required": True},
-            {"name": "quantity", "required": True}
-        ]
-    }
-]
+    ]
 
-task = "Find products matching 'laptop' and add the cheapest one to my cart"
+    task = "Find products matching 'laptop' and add the cheapest one to my cart"
 
-# Mock shortlisting example
-from pydantic import BaseModel, Field
-from typing import List
+    # Mock shortlisting example
+    from pydantic import BaseModel, Field
+    from typing import List
 
-class ToolDetails(BaseModel):
-    name: str
-    relevance_score: float = Field(ge=0.0, le=1.0)
-    reasoning: str
+    class ToolDetails(BaseModel):
+        name: str
+        relevance_score: float = Field(ge=0.0, le=1.0)
+        reasoning: str
 
-class ShortlistOutput(BaseModel):
-    thoughts: List[str]
-    result: List[ToolDetails]
+    class ShortlistOutput(BaseModel):
+        thoughts: List[str]
+        result: List[ToolDetails]
 
-async def shortlist_tools(task: str, tools: list) -> ShortlistOutput:
-    """Mock shortlisting function."""
-    # In real implementation, this would use LLM
-    return ShortlistOutput(
-        thoughts=["Need to search first, then add to cart"],
-        result=[
-            ToolDetails(
-                name="search_products",
-                relevance_score=0.95,
-                reasoning="Required to find products matching 'laptop'"
-            ),
-            ToolDetails(
-                name="add_to_cart",
-                relevance_score=0.85,
-                reasoning="Needed to add cheapest product to cart after search"
-            )
-        ]
-    )
+    async def shortlist_tools(task: str, tools: list) -> ShortlistOutput:
+        """Mock shortlisting function."""
+        # In real implementation, this would use LLM
+        return ShortlistOutput(
+            thoughts=["Need to search first, then add to cart"],
+            result=[
+                ToolDetails(
+                    name="search_products",
+                    relevance_score=0.95,
+                    reasoning="Required to find products matching 'laptop'"
+                ),
+                ToolDetails(
+                    name="add_to_cart",
+                    relevance_score=0.85,
+                    reasoning="Needed to add cheapest product to cart after search"
+                )
+            ]
+        )
 
-import asyncio
+    import asyncio
 
-async def main():
-    result = await shortlist_tools(task, available_tools)
-    for tool in result.result:
-        print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
+    async def main():
+        result = await shortlist_tools(task, available_tools)
+        for tool in result.result:
+            print(f"{tool.name}: {tool.relevance_score:.2f} - {tool.reasoning}")
 
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### Memory-Enhanced Shortlisting
+    if __name__ == "__main__":
+        asyncio.run(main())
+    ```
 
 Shortlisting can be improved by learning from past experiences:
 
-```python
-class MemoryEnhancedShortlister(ShortlisterAgent):
+??? "Memory-Enhanced Shortlisting"
+
+    ```python
+    class MemoryEnhancedShortlister(ShortlisterAgent):
     def __init__(self, llm, prompt_template, memory_store=None):
         super().__init__(llm, prompt_template)
         self.memory_store = memory_store
@@ -528,7 +528,7 @@ class MemoryEnhancedShortlister(ShortlisterAgent):
             )
         
         return result
-```
+        ```
 
 **Benefits:**
 - **Learns Tool Combinations:** Recognizes which tools work well together
@@ -536,36 +536,36 @@ class MemoryEnhancedShortlister(ShortlisterAgent):
 - **Avoids Failures:** Memory can include explicit failure patterns to watch for
 - **Reduces Errors:** Learns from successful tool chains
 
-### Tool Filtering
-
 After shortlisting, filter the full tool catalog to only include shortlisted tools:
 
-```python
-@staticmethod
-def filter_tools(all_tools: dict, shortlisted_names: List[str]) -> dict:
-    """Filter tool catalog to only include shortlisted tools.
-    
-    Input structure: {app_name: {tool_id: {name, description, ...}}}
-    Returns: Same structure but only with matching tool names
-    """
-    return {
-        app: {tid: tool for tid, tool in tools.items() 
-              if tool.get("name") in shortlisted_names}
-        for app, tools in all_tools.items()
-    }
 
-# Usage after shortlisting
-import asyncio
+??? "Tool Filtering"
 
+    ```python
+    @staticmethod
+    def filter_tools(all_tools: dict, shortlisted_names: List[str]) -> dict:
+        """Filter tool catalog to only include shortlisted tools.
+        
+        Input structure: {app_name: {tool_id: {name, description, ...}}}
+        Returns: Same structure but only with matching tool names
+        """
+        return {
+            app: {tid: tool for tid, tool in tools.items() 
+                if tool.get("name") in shortlisted_names}
+            for app, tools in all_tools.items()
+        }
 
-async def main():
-    result = await shortlister.shortlist(task, available_tools)
-shortlisted_names = [t.name for t in result.result]
-filtered_tools = ShortlisterAgent.filter_tools(all_tools, shortlisted_names)
+    # Usage after shortlisting
+    import asyncio
 
-if __name__ == "__main__":
-    asyncio.run(main())
-```
+    async def main():
+        result = await shortlister.shortlist(task, available_tools)
+    shortlisted_names = [t.name for t in result.result]
+    filtered_tools = ShortlisterAgent.filter_tools(all_tools, shortlisted_names)
+
+    if __name__ == "__main__":
+        asyncio.run(main())
+    ```
 
 **Benefits:**
 - **Context Reduction:** Reduces catalog from hundreds to 3-10 relevant tools
@@ -574,63 +574,63 @@ if __name__ == "__main__":
 
 ### Framework Integration
 
-**LangGraph Example:**
+??? "LangGraph Example:"
 
-```python
-from langgraph.graph import StateGraph, END
-from typing import TypedDict, List, Dict, Any
+    ```python
+    from langgraph.graph import StateGraph, END
+    from typing import TypedDict, List, Dict, Any
 
-# Mock type definitions
-class AgentState(TypedDict):
-    task: str
-    all_tools: List[Dict[str, Any]]
-    shortlisted: List[Dict[str, Any]]
+    # Mock type definitions
+    class AgentState(TypedDict):
+        task: str
+        all_tools: List[Dict[str, Any]]
+        shortlisted: List[Dict[str, Any]]
 
-# Mock implementations
-class ShortlisterAgent:
-    def __init__(self, llm, prompt_template):
-        self.llm = llm
-        self.prompt_template = prompt_template
-    
-    async def shortlist(self, task: str, available_tools: List[Dict]) -> Any:
-        # Mock result
-        class Result:
-            def __init__(self):
-                self.result = [{"name": tool["name"]} for tool in available_tools[:3]]
-        return Result()
+    # Mock implementations
+    class ShortlisterAgent:
+        def __init__(self, llm, prompt_template):
+            self.llm = llm
+            self.prompt_template = prompt_template
+        
+        async def shortlist(self, task: str, available_tools: List[Dict]) -> Any:
+            # Mock result
+            class Result:
+                def __init__(self):
+                    self.result = [{"name": tool["name"]} for tool in available_tools[:3]]
+            return Result()
 
-llm = None  # Would be initialized in real implementation
-prompt_template = None
+    llm = None  # Would be initialized in real implementation
+    prompt_template = None
 
-async def shortlist_node(state: AgentState) -> AgentState:
-    """Shortlist node in workflow."""
-    shortlister = ShortlisterAgent(llm, prompt_template)
-    result = await shortlister.shortlist(
-        task=state["task"],
-        available_tools=state["all_tools"]
-    )
-    return {**state, "shortlisted": result.result}
+    async def shortlist_node(state: AgentState) -> AgentState:
+        """Shortlist node in workflow."""
+        shortlister = ShortlisterAgent(llm, prompt_template)
+        result = await shortlister.shortlist(
+            task=state["task"],
+            available_tools=state["all_tools"]
+        )
+        return {**state, "shortlisted": result.result}
 
-# Example usage
-if __name__ == "__main__":
-    graph = StateGraph(AgentState)
-    graph.add_node("shortlist", shortlist_node)
-    graph.add_edge("shortlist", END)
-    
-    # Example state
-    initial_state: AgentState = {
-        "task": "Find products",
-        "all_tools": [{"name": "search"}, {"name": "filter"}],
-        "shortlisted": []
-    }
-    
-    import asyncio
-    async def run_example():
-        result = await graph.ainvoke(initial_state)
-        print(f"Shortlisted: {result['shortlisted']}")
-    
-    asyncio.run(run_example())
-```
+    # Example usage
+    if __name__ == "__main__":
+        graph = StateGraph(AgentState)
+        graph.add_node("shortlist", shortlist_node)
+        graph.add_edge("shortlist", END)
+        
+        # Example state
+        initial_state: AgentState = {
+            "task": "Find products",
+            "all_tools": [{"name": "search"}, {"name": "filter"}],
+            "shortlisted": []
+        }
+        
+        import asyncio
+        async def run_example():
+            result = await graph.ainvoke(initial_state)
+            print(f"Shortlisted: {result['shortlisted']}")
+        
+        asyncio.run(run_example())
+    ```
 
 **General Pattern:**
 - Shortlisting node receives task and full tool catalog
@@ -677,11 +677,11 @@ This pattern differs from:
 
 - **Planning:** Planning creates action sequences; Shortlisting identifies which tools are available for those sequences.
 
-## References
+??? "References"
 
-- LangChain Structured Output: https://python.langchain.com/docs/how_to/structured_output/
-- Model Context Protocol (MCP): https://modelcontextprotocol.io/
-- OpenAPI Specification: https://swagger.io/specification/
-- Google ADK Agents: https://google.github.io/adk-docs/agents/
-- Pydantic Models: https://docs.pydantic.dev/
+    - LangChain Structured Output: https://python.langchain.com/docs/how_to/structured_output/
+    - Model Context Protocol (MCP): https://modelcontextprotocol.io/
+    - OpenAPI Specification: https://swagger.io/specification/
+    - Google ADK Agents: https://google.github.io/adk-docs/agents/
+    - Pydantic Models: https://docs.pydantic.dev/
 

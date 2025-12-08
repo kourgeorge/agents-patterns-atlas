@@ -78,345 +78,348 @@ The Constrained Tool Use pattern is essential for managing complex action spaces
 # Check your framework's documentation for specific implementation details
 ```
 
-### Basic Example: Prefix Design Strategy
-
 The implementation often involves designing tool names with consistent prefixes and then leveraging the inference framework's ability to constrain output based on prefixes or logit masking:
 
-```python
-from typing import List, Dict, Set
-from enum import Enum
+??? "Basic Example: Prefix Design Strategy"
 
-class AgentState(Enum):
-    EXPLORING = "exploring"  # Can only use browser tools
-    EXECUTING = "executing"  # Can only use shell tools
-    QUERYING = "querying"   # Can only use database tools
-    RESPONDING = "responding"  # No tools, must respond directly
+    ```python
+    from typing import List, Dict, Set
+    from enum import Enum
 
-class ConstrainedToolManager:
-    def __init__(self):
-        # Define all tools with consistent prefixes
-        self.all_tools = {
-            "browser_search": "Search the web for information",
-            "browser_click_link": "Click on a link in the browser",
-            "browser_navigate": "Navigate to a URL",
-            "shell_execute": "Execute a shell command",
-            "shell_read_file": "Read a file from the filesystem",
-            "query_database": "Query the database with SQL",
-            "query_get_schema": "Get database schema information"
-        }
+    class AgentState(Enum):
+        EXPLORING = "exploring"  # Can only use browser tools
+        EXECUTING = "executing"  # Can only use shell tools
+        QUERYING = "querying"   # Can only use database tools
+        RESPONDING = "responding"  # No tools, must respond directly
+
+    class ConstrainedToolManager:
+        def __init__(self):
+            # Define all tools with consistent prefixes
+            self.all_tools = {
+                "browser_search": "Search the web for information",
+                "browser_click_link": "Click on a link in the browser",
+                "browser_navigate": "Navigate to a URL",
+                "shell_execute": "Execute a shell command",
+                "shell_read_file": "Read a file from the filesystem",
+                "query_database": "Query the database with SQL",
+                "query_get_schema": "Get database schema information"
+            }
+            
+            # Define tool groups by prefix
+            self.tool_groups = {
+                "browser_": ["browser_search", "browser_click_link", "browser_navigate"],
+                "shell_": ["shell_execute", "shell_read_file"],
+                "query_": ["query_database", "query_get_schema"]
+            }
+            
+            self.current_state = AgentState.RESPONDING
         
-        # Define tool groups by prefix
-        self.tool_groups = {
-            "browser_": ["browser_search", "browser_click_link", "browser_navigate"],
-            "shell_": ["shell_execute", "shell_read_file"],
-            "query_": ["query_database", "query_get_schema"]
-        }
+        def get_allowed_tools(self, state: AgentState) -> Set[str]:
+            """Get allowed tools for a given state."""
+            if state == AgentState.EXPLORING:
+                return set(self.tool_groups["browser_"])
+            elif state == AgentState.EXECUTING:
+                return set(self.tool_groups["shell_"])
+            elif state == AgentState.QUERYING:
+                return set(self.tool_groups["query_"])
+            else:  # RESPONDING
+                return set()  # No tools allowed
         
-        self.current_state = AgentState.RESPONDING
-    
-    def get_allowed_tools(self, state: AgentState) -> Set[str]:
-        """Get allowed tools for a given state."""
-        if state == AgentState.EXPLORING:
-            return set(self.tool_groups["browser_"])
-        elif state == AgentState.EXECUTING:
-            return set(self.tool_groups["shell_"])
-        elif state == AgentState.QUERYING:
-            return set(self.tool_groups["query_"])
-        else:  # RESPONDING
-            return set()  # No tools allowed
-    
-    def get_allowed_prefixes(self, state: AgentState) -> List[str]:
-        """Get allowed tool name prefixes for masking."""
-        if state == AgentState.EXPLORING:
-            return ["browser_"]
-        elif state == AgentState.EXECUTING:
-            return ["shell_"]
-        elif state == AgentState.QUERYING:
-            return ["query_"]
-        else:
-            return []  # No prefixes allowed
-    
-    def set_state(self, state: AgentState):
-        """Update agent state and return masking configuration."""
-        self.current_state = state
-        allowed_prefixes = self.get_allowed_prefixes(state)
-        return {
-            "allowed_prefixes": allowed_prefixes,
-            "mask_all_tools": len(allowed_prefixes) == 0
-        }
+        def get_allowed_prefixes(self, state: AgentState) -> List[str]:
+            """Get allowed tool name prefixes for masking."""
+            if state == AgentState.EXPLORING:
+                return ["browser_"]
+            elif state == AgentState.EXECUTING:
+                return ["shell_"]
+            elif state == AgentState.QUERYING:
+                return ["query_"]
+            else:
+                return []  # No prefixes allowed
+        
+        def set_state(self, state: AgentState):
+            """Update agent state and return masking configuration."""
+            self.current_state = state
+            allowed_prefixes = self.get_allowed_prefixes(state)
+            return {
+                "allowed_prefixes": allowed_prefixes,
+                "mask_all_tools": len(allowed_prefixes) == 0
+            }
 
-# Usage
-manager = ConstrainedToolManager()
+    # Usage
+    manager = ConstrainedToolManager()
 
-# Agent is exploring - only browser tools allowed
-masking_config = manager.set_state(AgentState.EXPLORING)
-# Framework would use this to mask logits for tools not starting with "browser_"
+    # Agent is exploring - only browser tools allowed
+    masking_config = manager.set_state(AgentState.EXPLORING)
+    # Framework would use this to mask logits for tools not starting with "browser_"
 
-# Agent must respond - no tools allowed
-masking_config = manager.set_state(AgentState.RESPONDING)
-# Framework would mask all tool-related tokens
-```
+    # Agent must respond - no tools allowed
+    masking_config = manager.set_state(AgentState.RESPONDING)
+    # Framework would mask all tool-related tokens
+    ```
 
 **Explanation:**
 This example demonstrates the prefix-based strategy where tools are named with consistent prefixes. The framework can then use these prefixes to mask logits during decoding, preventing selection of unavailable tools while keeping all definitions in context.
 
-### Advanced Example: Response Prefilling with Hermes Format
-
 This example shows how to use response prefilling to constrain the action space:
 
-```python
-from typing import Optional, List
-import json
 
-class ToolConstraintManager:
-    """Manages tool constraints using response prefilling."""
-    
-    def __init__(self):
-        self.all_tools = {
-            "browser_search": {"description": "Search the web"},
-            "browser_click": {"description": "Click a link"},
-            "shell_execute": {"description": "Execute command"},
-            "query_db": {"description": "Query database"}
-        }
-        self.current_constraint = None
-    
-    def get_response_prefix(self, constraint_mode: str, allowed_tools: Optional[List[str]] = None) -> str:
-        """
-        Generate response prefix based on constraint mode.
+??? "Advanced Example: Response Prefilling with Hermes Format"
+
+    ```python
+    from typing import Optional, List
+    import json
+
+    class ToolConstraintManager:
+        """Manages tool constraints using response prefilling."""
         
-        Hermes format examples:
-        - Auto: <|im_start|>assistant
-        - Required: <|im_start|>assistant<tool_call>
-        - Specified: <|im_start|>assistant<tool_call>{"name": "browser_"}
-        """
-        base_prefix = "<|im_start|>assistant"
+        def __init__(self):
+            self.all_tools = {
+                "browser_search": {"description": "Search the web"},
+                "browser_click": {"description": "Click a link"},
+                "shell_execute": {"description": "Execute command"},
+                "query_db": {"description": "Query database"}
+            }
+            self.current_constraint = None
         
-        if constraint_mode == "auto":
-            # Model may choose to call a function or not
-            return base_prefix
-        
-        elif constraint_mode == "required":
-            # Model must call a function, but choice is unconstrained
-            return f"{base_prefix}<tool_call>"
-        
-        elif constraint_mode == "specified":
-            # Model must call a function from a specific subset
-            if not allowed_tools:
-                raise ValueError("allowed_tools required for 'specified' mode")
+        def get_response_prefix(self, constraint_mode: str, allowed_tools: Optional[List[str]] = None) -> str:
+            """
+            Generate response prefix based on constraint mode.
             
-            # Prefill up to the beginning of the function name
-            # This constrains to specific tools
-            tool_names = [tool for tool in allowed_tools]
-            # In practice, you'd prefill the JSON structure
-            return f"{base_prefix}<tool_call>{{\"name\": \""
+            Hermes format examples:
+            - Auto: <|im_start|>assistant
+            - Required: <|im_start|>assistant<tool_call>
+            - Specified: <|im_start|>assistant<tool_call>{"name": "browser_"}
+            """
+            base_prefix = "<|im_start|>assistant"
+            
+            if constraint_mode == "auto":
+                # Model may choose to call a function or not
+                return base_prefix
+            
+            elif constraint_mode == "required":
+                # Model must call a function, but choice is unconstrained
+                return f"{base_prefix}<tool_call>"
+            
+            elif constraint_mode == "specified":
+                # Model must call a function from a specific subset
+                if not allowed_tools:
+                    raise ValueError("allowed_tools required for 'specified' mode")
+                
+                # Prefill up to the beginning of the function name
+                # This constrains to specific tools
+                tool_names = [tool for tool in allowed_tools]
+                # In practice, you'd prefill the JSON structure
+                return f"{base_prefix}<tool_call>{{\"name\": \""
+            
+            else:
+                return base_prefix
         
-        else:
-            return base_prefix
-    
-    def apply_constraint(self, state: str, user_input: str) -> Dict:
-        """
-        Apply constraint based on agent state.
-        Returns configuration for response prefilling.
-        """
-        if state == "must_respond":
-            # Agent must reply immediately, no tool calls
-            return {
-                "mode": "auto",
-                "prefix": self.get_response_prefix("auto"),
-                "mask_tools": True
-            }
-        
-        elif state == "can_use_browser":
-            # Only browser tools allowed
-            browser_tools = [t for t in self.all_tools.keys() if t.startswith("browser_")]
-            return {
-                "mode": "specified",
-                "prefix": self.get_response_prefix("specified", browser_tools),
-                "allowed_tools": browser_tools,
-                "mask_tools": False
-            }
-        
-        elif state == "must_use_tool":
-            # Must use a tool, but any tool is fine
-            return {
-                "mode": "required",
-                "prefix": self.get_response_prefix("required"),
-                "mask_tools": False
-            }
-        
-        else:
-            # Default: auto mode
-            return {
-                "mode": "auto",
-                "prefix": self.get_response_prefix("auto"),
-                "mask_tools": False
-            }
+        def apply_constraint(self, state: str, user_input: str) -> Dict:
+            """
+            Apply constraint based on agent state.
+            Returns configuration for response prefilling.
+            """
+            if state == "must_respond":
+                # Agent must reply immediately, no tool calls
+                return {
+                    "mode": "auto",
+                    "prefix": self.get_response_prefix("auto"),
+                    "mask_tools": True
+                }
+            
+            elif state == "can_use_browser":
+                # Only browser tools allowed
+                browser_tools = [t for t in self.all_tools.keys() if t.startswith("browser_")]
+                return {
+                    "mode": "specified",
+                    "prefix": self.get_response_prefix("specified", browser_tools),
+                    "allowed_tools": browser_tools,
+                    "mask_tools": False
+                }
+            
+            elif state == "must_use_tool":
+                # Must use a tool, but any tool is fine
+                return {
+                    "mode": "required",
+                    "prefix": self.get_response_prefix("required"),
+                    "mask_tools": False
+                }
+            
+            else:
+                # Default: auto mode
+                return {
+                    "mode": "auto",
+                    "prefix": self.get_response_prefix("auto"),
+                    "mask_tools": False
+                }
 
-# Usage
-manager = ToolConstraintManager()
+    # Usage
+    manager = ToolConstraintManager()
 
-# Agent must respond to user input
-config = manager.apply_constraint("must_respond", "User asked a question")
-# Framework uses config["prefix"] to prefill response
-# config["mask_tools"] = True prevents tool selection
+    # Agent must respond to user input
+    config = manager.apply_constraint("must_respond", "User asked a question")
+    # Framework uses config["prefix"] to prefill response
+    # config["mask_tools"] = True prevents tool selection
 
-# Agent can use browser tools
-config = manager.apply_constraint("can_use_browser", "Need to search web")
-# Framework uses config["prefix"] and config["allowed_tools"] to constrain selection
-```
+    # Agent can use browser tools
+    config = manager.apply_constraint("can_use_browser", "Need to search web")
+    # Framework uses config["prefix"] and config["allowed_tools"] to constrain selection
+    ```
 
 **Explanation:**
 This advanced example demonstrates response prefilling using the Hermes format. The framework prefills response tokens to constrain the action space without modifying tool definitions. Three modes are shown: Auto (may or may not call tools), Required (must call a tool), and Specified (must call from a subset).
 
 ### Framework-Specific Examples
 
-#### Custom Logit Masking Implementation
-```python
-from typing import Dict, List, Set
-import torch
+??? "Custom Logit Masking Implementation"
 
-class LogitMasker:
-    """Implements logit masking for tool constraints."""
-    
-    def __init__(self, tokenizer, tool_name_tokens: Dict[str, List[int]]):
-        """
-        Initialize with tokenizer and tool name token mappings.
-        
-        Args:
-            tokenizer: Tokenizer to convert tool names to token IDs
-            tool_name_tokens: Dict mapping tool names to their token ID sequences
-        """
-        self.tokenizer = tokenizer
-        self.tool_name_tokens = tool_name_tokens
-        self.all_tool_token_ids = set()
-        for tokens in tool_name_tokens.values():
-            self.all_tool_token_ids.update(tokens)
-    
-    def create_mask(self, allowed_tools: Set[str], vocab_size: int) -> torch.Tensor:
-        """
-        Create a logit mask that allows only specified tools.
-        
-        Args:
-            allowed_tools: Set of tool names that are allowed
-            vocab_size: Size of vocabulary
-        
-        Returns:
-            Binary mask tensor (1 = allowed, 0 = masked)
-        """
-        mask = torch.zeros(vocab_size, dtype=torch.bool)
-        
-        # Allow all tokens by default
-        mask.fill_(True)
-        
-        # Mask all tool-related tokens
-        mask[list(self.all_tool_token_ids)] = False
-        
-        # Unmask allowed tools
-        for tool_name in allowed_tools:
-            if tool_name in self.tool_name_tokens:
-                tool_tokens = self.tool_name_tokens[tool_name]
-                mask[tool_tokens] = True
-        
-        return mask
-    
-    def apply_mask_to_logits(self, logits: torch.Tensor, allowed_tools: Set[str]) -> torch.Tensor:
-        """Apply masking to logits during decoding."""
-        mask = self.create_mask(allowed_tools, logits.shape[-1])
-        
-        # Set masked logits to very negative value
-        masked_logits = logits.clone()
-        masked_logits[~mask] = float('-inf')
-        
-        return masked_logits
+    ```python
+    from typing import Dict, List, Set
+    import torch
 
-# Usage
-# In practice, this would be integrated into the inference framework
-# The mask would be applied during each decoding step
-```
-
-#### State Machine for Tool Availability
-```python
-from typing import Dict, Set, Optional
-from enum import Enum
-from dataclasses import dataclass
-
-class AgentState(Enum):
-    INITIALIZING = "initializing"
-    RESEARCHING = "researching"
-    EXECUTING = "executing"
-    RESPONDING = "responding"
-
-@dataclass
-class ToolConstraint:
-    """Defines tool constraints for a state."""
-    allowed_prefixes: List[str]
-    blocked_tools: Set[str]
-    require_tool: bool = False
-
-class ContextAwareToolStateMachine:
-    """Manages tool availability using a state machine."""
-    
-    def __init__(self):
-        # Define state-specific constraints
-        self.state_constraints = {
-            AgentState.INITIALIZING: ToolConstraint(
-                allowed_prefixes=[],
-                blocked_tools=set(),
-                require_tool=False
-            ),
-            AgentState.RESEARCHING: ToolConstraint(
-                allowed_prefixes=["browser_", "search_"],
-                blocked_tools={"shell_execute", "query_database"},
-                require_tool=False
-            ),
-            AgentState.EXECUTING: ToolConstraint(
-                allowed_prefixes=["shell_", "file_"],
-                blocked_tools={"browser_search", "browser_click"},
-                require_tool=False
-            ),
-            AgentState.RESPONDING: ToolConstraint(
-                allowed_prefixes=[],
-                blocked_tools=set(),  # All tools blocked
-                require_tool=False
-            )
-        }
+    class LogitMasker:
+        """Implements logit masking for tool constraints."""
         
-        self.current_state = AgentState.INITIALIZING
-    
-    def get_constraint_for_state(self, state: AgentState) -> ToolConstraint:
-        """Get tool constraint configuration for a state."""
-        return self.state_constraints.get(state, self.state_constraints[AgentState.INITIALIZING])
-    
-    def transition_to(self, new_state: AgentState) -> ToolConstraint:
-        """Transition to new state and return constraint."""
-        self.current_state = new_state
-        return self.get_constraint_for_state(new_state)
-    
-    def get_masking_config(self, state: Optional[AgentState] = None) -> Dict:
-        """Get masking configuration for current or specified state."""
-        target_state = state or self.current_state
-        constraint = self.get_constraint_for_state(target_state)
+        def __init__(self, tokenizer, tool_name_tokens: Dict[str, List[int]]):
+            """
+            Initialize with tokenizer and tool name token mappings.
+            
+            Args:
+                tokenizer: Tokenizer to convert tool names to token IDs
+                tool_name_tokens: Dict mapping tool names to their token ID sequences
+            """
+            self.tokenizer = tokenizer
+            self.tool_name_tokens = tool_name_tokens
+            self.all_tool_token_ids = set()
+            for tokens in tool_name_tokens.values():
+                self.all_tool_token_ids.update(tokens)
         
-        return {
-            "allowed_prefixes": constraint.allowed_prefixes,
-            "blocked_tools": constraint.blocked_tools,
-            "require_tool": constraint.require_tool,
-            "mask_all": len(constraint.allowed_prefixes) == 0 and len(constraint.blocked_tools) == 0
-        }
+        def create_mask(self, allowed_tools: Set[str], vocab_size: int) -> torch.Tensor:
+            """
+            Create a logit mask that allows only specified tools.
+            
+            Args:
+                allowed_tools: Set of tool names that are allowed
+                vocab_size: Size of vocabulary
+            
+            Returns:
+                Binary mask tensor (1 = allowed, 0 = masked)
+            """
+            mask = torch.zeros(vocab_size, dtype=torch.bool)
+            
+            # Allow all tokens by default
+            mask.fill_(True)
+            
+            # Mask all tool-related tokens
+            mask[list(self.all_tool_token_ids)] = False
+            
+            # Unmask allowed tools
+            for tool_name in allowed_tools:
+                if tool_name in self.tool_name_tokens:
+                    tool_tokens = self.tool_name_tokens[tool_name]
+                    mask[tool_tokens] = True
+            
+            return mask
+        
+        def apply_mask_to_logits(self, logits: torch.Tensor, allowed_tools: Set[str]) -> torch.Tensor:
+            """Apply masking to logits during decoding."""
+            mask = self.create_mask(allowed_tools, logits.shape[-1])
+            
+            # Set masked logits to very negative value
+            masked_logits = logits.clone()
+            masked_logits[~mask] = float('-inf')
+            
+            return masked_logits
 
-# Usage
-state_machine = ContextAwareToolStateMachine()
+    # Usage
+    # In practice, this would be integrated into the inference framework
+    # The mask would be applied during each decoding step
+    ```
 
-# Agent starts researching
-constraint = state_machine.transition_to(AgentState.RESEARCHING)
-masking_config = state_machine.get_masking_config()
-# Framework uses masking_config to constrain tool selection
+??? "State Machine for Tool Availability"
 
-# Agent must respond
-constraint = state_machine.transition_to(AgentState.RESPONDING)
-masking_config = state_machine.get_masking_config()
-# All tools masked, agent must respond directly
-```
+    ```python
+    from typing import Dict, Set, Optional
+    from enum import Enum
+    from dataclasses import dataclass
+
+    class AgentState(Enum):
+        INITIALIZING = "initializing"
+        RESEARCHING = "researching"
+        EXECUTING = "executing"
+        RESPONDING = "responding"
+
+    @dataclass
+    class ToolConstraint:
+        """Defines tool constraints for a state."""
+        allowed_prefixes: List[str]
+        blocked_tools: Set[str]
+        require_tool: bool = False
+
+    class ContextAwareToolStateMachine:
+        """Manages tool availability using a state machine."""
+        
+        def __init__(self):
+            # Define state-specific constraints
+            self.state_constraints = {
+                AgentState.INITIALIZING: ToolConstraint(
+                    allowed_prefixes=[],
+                    blocked_tools=set(),
+                    require_tool=False
+                ),
+                AgentState.RESEARCHING: ToolConstraint(
+                    allowed_prefixes=["browser_", "search_"],
+                    blocked_tools={"shell_execute", "query_database"},
+                    require_tool=False
+                ),
+                AgentState.EXECUTING: ToolConstraint(
+                    allowed_prefixes=["shell_", "file_"],
+                    blocked_tools={"browser_search", "browser_click"},
+                    require_tool=False
+                ),
+                AgentState.RESPONDING: ToolConstraint(
+                    allowed_prefixes=[],
+                    blocked_tools=set(),  # All tools blocked
+                    require_tool=False
+                )
+            }
+            
+            self.current_state = AgentState.INITIALIZING
+        
+        def get_constraint_for_state(self, state: AgentState) -> ToolConstraint:
+            """Get tool constraint configuration for a state."""
+            return self.state_constraints.get(state, self.state_constraints[AgentState.INITIALIZING])
+        
+        def transition_to(self, new_state: AgentState) -> ToolConstraint:
+            """Transition to new state and return constraint."""
+            self.current_state = new_state
+            return self.get_constraint_for_state(new_state)
+        
+        def get_masking_config(self, state: Optional[AgentState] = None) -> Dict:
+            """Get masking configuration for current or specified state."""
+            target_state = state or self.current_state
+            constraint = self.get_constraint_for_state(target_state)
+            
+            return {
+                "allowed_prefixes": constraint.allowed_prefixes,
+                "blocked_tools": constraint.blocked_tools,
+                "require_tool": constraint.require_tool,
+                "mask_all": len(constraint.allowed_prefixes) == 0 and len(constraint.blocked_tools) == 0
+            }
+
+    # Usage
+    state_machine = ContextAwareToolStateMachine()
+
+    # Agent starts researching
+    constraint = state_machine.transition_to(AgentState.RESEARCHING)
+    masking_config = state_machine.get_masking_config()
+    # Framework uses masking_config to constrain tool selection
+
+    # Agent must respond
+    constraint = state_machine.transition_to(AgentState.RESPONDING)
+    masking_config = state_machine.get_masking_config()
+    # All tools masked, agent must respond directly
+    ```
 
 ## Key Takeaways
 
@@ -450,11 +453,11 @@ This pattern is often combined with:
 
 - **State Management:** State machines or state management systems determine when to apply constraints, transitioning between states that allow different tool groups.
 
-## References
+??? "References"
 
-- Manus AI: Context Engineering for AI Agents - Lessons from Building Manus
-- KV-Cache Optimization: Maintaining stable context prefixes for efficient inference
-- Response Prefilling: Constraining LLM outputs through token prefilling
-- Hermes Format: Function calling format from NousResearch
-- Model Context Protocol (MCP): Standardized protocol for tool discovery and access
+    - Manus AI: Context Engineering for AI Agents - Lessons from Building Manus
+    - KV-Cache Optimization: Maintaining stable context prefixes for efficient inference
+    - Response Prefilling: Constraining LLM outputs through token prefilling
+    - Hermes Format: Function calling format from NousResearch
+    - Model Context Protocol (MCP): Standardized protocol for tool discovery and access
 

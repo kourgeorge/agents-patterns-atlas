@@ -138,45 +138,57 @@ When designing tools, there are often multiple ways to specify the same action. 
 **Practical Examples:**
 
 **❌ Avoid: Diff-based file editing**
-```python
-# Difficult for LLMs - requires precise line counting
-def edit_file(filepath: str, diff: str) -> str:
-    """
-    Edit a file using a diff format.
-    diff format: '@@ -start_line,count +start_line,count @@'
-    Example: '@@ -5,3 +5,4 @@\n old line 1\n-old line 2\n+new line 2'
-    """
-```
+
+??? "Example: Avoid Diff-based Editing"
+
+    ```python
+    # Difficult for LLMs - requires precise line counting
+    def edit_file(filepath: str, diff: str) -> str:
+        """
+        Edit a file using a diff format.
+        diff format: '@@ -start_line,count +start_line,count @@'
+        Example: '@@ -5,3 +5,4 @@\n old line 1\n-old line 2\n+new line 2'
+        """
+    ```
 
 **✅ Prefer: Full file replacement or append operations**
-```python
-# Easier for LLMs - no line counting required
-def write_file(filepath: str, content: str) -> str:
-    """
-    Write content to a file. If file exists, replaces it entirely.
-    content: The complete file contents as a string.
-    """
-```
+
+??? "Example: Prefer Full File Replacement"
+
+    ```python
+    # Easier for LLMs - no line counting required
+    def write_file(filepath: str, content: str) -> str:
+        """
+        Write content to a file. If file exists, replaces it entirely.
+        content: The complete file contents as a string.
+        """
+    ```
 
 **❌ Avoid: Code in JSON strings**
-```python
-# Requires escaping newlines and quotes
-def execute_code(code_json: str) -> str:
-    """
-    Execute code provided as JSON string.
-    Example: {"code": "def hello():\n    print('hi')"}
-    """
-```
+
+??? "Example: Avoid Code in JSON"
+
+    ```python
+    # Requires escaping newlines and quotes
+    def execute_code(code_json: str) -> str:
+        """
+        Execute code provided as JSON string.
+        Example: {"code": "def hello():\n    print('hi')"}
+        """
+    ```
 
 **✅ Prefer: Code in markdown or plain text**
-```python
-# Natural format, no escaping needed
-def execute_code(code: str) -> str:
-    """
-    Execute Python code provided as a string.
-    Code should be valid Python syntax.
-    """
-```
+
+??? "Example: Prefer Code in Plain Text"
+
+    ```python
+    # Natural format, no escaping needed
+    def execute_code(code: str) -> str:
+        """
+        Execute Python code provided as a string.
+        Code should be valid Python syntax.
+        """
+    ```
 
 **Poka-Yoke (Error-Proofing) Your Tools:**
 
@@ -289,94 +301,94 @@ Maintain a stable, hierarchical tool set. Use the three-level structure to balan
 
 ### Code Examples
 
-#### LangGraph Implementation
+??? "LangGraph Implementation"
 
-```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.tools import tool
-from langgraph.prebuilt import create_react_agent
+    ```python
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_core.tools import tool
+    from langgraph.prebuilt import create_react_agent
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-@tool
-def search_information(query: str) -> str:
-    """Provides factual information on a given topic."""
-    results = {
-        "weather in london": "The weather in London is currently cloudy with a temperature of 15°C.",
-        "capital of france": "The capital of France is Paris.",
-    }
-    return results.get(query.lower(), f"Information about: {query}")
+    @tool
+    def search_information(query: str) -> str:
+        """Provides factual information on a given topic."""
+        results = {
+            "weather in london": "The weather in London is currently cloudy with a temperature of 15°C.",
+            "capital of france": "The capital of France is Paris.",
+        }
+        return results.get(query.lower(), f"Information about: {query}")
 
-agent = create_react_agent(
-    llm,
-    [search_information],
-    state_modifier="You are a helpful assistant."
-)
+    agent = create_react_agent(
+        llm,
+        [search_information],
+        state_modifier="You are a helpful assistant."
+    )
 
-response = agent.invoke({
-    "messages": [{"role": "user", "content": "What is the capital of France?"}]
-})
-print(response["messages"][-1].content)
-```
+    response = agent.invoke({
+        "messages": [{"role": "user", "content": "What is the capital of France?"}]
+    })
+    print(response["messages"][-1].content)
+    ```
 
-#### CrewAI Implementation
+??? "CrewAI Implementation"
 
-```python
-from crewai import Agent, Task, Crew
-from crewai.tools import tool
+    ```python
+    from crewai import Agent, Task, Crew
+    from crewai.tools import tool
 
-@tool("Stock Price Lookup Tool")
-def get_stock_price(ticker: str) -> float:
-    """Fetches the latest simulated stock price for a given stock ticker symbol."""
-    prices = {"AAPL": 178.15, "GOOGL": 1750.30, "MSFT": 425.50}
-    return prices.get(ticker.upper(), 0.0)
+    @tool("Stock Price Lookup Tool")
+    def get_stock_price(ticker: str) -> float:
+        """Fetches the latest simulated stock price for a given stock ticker symbol."""
+        prices = {"AAPL": 178.15, "GOOGL": 1750.30, "MSFT": 425.50}
+        return prices.get(ticker.upper(), 0.0)
 
-agent = Agent(
-    role='Financial Analyst',
-    goal='Analyze stock data using provided tools.',
-    backstory="You are an experienced financial analyst.",
-    tools=[get_stock_price],
-    verbose=True
-)
+    agent = Agent(
+        role='Financial Analyst',
+        goal='Analyze stock data using provided tools.',
+        backstory="You are an experienced financial analyst.",
+        tools=[get_stock_price],
+        verbose=True
+    )
 
-task = Task(
-    description="What is the current stock price for Apple (ticker: AAPL)?",
-    expected_output="The simulated stock price for AAPL.",
-    agent=agent
-)
+    task = Task(
+        description="What is the current stock price for Apple (ticker: AAPL)?",
+        expected_output="The simulated stock price for AAPL.",
+        agent=agent
+    )
 
-crew = Crew(agents=[agent], tasks=[task], verbose=True)
-result = crew.kickoff()
-print(result)
-```
+    crew = Crew(agents=[agent], tasks=[task], verbose=True)
+    result = crew.kickoff()
+    print(result)
+    ```
 
-#### Google ADK Implementation
+??? "Google ADK Implementation"
 
-```python
-from google.adk.agents import Agent as ADKAgent
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.adk.tools import google_search
-from google.genai import types
+    ```python
+    from google.adk.agents import Agent as ADKAgent
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
+    from google.adk.tools import google_search
+    from google.genai import types
 
-agent = ADKAgent(
-    name="search_agent",
-    model="gemini-2.0-flash-exp",
-    description="Agent to answer questions using Google Search.",
-    instruction="I can answer your questions by searching the internet.",
-    tools=[google_search]
-)
+    agent = ADKAgent(
+        name="search_agent",
+        model="gemini-2.0-flash-exp",
+        description="Agent to answer questions using Google Search.",
+        instruction="I can answer your questions by searching the internet.",
+        tools=[google_search]
+    )
 
-session_service = InMemorySessionService()
-runner = Runner(agent=agent, app_name="search_app", session_service=session_service)
+    session_service = InMemorySessionService()
+    runner = Runner(agent=agent, app_name="search_app", session_service=session_service)
 
-content = types.Content(role='user', parts=[types.Part(text="what's the latest ai news?")])
-events = runner.run(user_id="user1", session_id="session1", new_message=content)
+    content = types.Content(role='user', parts=[types.Part(text="what's the latest ai news?")])
+    events = runner.run(user_id="user1", session_id="session1", new_message=content)
 
-for event in events:
-    if event.is_final_response():
-        print(event.content.parts[0].text)
-```
+    for event in events:
+        if event.is_final_response():
+            print(event.content.parts[0].text)
+    ```
 
 ## Key Takeaways
 
@@ -400,10 +412,10 @@ for event in events:
 - **Exception Handling:** Robust error handling is critical when tools fail or return unexpected results.
 - **Memory Management:** Tool results may need to be stored in external memory systems for later retrieval.
 
-## References
+??? "References"
 
-1. LangGraph Documentation (Tool Calling): https://langchain-ai.github.io/langgraph/how-tos/tool-calling/
-2. Google Agent Developer Kit (ADK) Documentation (Tools): https://google.github.io/adk-docs/tools/
-3. OpenAI Function Calling Documentation: https://platform.openai.com/docs/guides/function-calling
-4. CrewAI Documentation (Tools): https://docs.crewai.com/concepts/tools
-5. Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
+    1. LangGraph Documentation (Tool Calling): https://langchain-ai.github.io/langgraph/how-tos/tool-calling/
+    2. Google Agent Developer Kit (ADK) Documentation (Tools): https://google.github.io/adk-docs/tools/
+    3. OpenAI Function Calling Documentation: https://platform.openai.com/docs/guides/function-calling
+    4. CrewAI Documentation (Tools): https://docs.crewai.com/concepts/tools
+    5. Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2

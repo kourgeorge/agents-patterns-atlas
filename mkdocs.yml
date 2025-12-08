@@ -83,10 +83,10 @@ nav:
 - Reasoning & Planning:
     - Reasoning Techniques: reasoning-techniques.md
     - Planning Strategies: planning-strategies.md
-    - "Pattern: Task Decomposition Planning": task-decomposition.md
+    - "Pattern: Task Decomposition": task-decomposition.md
     - "Pattern: Prioritization": prioritization.md
 - Context:
-    - Context Engineering: context-compression.md
+    - Context Engineering: context-engineeting.md
     - "Pattern: Attention Engineering": attention-engineering.md
     - "Pattern: Context Editing": context-editing.md
     - "Pattern: Variables Manager": variables-manager.md

@@ -621,10 +621,9 @@ This pattern is often combined with:
 - **Natural Language Negotiation** - Agents negotiate and build consensus through dialogue
 - **Tool Use** - Agents use tools to gather information that informs discussion
 
-## References
-
-- **Consensus Through Discussion:** Improving Factuality and Reasoning in Language Models through Multiagent Debate (Du et al., 2023) - https://arxiv.org/abs/2305.14325
-- **Society of Minds:** Multiple LLM instances discussing and converging on solutions
-- **Natural Language Negotiation:** CICERO - Achieving human-level performance in Diplomacy through negotiation
-- LangGraph Multi-Agent: https://langchain-ai.github.io/langgraph/how-tos/multi-agent/
-- Multi-Agent Collaboration Mechanisms: A Survey of LLMs - https://arxiv.org/html/2501.06322v1
+??? "References"
+    - **Consensus Through Discussion:** Improving Factuality and Reasoning in Language Models through Multiagent Debate (Du et al., 2023) - https://arxiv.org/abs/2305.14325
+    - **Society of Minds:** Multiple LLM instances discussing and converging on solutions
+    - **Natural Language Negotiation:** CICERO - Achieving human-level performance in Diplomacy through negotiation
+    - LangGraph Multi-Agent: https://langchain-ai.github.io/langgraph/how-tos/multi-agent/
+    - Multi-Agent Collaboration Mechanisms: A Survey of LLMs - https://arxiv.org/html/2501.06322v1

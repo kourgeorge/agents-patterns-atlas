@@ -622,7 +622,7 @@ This pattern is often combined with:
 - **Memory Management** - Plans and results can be stored in external memory
 - **Exception Handling** - Robust error handling when plan execution fails
 
-## References
+??? "References"
 
 - **CoReaAgents:** A Collaboration and Reasoning Framework Based on LLM-Powered Agents for Complex Reasoning Tasks - https://www.mdpi.com/2076-3417/15/10/5663
 - **Plan-and-Execute:** Beyond ReAct: A Planner-Centric Framework for Complex Tool-Augmented LLM Reasoning - https://arxiv.org/html/2511.10037v2

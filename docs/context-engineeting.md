@@ -332,9 +332,9 @@ For related patterns covering externalization and long-term memory, see the **Me
 
 Effective context engineering is essential for building production-ready agentic systems. Understanding these concepts and patterns will enable you to build agents that operate efficiently within context limits, maintain focus on critical information, and scale to handle complex, long-horizon tasks.
 
-## References
+??? "References"
 
-- Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
-- Context Engineering for AI Agents: Lessons from Building Manus
-- Manus AI Agent Harness learnings from Peak Ji
-- LangChain Open Deep Research re-architecture examples
+    - Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
+    - Context Engineering for AI Agents: Lessons from Building Manus
+    - Manus AI Agent Harness learnings from Peak Ji
+    - LangChain Open Deep Research re-architecture examples

@@ -68,174 +68,175 @@ pip install langchain langchain-openai langgraph
 pip install google-adk
 ```
 
-### Basic Example
-```python
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
+??? "Basic Example"
+    ```python
+    from langchain_openai import ChatOpenAI
+    from langchain_core.messages import SystemMessage, HumanMessage
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
+    llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
 
-def reflect_and_refine(task: str, max_iterations: int = 3):
-    """Simple reflection loop for code generation."""
-    
-    current_output = ""
-    message_history = [HumanMessage(content=task)]
-    
-    for i in range(max_iterations):
-        # Producer: Generate or refine
-        if i == 0:
-            response = llm.invoke(message_history)
-            current_output = response.content
-        else:
-            message_history.append(HumanMessage(
-                content="Please refine based on the critique."
-            ))
-            response = llm.invoke(message_history)
-            current_output = response.content
+    def reflect_and_refine(task: str, max_iterations: int = 3):
+        """Simple reflection loop for code generation."""
         
-        message_history.append(response)
+        current_output = ""
+        message_history = [HumanMessage(content=task)]
         
-        # Critic: Evaluate
-        critique_prompt = [
-            SystemMessage(content="""You are a senior code reviewer.
-            Evaluate the code. If perfect, say 'PERFECT'.
-            Otherwise, provide critiques."""),
-            HumanMessage(content=f"Task: {task}\n\nCode: {current_output}")
-        ]
-        
-        critique = llm.invoke(critique_prompt).content
-        
-        if "PERFECT" in critique:
-            break
+        for i in range(max_iterations):
+            # Producer: Generate or refine
+            if i == 0:
+                response = llm.invoke(message_history)
+                current_output = response.content
+            else:
+                message_history.append(HumanMessage(
+                    content="Please refine based on the critique."
+                ))
+                response = llm.invoke(message_history)
+                current_output = response.content
             
-        message_history.append(HumanMessage(
-            content=f"Critique: {critique}"
-        ))
+            message_history.append(response)
+            
+            # Critic: Evaluate
+            critique_prompt = [
+                SystemMessage(content="""You are a senior code reviewer.
+                Evaluate the code. If perfect, say 'PERFECT'.
+                Otherwise, provide critiques."""),
+                HumanMessage(content=f"Task: {task}\n\nCode: {current_output}")
+            ]
+            
+            critique = llm.invoke(critique_prompt).content
+            
+            if "PERFECT" in critique:
+                break
+                
+            message_history.append(HumanMessage(
+                content=f"Critique: {critique}"
+            ))
+        
+        return current_output
+
+    # Use
+    code = reflect_and_refine("Write a Python function to calculate factorial")
+    print(code)
+        ```
+
     
-    return current_output
-
-# Use
-code = reflect_and_refine("Write a Python function to calculate factorial")
-print(code)
-```
-
 **Explanation:**
 This example demonstrates a basic reflection loop. The Producer generates code, the Critic evaluates it, and the Producer refines based on feedback. The loop continues until the Critic approves or max iterations are reached. This shows the core feedback mechanism of the Reflection pattern.
 
-### Advanced Example
-```python
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_core.output_parsers import JsonOutputParser
+??? "Advanced Example"
+    ```python
+    from langchain_openai import ChatOpenAI
+    from langchain_core.messages import SystemMessage, HumanMessage
+    from langchain_core.output_parsers import JsonOutputParser
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
+    llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
 
-def produce(task: str) -> str:
-    response = llm.invoke([HumanMessage(content=task)])
-    return response.content
+    def produce(task: str) -> str:
+        response = llm.invoke([HumanMessage(content=task)])
+        return response.content
 
-def critique(output: str, criteria: str) -> dict:
-    prompt = [
-        SystemMessage(content=f"""Evaluate. Return JSON: {{"score": float, "feedback": str, "status": "PASS|FAIL"}}
-        Criteria: {criteria}"""),
-        HumanMessage(content=output)
-    ]
-    chain = prompt | llm | JsonOutputParser()
-    return chain.invoke({})
+    def critique(output: str, criteria: str) -> dict:
+        prompt = [
+            SystemMessage(content=f"""Evaluate. Return JSON: {{"score": float, "feedback": str, "status": "PASS|FAIL"}}
+            Criteria: {criteria}"""),
+            HumanMessage(content=output)
+        ]
+        chain = prompt | llm | JsonOutputParser()
+        return chain.invoke({})
 
-def reflect(task: str, max_iterations: int = 3) -> str:
-    output = produce(task)
-    for i in range(max_iterations):
-        eval_result = critique(output, "quality, accuracy")
-        if eval_result.get("status") == "PASS":
-            break
-        output = llm.invoke([
-            HumanMessage(content=task),
-            HumanMessage(content=f"Previous: {output}"),
-            HumanMessage(content=f"Feedback: {eval_result['feedback']}\nRefine:")
-        ]).content
-    return output
+    def reflect(task: str, max_iterations: int = 3) -> str:
+        output = produce(task)
+        for i in range(max_iterations):
+            eval_result = critique(output, "quality, accuracy")
+            if eval_result.get("status") == "PASS":
+                break
+            output = llm.invoke([
+                HumanMessage(content=task),
+                HumanMessage(content=f"Previous: {output}"),
+                HumanMessage(content=f"Feedback: {eval_result['feedback']}\nRefine:")
+            ]).content
+        return output
 
-result = reflect("Write a blog post about AI agents")
-print(result)
-```
+    result = reflect("Write a blog post about AI agents")
+    print(result)
+    ```
 
 **Explanation:**
 This advanced example implements a full ReflectionAgent class with structured evaluation, quality scoring, and detailed iteration tracking. The Critic provides structured JSON feedback with scores, enabling more sophisticated stopping conditions and quality monitoring. This demonstrates production-ready reflection with quality thresholds and comprehensive iteration history.
 
 ### Framework-Specific Examples
 
-#### LangGraph
-```python
-from langgraph.graph import StateGraph, END
-from langchain_openai import ChatOpenAI
-from typing import TypedDict
+??? LangGraph
+    ```python
+    from langgraph.graph import StateGraph, END
+    from langchain_openai import ChatOpenAI
+    from typing import TypedDict
 
-llm = ChatOpenAI(temperature=0.1)
+    llm = ChatOpenAI(temperature=0.1)
 
-class ReflectionState(TypedDict):
-    task: str
-    output: str
-    critique: str
-    iteration: int
+    class ReflectionState(TypedDict):
+        task: str
+        output: str
+        critique: str
+        iteration: int
 
-def produce_node(state: ReflectionState) -> ReflectionState:
-    output = llm.invoke(f"Task: {state['task']}").content
-    return {**state, "output": output}
+    def produce_node(state: ReflectionState) -> ReflectionState:
+        output = llm.invoke(f"Task: {state['task']}").content
+        return {**state, "output": output}
 
-def critique_node(state: ReflectionState) -> ReflectionState:
-    critique = llm.invoke(f"Evaluate. If perfect say 'PERFECT': {state['output']}").content
-    return {**state, "critique": critique}
+    def critique_node(state: ReflectionState) -> ReflectionState:
+        critique = llm.invoke(f"Evaluate. If perfect say 'PERFECT': {state['output']}").content
+        return {**state, "critique": critique}
 
-def should_continue(state: ReflectionState) -> str:
-    if "PERFECT" in state["critique"] or state["iteration"] >= 3:
-        return "end"
-    return "refine"
+    def should_continue(state: ReflectionState) -> str:
+        if "PERFECT" in state["critique"] or state["iteration"] >= 3:
+            return "end"
+        return "refine"
 
-def refine_node(state: ReflectionState) -> ReflectionState:
-    output = llm.invoke(f"Refine: {state['critique']}\n{state['output']}").content
-    return {**state, "output": output, "iteration": state["iteration"] + 1}
+    def refine_node(state: ReflectionState) -> ReflectionState:
+        output = llm.invoke(f"Refine: {state['critique']}\n{state['output']}").content
+        return {**state, "output": output, "iteration": state["iteration"] + 1}
 
-graph = StateGraph(ReflectionState)
-graph.add_node("produce", produce_node)
-graph.add_node("critique", critique_node)
-graph.add_node("refine", refine_node)
-graph.set_entry_point("produce")
-graph.add_edge("produce", "critique")
-graph.add_conditional_edges("critique", should_continue, {"end": END, "refine": "refine"})
-graph.add_edge("refine", "produce")
+    graph = StateGraph(ReflectionState)
+    graph.add_node("produce", produce_node)
+    graph.add_node("critique", critique_node)
+    graph.add_node("refine", refine_node)
+    graph.set_entry_point("produce")
+    graph.add_edge("produce", "critique")
+    graph.add_conditional_edges("critique", should_continue, {"end": END, "refine": "refine"})
+    graph.add_edge("refine", "produce")
 
-result = graph.invoke({"task": "Write a function", "output": "", "critique": "", "iteration": 0})
-print(result["output"])
-```
+    result = graph.invoke({"task": "Write a function", "output": "", "critique": "", "iteration": 0})
+    print(result["output"])
+    ```
 
-#### Google ADK
-```python
-from google.adk.agents import LlmAgent, SequentialAgent
+??? "Google ADK"
+    ```python
+    from google.adk.agents import LlmAgent, SequentialAgent
 
-# Producer agent
-generator = LlmAgent(
-    name="DraftWriter",
-    model="gemini-2.0-flash",
-    instruction="Write a short paragraph about the subject.",
-    output_key="draft_text"
-)
+    # Producer agent
+    generator = LlmAgent(
+        name="DraftWriter",
+        model="gemini-2.0-flash",
+        instruction="Write a short paragraph about the subject.",
+        output_key="draft_text"
+    )
 
-# Critic agent
-reviewer = LlmAgent(
-    name="FactChecker",
-    model="gemini-2.0-flash",
-    instruction="""Review the text in 'draft_text'.
-    Return JSON: {"status": "ACCURATE"|"INACCURATE", "reasoning": str}""",
-    output_key="review_output"
-)
+    # Critic agent
+    reviewer = LlmAgent(
+        name="FactChecker",
+        model="gemini-2.0-flash",
+        instruction="""Review the text in 'draft_text'.
+        Return JSON: {"status": "ACCURATE"|"INACCURATE", "reasoning": str}""",
+        output_key="review_output"
+    )
 
-# Pattern: Reflection pipeline
-review_pipeline = SequentialAgent(
-    name="WriteAndReview",
-    sub_agents=[generator, reviewer]
-)
-```
+    # Pattern: Reflection pipeline
+    review_pipeline = SequentialAgent(
+        name="WriteAndReview",
+        sub_agents=[generator, reviewer]
+    )
+    ```
 
 ## Key Takeaways
 
@@ -255,9 +256,9 @@ This pattern is often combined with:
 - **Exception Handling** - Reflection can identify and correct errors before they cause failures
 - **Evaluation and Monitoring** - Structured evaluation metrics guide the reflection process
 
-## References
+??? "References"
 
-- LangGraph Iterative Workflows: https://langchain-ai.github.io/langgraph/how-tos/iterative/
-- Google ADK Sequential Agents: https://google.github.io/adk-docs/agents/sequential/
-- Self-Consistency and Chain-of-Thought: https://arxiv.org/abs/2203.11171
+    - LangGraph Iterative Workflows: https://langchain-ai.github.io/langgraph/how-tos/iterative/
+    - Google ADK Sequential Agents: https://google.github.io/adk-docs/agents/sequential/
+    - Self-Consistency and Chain-of-Thought: https://arxiv.org/abs/2203.11171
 

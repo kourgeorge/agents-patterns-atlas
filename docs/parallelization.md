@@ -65,141 +65,141 @@ pip install langchain langchain-openai langgraph
 pip install google-adk
 ```
 
-### Basic Example
-```python
-import asyncio
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableParallel, RunnablePassthrough
+??? "Basic Example"
+    ```python
+    import asyncio
+    from langchain_openai import ChatOpenAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser
+    from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-# Define independent chains
-summarize_chain = (
-    ChatPromptTemplate.from_template("Summarize: {topic}")
-    | llm
-    | StrOutputParser()
-)
+    # Define independent chains
+    summarize_chain = (
+        ChatPromptTemplate.from_template("Summarize: {topic}")
+        | llm
+        | StrOutputParser()
+    )
 
-questions_chain = (
-    ChatPromptTemplate.from_template("Generate 3 questions about: {topic}")
-    | llm
-    | StrOutputParser()
-)
+    questions_chain = (
+        ChatPromptTemplate.from_template("Generate 3 questions about: {topic}")
+        | llm
+        | StrOutputParser()
+    )
 
-terms_chain = (
-    ChatPromptTemplate.from_template("List key terms from: {topic}")
-    | llm
-    | StrOutputParser()
-)
+    terms_chain = (
+        ChatPromptTemplate.from_template("List key terms from: {topic}")
+        | llm
+        | StrOutputParser()
+    )
 
-# Execute in parallel
-parallel_chain = RunnableParallel({
-    "summary": summarize_chain,
-    "questions": questions_chain,
-    "key_terms": terms_chain,
-    "topic": RunnablePassthrough()
-})
+    # Execute in parallel
+    parallel_chain = RunnableParallel({
+        "summary": summarize_chain,
+        "questions": questions_chain,
+        "key_terms": terms_chain,
+        "topic": RunnablePassthrough()
+    })
 
-# Run
-result = parallel_chain.invoke("artificial intelligence")
-print(result)
-```
+    # Run
+    result = parallel_chain.invoke("artificial intelligence")
+    print(result)
+    ```
 
 **Explanation:**
 This example demonstrates parallel execution using LangChain's RunnableParallel. Three independent chains (summarize, questions, terms) execute concurrently on the same input topic. The results are collected in a dictionary, with all three operations completing in approximately the time of the slowest one, rather than the sum of all three.
 
-### Advanced Example
-```python
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableParallel
+??? "Advanced Example"
+    ```python
+    from langchain_openai import ChatOpenAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser
+    from langchain_core.runnables import RunnableParallel
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-def process_topic(topic: str):
-    chain = RunnableParallel({
-        "summary": ChatPromptTemplate.from_template("Summarize: {topic}") | llm | StrOutputParser(),
-        "analysis": ChatPromptTemplate.from_template("Analyze: {topic}") | llm | StrOutputParser(),
-    })
-    return chain.invoke({"topic": topic})
+    def process_topic(topic: str):
+        chain = RunnableParallel({
+            "summary": ChatPromptTemplate.from_template("Summarize: {topic}") | llm | StrOutputParser(),
+            "analysis": ChatPromptTemplate.from_template("Analyze: {topic}") | llm | StrOutputParser(),
+        })
+        return chain.invoke({"topic": topic})
 
-result = process_topic("artificial intelligence")
-print(result)
-```
+    result = process_topic("artificial intelligence")
+    print(result)
+    ```
 
 **Explanation:**
 This advanced example processes multiple topics in parallel, each with multiple sub-tasks. It includes error handling using asyncio.gather with return_exceptions, allowing the workflow to continue even if some tasks fail. This demonstrates production-ready parallelization with robust error management.
 
 ### Framework-Specific Examples
 
-#### LangGraph
-```python
-from langgraph.graph import StateGraph, END
-from typing import TypedDict
+??? LangGraph
+    ```python
+    from langgraph.graph import StateGraph, END
+    from typing import TypedDict
 
-class ParallelState(TypedDict):
-    input: str
-    result_a: str
-    result_b: str
+    class ParallelState(TypedDict):
+        input: str
+        result_a: str
+        result_b: str
 
-def task_a(state: ParallelState) -> ParallelState:
-    return {**state, "result_a": f"Processed A: {state['input']}"}
+    def task_a(state: ParallelState) -> ParallelState:
+        return {**state, "result_a": f"Processed A: {state['input']}"}
 
-def task_b(state: ParallelState) -> ParallelState:
-    return {**state, "result_b": f"Processed B: {state['input']}"}
+    def task_b(state: ParallelState) -> ParallelState:
+        return {**state, "result_b": f"Processed B: {state['input']}"}
 
-graph = StateGraph(ParallelState)
-graph.add_node("task_a", task_a)
-graph.add_node("task_b", task_b)
-graph.set_entry_point("task_a")
-graph.add_edge("task_a", "task_b")
-graph.add_edge("task_b", END)
+    graph = StateGraph(ParallelState)
+    graph.add_node("task_a", task_a)
+    graph.add_node("task_b", task_b)
+    graph.set_entry_point("task_a")
+    graph.add_edge("task_a", "task_b")
+    graph.add_edge("task_b", END)
 
-result = graph.invoke({"input": "test", "result_a": "", "result_b": ""})
-print(result)
-```
+    result = graph.invoke({"input": "test", "result_a": "", "result_b": ""})
+    print(result)
+    ```
 
-#### Google ADK
-```python
-from google.adk.agents import LlmAgent, ParallelAgent, SequentialAgent
+??? "Google ADK"
+    ```python
+    from google.adk.agents import LlmAgent, ParallelAgent, SequentialAgent
 
-# Define sub-agents that run in parallel
-researcher_1 = LlmAgent(
-    name="Researcher1",
-    model="gemini-2.0-flash",
-    instruction="Research topic A",
-    output_key="result_a"
-)
+    # Define sub-agents that run in parallel
+    researcher_1 = LlmAgent(
+        name="Researcher1",
+        model="gemini-2.0-flash",
+        instruction="Research topic A",
+        output_key="result_a"
+    )
 
-researcher_2 = LlmAgent(
-    name="Researcher2", 
-    model="gemini-2.0-flash",
-    instruction="Research topic B",
-    output_key="result_b"
-)
+    researcher_2 = LlmAgent(
+        name="Researcher2", 
+        model="gemini-2.0-flash",
+        instruction="Research topic B",
+        output_key="result_b"
+    )
 
-# Parallel execution
-parallel_agent = ParallelAgent(
-    name="ParallelResearch",
-    sub_agents=[researcher_1, researcher_2]
-)
+    # Parallel execution
+    parallel_agent = ParallelAgent(
+        name="ParallelResearch",
+        sub_agents=[researcher_1, researcher_2]
+    )
 
-# Synthesis agent runs after parallel completion
-synthesis_agent = LlmAgent(
-    name="Synthesis",
-    model="gemini-2.0-flash",
-    instruction="Combine {result_a} and {result_b}"
-)
+    # Synthesis agent runs after parallel completion
+    synthesis_agent = LlmAgent(
+        name="Synthesis",
+        model="gemini-2.0-flash",
+        instruction="Combine {result_a} and {result_b}"
+    )
 
-# Sequential orchestration
-main_agent = SequentialAgent(
-    name="Main",
-    sub_agents=[parallel_agent, synthesis_agent]
-)
-```
+    # Sequential orchestration
+    main_agent = SequentialAgent(
+        name="Main",
+        sub_agents=[parallel_agent, synthesis_agent]
+    )
+    ```
 
 ## Key Takeaways
 
@@ -219,9 +219,9 @@ This pattern is often combined with:
 - **Planning** - Plans can identify which tasks can run in parallel
 - **Reflection** - Parallel results can be evaluated and refined
 
-## References
+??? "References"
 
-- LangChain Expression Language (LCEL) Documentation: https://python.langchain.com/docs/concepts/lcel/
-- Google ADK Multi-Agent Systems: https://google.github.io/adk-docs/agents/multi-agents/
-- Python asyncio Documentation: https://docs.python.org/3/library/asyncio.html
+    - LangChain Expression Language (LCEL) Documentation: https://python.langchain.com/docs/concepts/lcel/
+    - Google ADK Multi-Agent Systems: https://google.github.io/adk-docs/agents/multi-agents/
+    - Python asyncio Documentation: https://docs.python.org/3/library/asyncio.html
 

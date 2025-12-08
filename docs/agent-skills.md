@@ -226,218 +226,218 @@ When including code in skills, it should be clear whether the agent should run s
 
 ### Basic Implementation
 
-#### Skill Discovery and Loading
+??? "Skill Discovery and Loading"
 
-```python
-from pathlib import Path
-from typing import List, Dict, Optional
-import yaml
-import frontmatter
+    ```python
+    from pathlib import Path
+    from typing import List, Dict, Optional
+    import yaml
+    import frontmatter
 
-class SkillManager:
-    def __init__(self, skills_directory: str = "./skills"):
-        self.skills_dir = Path(skills_directory)
-        self.skills_metadata: Dict[str, Dict] = {}
-        self.loaded_skills: Dict[str, str] = {}
-    
-    def discover_skills(self) -> List[Dict]:
-        """Level 1: Load metadata from all SKILL.md files."""
-        skills = []
+    class SkillManager:
+        def __init__(self, skills_directory: str = "./skills"):
+            self.skills_dir = Path(skills_directory)
+            self.skills_metadata: Dict[str, Dict] = {}
+            self.loaded_skills: Dict[str, str] = {}
         
-        for skill_dir in self.skills_dir.iterdir():
-            if not skill_dir.is_dir():
-                continue
+        def discover_skills(self) -> List[Dict]:
+            """Level 1: Load metadata from all SKILL.md files."""
+            skills = []
             
-            skill_file = skill_dir / "SKILL.md"
-            if not skill_file.exists():
-                continue
+            for skill_dir in self.skills_dir.iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                
+                skill_file = skill_dir / "SKILL.md"
+                if not skill_file.exists():
+                    continue
+                
+                # Parse YAML frontmatter
+                with open(skill_file, 'r') as f:
+                    post = frontmatter.load(f)
+                    metadata = post.metadata
+                    skills.append({
+                        "name": metadata.get("name", skill_dir.name),
+                        "description": metadata.get("description", ""),
+                        "path": str(skill_file),
+                        "directory": str(skill_dir)
+                    })
+                    self.skills_metadata[metadata.get("name", skill_dir.name)] = {
+                        "metadata": metadata,
+                        "path": str(skill_file),
+                        "directory": str(skill_dir)
+                    }
             
-            # Parse YAML frontmatter
-            with open(skill_file, 'r') as f:
-                post = frontmatter.load(f)
-                metadata = post.metadata
-                skills.append({
-                    "name": metadata.get("name", skill_dir.name),
-                    "description": metadata.get("description", ""),
-                    "path": str(skill_file),
-                    "directory": str(skill_dir)
-                })
-                self.skills_metadata[metadata.get("name", skill_dir.name)] = {
-                    "metadata": metadata,
-                    "path": str(skill_file),
-                    "directory": str(skill_dir)
-                }
+            return skills
         
-        return skills
-    
-    def get_skill_metadata_summary(self) -> str:
-        """Generate a summary of all skills for agent system prompt."""
-        skills = self.discover_skills()
-        summary = "Available Skills:\n\n"
-        for skill in skills:
-            summary += f"- **{skill['name']}**: {skill['description']}\n"
-        return summary
-    
-    def load_skill(self, skill_name: str) -> Optional[str]:
-        """Level 2: Load full SKILL.md content."""
-        if skill_name in self.loaded_skills:
-            return self.loaded_skills[skill_name]
+        def get_skill_metadata_summary(self) -> str:
+            """Generate a summary of all skills for agent system prompt."""
+            skills = self.discover_skills()
+            summary = "Available Skills:\n\n"
+            for skill in skills:
+                summary += f"- **{skill['name']}**: {skill['description']}\n"
+            return summary
         
-        if skill_name not in self.skills_metadata:
-            return None
+        def load_skill(self, skill_name: str) -> Optional[str]:
+            """Level 2: Load full SKILL.md content."""
+            if skill_name in self.loaded_skills:
+                return self.loaded_skills[skill_name]
+            
+            if skill_name not in self.skills_metadata:
+                return None
+            
+            skill_path = Path(self.skills_metadata[skill_name]["path"])
+            content = skill_path.read_text()
+            self.loaded_skills[skill_name] = content
+            return content
         
-        skill_path = Path(self.skills_metadata[skill_name]["path"])
-        content = skill_path.read_text()
-        self.loaded_skills[skill_name] = content
-        return content
-    
-    def read_skill_file(self, skill_name: str, filename: str) -> Optional[str]:
-        """Level 3: Read a linked file from skill directory."""
-        if skill_name not in self.skills_metadata:
-            return None
-        
-        skill_dir = Path(self.skills_metadata[skill_name]["directory"])
-        file_path = skill_dir / filename
-        
-        if not file_path.exists():
-            return None
-        
-        return file_path.read_text()
+        def read_skill_file(self, skill_name: str, filename: str) -> Optional[str]:
+            """Level 3: Read a linked file from skill directory."""
+            if skill_name not in self.skills_metadata:
+                return None
+            
+            skill_dir = Path(self.skills_metadata[skill_name]["directory"])
+            file_path = skill_dir / filename
+            
+            if not file_path.exists():
+                return None
+            
+            return file_path.read_text()
 
-# Usage
-skill_manager = SkillManager("./skills")
+    # Usage
+    skill_manager = SkillManager("./skills")
 
-# Level 1: Get metadata for system prompt
-system_prompt = f"""
-You are a helpful assistant with access to specialized skills.
+    # Level 1: Get metadata for system prompt
+    system_prompt = f"""
+    You are a helpful assistant with access to specialized skills.
 
-{skill_manager.get_skill_metadata_summary()}
+    {skill_manager.get_skill_metadata_summary()}
 
-When a user request matches a skill description, you can load that skill's full instructions.
-"""
+    When a user request matches a skill description, you can load that skill's full instructions.
+    """
 
-# Level 2: Agent determines "Data Analysis Skill" is needed
-skill_content = skill_manager.load_skill("Data Analysis Skill")
-# Inject skill_content into agent context
+    # Level 2: Agent determines "Data Analysis Skill" is needed
+    skill_content = skill_manager.load_skill("Data Analysis Skill")
+    # Inject skill_content into agent context
 
-# Level 3: Agent needs additional detail
-advanced_examples = skill_manager.read_skill_file("Data Analysis Skill", "advanced_examples.md")
-```
+    # Level 3: Agent needs additional detail
+    advanced_examples = skill_manager.read_skill_file("Data Analysis Skill", "advanced_examples.md")
+    ```
 
 **Explanation:**
 This implementation demonstrates the three-level progressive disclosure. The `discover_skills()` method performs Level 1 metadata loading, `load_skill()` performs Level 2 activation, and `read_skill_file()` enables Level 3 targeted detail access.
 
-### Advanced Implementation: Filesystem Tools Integration
+??? "Advanced Implementation: Filesystem Tools Integration"
 
-```python
-from pathlib import Path
-from typing import Optional
+    ```python
+    from pathlib import Path
+    from typing import Optional
 
-class SkillFilesystemTools:
-    """Tools for agents to interact with skills via filesystem."""
-    
-    def __init__(self, skills_directory: str = "./skills"):
-        self.skills_dir = Path(skills_directory)
-    
-    def list_skills(self) -> str:
-        """List all available skills with their descriptions."""
-        skills = []
-        for skill_dir in self.skills_dir.iterdir():
-            if not skill_dir.is_dir():
-                continue
-            
-            skill_file = skill_dir / "SKILL.md"
-            if not skill_file.exists():
-                continue
-            
-            # Read just the frontmatter
-            with open(skill_file, 'r') as f:
-                post = frontmatter.load(f)
-                metadata = post.metadata
-                skills.append({
-                    "name": metadata.get("name", skill_dir.name),
-                    "description": metadata.get("description", "")
-                })
+    class SkillFilesystemTools:
+        """Tools for agents to interact with skills via filesystem."""
         
-        if not skills:
-            return "No skills found."
+        def __init__(self, skills_directory: str = "./skills"):
+            self.skills_dir = Path(skills_directory)
         
-        result = "Available Skills:\n\n"
-        for skill in skills:
-            result += f"- **{skill['name']}**: {skill['description']}\n"
-        return result
-    
-    def read_skill(self, skill_name: str) -> str:
-        """Read the full contents of a SKILL.md file."""
-        # Find skill directory by name
-        for skill_dir in self.skills_dir.iterdir():
-            if not skill_dir.is_dir():
-                continue
+        def list_skills(self) -> str:
+            """List all available skills with their descriptions."""
+            skills = []
+            for skill_dir in self.skills_dir.iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                
+                skill_file = skill_dir / "SKILL.md"
+                if not skill_file.exists():
+                    continue
+                
+                # Read just the frontmatter
+                with open(skill_file, 'r') as f:
+                    post = frontmatter.load(f)
+                    metadata = post.metadata
+                    skills.append({
+                        "name": metadata.get("name", skill_dir.name),
+                        "description": metadata.get("description", "")
+                    })
             
-            skill_file = skill_dir / "SKILL.md"
-            if not skill_file.exists():
-                continue
+            if not skills:
+                return "No skills found."
             
-            with open(skill_file, 'r') as f:
-                post = frontmatter.load(f)
-                metadata = post.metadata
-                if metadata.get("name") == skill_name:
-                    return skill_file.read_text()
+            result = "Available Skills:\n\n"
+            for skill in skills:
+                result += f"- **{skill['name']}**: {skill['description']}\n"
+            return result
         
-        return f"Skill '{skill_name}' not found. Use list_skills() to see available skills."
-    
-    def read_skill_file(self, skill_name: str, filename: str) -> str:
-        """Read a file from within a skill's directory."""
-        # Find skill directory
-        for skill_dir in self.skills_dir.iterdir():
-            if not skill_dir.is_dir():
-                continue
+        def read_skill(self, skill_name: str) -> str:
+            """Read the full contents of a SKILL.md file."""
+            # Find skill directory by name
+            for skill_dir in self.skills_dir.iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                
+                skill_file = skill_dir / "SKILL.md"
+                if not skill_file.exists():
+                    continue
+                
+                with open(skill_file, 'r') as f:
+                    post = frontmatter.load(f)
+                    metadata = post.metadata
+                    if metadata.get("name") == skill_name:
+                        return skill_file.read_text()
             
-            skill_file = skill_dir / "SKILL.md"
-            if not skill_file.exists():
-                continue
-            
-            with open(skill_file, 'r') as f:
-                post = frontmatter.load(f)
-                metadata = post.metadata
-                if metadata.get("name") == skill_name:
-                    target_file = skill_dir / filename
-                    if target_file.exists():
-                        return target_file.read_text()
-                    else:
-                        return f"File '{filename}' not found in skill '{skill_name}'."
+            return f"Skill '{skill_name}' not found. Use list_skills() to see available skills."
         
-        return f"Skill '{skill_name}' not found."
-    
-    def list_skill_files(self, skill_name: str) -> str:
-        """List all files in a skill's directory."""
-        for skill_dir in self.skills_dir.iterdir():
-            if not skill_dir.is_dir():
-                continue
+        def read_skill_file(self, skill_name: str, filename: str) -> str:
+            """Read a file from within a skill's directory."""
+            # Find skill directory
+            for skill_dir in self.skills_dir.iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                
+                skill_file = skill_dir / "SKILL.md"
+                if not skill_file.exists():
+                    continue
+                
+                with open(skill_file, 'r') as f:
+                    post = frontmatter.load(f)
+                    metadata = post.metadata
+                    if metadata.get("name") == skill_name:
+                        target_file = skill_dir / filename
+                        if target_file.exists():
+                            return target_file.read_text()
+                        else:
+                            return f"File '{filename}' not found in skill '{skill_name}'."
             
-            skill_file = skill_dir / "SKILL.md"
-            if not skill_file.exists():
-                continue
-            
-            with open(skill_file, 'r') as f:
-                post = frontmatter.load(f)
-                metadata = post.metadata
-                if metadata.get("name") == skill_name:
-                    files = [f.name for f in skill_dir.iterdir() if f.is_file()]
-                    dirs = [f.name + "/" for f in skill_dir.iterdir() if f.is_dir()]
-                    return "\n".join(sorted(dirs + files))
+            return f"Skill '{skill_name}' not found."
         
-        return f"Skill '{skill_name}' not found."
+        def list_skill_files(self, skill_name: str) -> str:
+            """List all files in a skill's directory."""
+            for skill_dir in self.skills_dir.iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                
+                skill_file = skill_dir / "SKILL.md"
+                if not skill_file.exists():
+                    continue
+                
+                with open(skill_file, 'r') as f:
+                    post = frontmatter.load(f)
+                    metadata = post.metadata
+                    if metadata.get("name") == skill_name:
+                        files = [f.name for f in skill_dir.iterdir() if f.is_file()]
+                        dirs = [f.name + "/" for f in skill_dir.iterdir() if f.is_dir()]
+                        return "\n".join(sorted(dirs + files))
+            
+            return f"Skill '{skill_name}' not found."
 
-# Agent with skill tools
-skill_tools = SkillFilesystemTools("./skills")
+    # Agent with skill tools
+    skill_tools = SkillFilesystemTools("./skills")
 
-# Agent can use these tools to discover and load skills
-# 1. Agent calls list_skills() to see what's available
-# 2. Agent determines "Data Analysis Skill" is relevant
-# 3. Agent calls read_skill("Data Analysis Skill") to load full instructions
-# 4. If needed, agent calls read_skill_file("Data Analysis Skill", "advanced_examples.md")
-```
+    # Agent can use these tools to discover and load skills
+    # 1. Agent calls list_skills() to see what's available
+    # 2. Agent determines "Data Analysis Skill" is relevant
+    # 3. Agent calls read_skill("Data Analysis Skill") to load full instructions
+    # 4. If needed, agent calls read_skill_file("Data Analysis Skill", "advanced_examples.md")
+    ```
 
 **Explanation:**
 This advanced implementation provides filesystem tools that agents can use to interact with skills. The agent can discover skills, load their instructions, and access supporting files, all through tool calls rather than pre-loading everything.
@@ -487,109 +487,109 @@ print("Skill directory structure example:")
 print(skill_example)
 ```
 
-#### LangChain Agent with Skills
+??? LangChain Agent with Skills
 
-```python
-from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
-from pathlib import Path
-import frontmatter
+    ```python
+    from langchain.agents import AgentExecutor, create_tool_calling_agent
+    from langchain_core.tools import tool
+    from langchain_openai import ChatOpenAI
+    from pathlib import Path
+    import frontmatter
 
-# Skill filesystem tools
-@tool
-def list_skills() -> str:
-    """List all available skills with descriptions."""
-    skills_dir = Path("./skills")
-    skills = []
-    for skill_dir in skills_dir.iterdir():
-        if skill_dir.is_dir():
-            skill_file = skill_dir / "SKILL.md"
-            if skill_file.exists():
-                with open(skill_file, 'r') as f:
-                    post = frontmatter.load(f)
-                    metadata = post.metadata
-                    skills.append(f"- **{metadata.get('name')}**: {metadata.get('description')}")
-    return "\n".join(skills) if skills else "No skills found."
+    # Skill filesystem tools
+    @tool
+    def list_skills() -> str:
+        """List all available skills with descriptions."""
+        skills_dir = Path("./skills")
+        skills = []
+        for skill_dir in skills_dir.iterdir():
+            if skill_dir.is_dir():
+                skill_file = skill_dir / "SKILL.md"
+                if skill_file.exists():
+                    with open(skill_file, 'r') as f:
+                        post = frontmatter.load(f)
+                        metadata = post.metadata
+                        skills.append(f"- **{metadata.get('name')}**: {metadata.get('description')}")
+        return "\n".join(skills) if skills else "No skills found."
 
-@tool
-def read_skill(skill_name: str) -> str:
-    """Read the full instructions for a skill. Use this when you determine a skill is relevant to the task."""
-    skills_dir = Path("./skills")
-    for skill_dir in skills_dir.iterdir():
-        if skill_dir.is_dir():
-            skill_file = skill_dir / "SKILL.md"
-            if skill_file.exists():
-                with open(skill_file, 'r') as f:
-                    post = frontmatter.load(f)
-                    if post.metadata.get("name") == skill_name:
-                        return skill_file.read_text()
-    return f"Skill '{skill_name}' not found."
+    @tool
+    def read_skill(skill_name: str) -> str:
+        """Read the full instructions for a skill. Use this when you determine a skill is relevant to the task."""
+        skills_dir = Path("./skills")
+        for skill_dir in skills_dir.iterdir():
+            if skill_dir.is_dir():
+                skill_file = skill_dir / "SKILL.md"
+                if skill_file.exists():
+                    with open(skill_file, 'r') as f:
+                        post = frontmatter.load(f)
+                        if post.metadata.get("name") == skill_name:
+                            return skill_file.read_text()
+        return f"Skill '{skill_name}' not found."
 
-# Agent with skill tools
-llm = ChatOpenAI(model="gpt-4", temperature=0)
-tools = [list_skills, read_skill]
+    # Agent with skill tools
+    llm = ChatOpenAI(model="gpt-4", temperature=0)
+    tools = [list_skills, read_skill]
 
-agent_prompt = """You are a helpful assistant with access to specialized skills.
+    agent_prompt = """You are a helpful assistant with access to specialized skills.
 
-You can use the list_skills tool to see what capabilities are available.
-When a user request matches a skill description, use read_skill to load that skill's instructions.
-Then follow the skill's procedures to complete the task.
-"""
+    You can use the list_skills tool to see what capabilities are available.
+    When a user request matches a skill description, use read_skill to load that skill's instructions.
+    Then follow the skill's procedures to complete the task.
+    """
 
-agent = create_tool_calling_agent(llm, tools, agent_prompt)
-executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+    agent = create_tool_calling_agent(llm, tools, agent_prompt)
+    executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
-# Agent automatically discovers and uses skills
-result = executor.invoke({"input": "Analyze the sales data and create a report"})
-```
+    # Agent automatically discovers and uses skills
+    result = executor.invoke({"input": "Analyze the sales data and create a report"})
+    ```
 
-#### Google ADK Integration
+??? "Google ADK Integration"
 
-```python
-from google.adk.agents import Agent
-from google.adk.tools import FunctionTool
-from pathlib import Path
-import frontmatter
+    ```python
+    from google.adk.agents import Agent
+    from google.adk.tools import FunctionTool
+    from pathlib import Path
+    import frontmatter
 
-def list_skills_tool() -> str:
-    """List available skills."""
-    skills_dir = Path("./skills")
-    skills = []
-    for skill_dir in skills_dir.iterdir():
-        if skill_dir.is_dir():
-            skill_file = skill_dir / "SKILL.md"
-            if skill_file.exists():
-                with open(skill_file, 'r') as f:
-                    post = frontmatter.load(f)
-                    skills.append(f"- {post.metadata.get('name')}: {post.metadata.get('description')}")
-    return "\n".join(skills)
+    def list_skills_tool() -> str:
+        """List available skills."""
+        skills_dir = Path("./skills")
+        skills = []
+        for skill_dir in skills_dir.iterdir():
+            if skill_dir.is_dir():
+                skill_file = skill_dir / "SKILL.md"
+                if skill_file.exists():
+                    with open(skill_file, 'r') as f:
+                        post = frontmatter.load(f)
+                        skills.append(f"- {post.metadata.get('name')}: {post.metadata.get('description')}")
+        return "\n".join(skills)
 
-def read_skill_tool(skill_name: str) -> str:
-    """Read skill instructions."""
-    skills_dir = Path("./skills")
-    for skill_dir in skills_dir.iterdir():
-        if skill_dir.is_dir():
-            skill_file = skill_dir / "SKILL.md"
-            if skill_file.exists():
-                with open(skill_file, 'r') as f:
-                    post = frontmatter.load(f)
-                    if post.metadata.get("name") == skill_name:
-                        return skill_file.read_text()
-    return f"Skill not found: {skill_name}"
+    def read_skill_tool(skill_name: str) -> str:
+        """Read skill instructions."""
+        skills_dir = Path("./skills")
+        for skill_dir in skills_dir.iterdir():
+            if skill_dir.is_dir():
+                skill_file = skill_dir / "SKILL.md"
+                if skill_file.exists():
+                    with open(skill_file, 'r') as f:
+                        post = frontmatter.load(f)
+                        if post.metadata.get("name") == skill_name:
+                            return skill_file.read_text()
+        return f"Skill not found: {skill_name}"
 
-# Create agent with skill tools
-agent = Agent(
-    name="SkillBasedAgent",
-    model="gemini-2.0-flash",
-    instruction="""You have access to specialized skills organized as SKILL.md files.
+    # Create agent with skill tools
+    agent = Agent(
+        name="SkillBasedAgent",
+        model="gemini-2.0-flash",
+        instruction="""You have access to specialized skills organized as SKILL.md files.
 
-Use list_skills_tool to discover available capabilities.
-When a user request matches a skill, use read_skill_tool to load the skill's instructions.
-Follow the skill's procedures to complete the task.""",
-    tools=[FunctionTool(list_skills_tool), FunctionTool(read_skill_tool)]
-)
-```
+    Use list_skills_tool to discover available capabilities.
+    When a user request matches a skill, use read_skill_tool to load the skill's instructions.
+    Follow the skill's procedures to complete the task.""",
+        tools=[FunctionTool(list_skills_tool), FunctionTool(read_skill_tool)]
+    )
+    ```
 
 ## Integration with Agent Architectures
 
@@ -705,13 +705,13 @@ This pattern is often combined with:
 
 - **Reflection:** Agents can reflect on skill effectiveness and update skill instructions based on performance feedback.
 
-## References
+??? "References"
 
-- Anthropic Engineering Blog: [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) - The original blog post introducing the SKILL pattern by Anthropic
-- Deep Agents Framework: SKILL.md pattern implementation
-- Agentic Design Patterns: Building composable agent capabilities
-- Context Engineering: Progressive disclosure strategies for LLM agents
-- Filesystem as Context: Using external storage for agent knowledge
-- YAML Frontmatter Specification: https://jekyllrb.com/docs/front-matter/
-- Python Frontmatter Library: https://github.com/eyeseast/python-frontmatter
+    - Anthropic Engineering Blog: [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) - The original blog post introducing the SKILL pattern by Anthropic
+    - Deep Agents Framework: SKILL.md pattern implementation
+    - Agentic Design Patterns: Building composable agent capabilities
+    - Context Engineering: Progressive disclosure strategies for LLM agents
+    - Filesystem as Context: Using external storage for agent knowledge
+    - YAML Frontmatter Specification: https://jekyllrb.com/docs/front-matter/
+    - Python Frontmatter Library: https://github.com/eyeseast/python-frontmatter
 

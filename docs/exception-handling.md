@@ -1093,7 +1093,7 @@ This pattern is often combined with:
 - **Tool Use** - Tool failures require exception handling and recovery
 - **Planning** - Exceptions may trigger plan revision and replanning
 
-## References
+??? "References"
 
 - Code Complete by Steve McConnell
 - Fault Tolerance in Multi-Agent Systems: https://arxiv.org/abs/2412.00534

@@ -69,116 +69,116 @@ pip install langchain langchain-community langchain-openai langgraph
 
 Note: `langchain-openai` can be substituted with the appropriate package for a different model provider (e.g., `langchain-google-genai` for Gemini).
 
-### Basic Example
-```python
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
+??? "Basic Example"
+    ```python
+    from langchain_openai import ChatOpenAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser
 
-llm = ChatOpenAI(temperature=0)
+    llm = ChatOpenAI(temperature=0)
 
-prompt_extract = ChatPromptTemplate.from_template(
-    "Extract the technical specifications from: {text_input}"
-)
+    prompt_extract = ChatPromptTemplate.from_template(
+        "Extract the technical specifications from: {text_input}"
+    )
 
-prompt_transform = ChatPromptTemplate.from_template(
-    "Transform into JSON with 'cpu', 'memory', 'storage': {specifications}"
-)
+    prompt_transform = ChatPromptTemplate.from_template(
+        "Transform into JSON with 'cpu', 'memory', 'storage': {specifications}"
+    )
 
-extraction_chain = prompt_extract | llm | StrOutputParser()
-full_chain = {"specifications": extraction_chain} | prompt_transform | llm | StrOutputParser()
+    extraction_chain = prompt_extract | llm | StrOutputParser()
+    full_chain = {"specifications": extraction_chain} | prompt_transform | llm | StrOutputParser()
 
-result = full_chain.invoke({"text_input": "3.5 GHz CPU, 16GB RAM, 1TB SSD"})
-print(result)
-```
+    result = full_chain.invoke({"text_input": "3.5 GHz CPU, 16GB RAM, 1TB SSD"})
+    print(result)
+    ```
 
 **Explanation:**
 This example demonstrates a two-step prompt chain that functions as a data processing pipeline. The initial stage extracts technical specifications from unstructured text, and the subsequent stage transforms the extracted output into a structured JSON format. The LangChain Expression Language (LCEL) elegantly chains these prompts together, with the output of the first chain automatically feeding into the second prompt.
 
-### Advanced Example: Multi-Step Workflow
-```python
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
-from langchain_core.pydantic_v1 import BaseModel, Field
-from typing import List
+??? "Advanced Example: Multi-Step Workflow"
+    ```python
+    from langchain_openai import ChatOpenAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+    from langchain_core.pydantic_v1 import BaseModel, Field
+    from typing import List
 
-llm = ChatOpenAI(temperature=0)
+    llm = ChatOpenAI(temperature=0)
 
-class Trend(BaseModel):
-    trend_name: str = Field(description="Name of the trend")
-    supporting_data: str = Field(description="Data point supporting the trend")
+    class Trend(BaseModel):
+        trend_name: str = Field(description="Name of the trend")
+        supporting_data: str = Field(description="Data point supporting the trend")
 
-class TrendsResponse(BaseModel):
-    trends: List[Trend]
+    class TrendsResponse(BaseModel):
+        trends: List[Trend]
 
-summarize_chain = ChatPromptTemplate.from_template(
-    "Summarize key findings: {report_text}"
-) | llm | StrOutputParser()
+    summarize_chain = ChatPromptTemplate.from_template(
+        "Summarize key findings: {report_text}"
+    ) | llm | StrOutputParser()
 
-extract_chain = ChatPromptTemplate.from_template(
-    "Extract top 3 trends from: {summary}"
-) | llm | JsonOutputParser(pydantic_object=TrendsResponse)
+    extract_chain = ChatPromptTemplate.from_template(
+        "Extract top 3 trends from: {summary}"
+    ) | llm | JsonOutputParser(pydantic_object=TrendsResponse)
 
-email_chain = ChatPromptTemplate.from_template(
-    "Draft email about: {trends_json}"
-) | llm | StrOutputParser()
+    email_chain = ChatPromptTemplate.from_template(
+        "Draft email about: {trends_json}"
+    ) | llm | StrOutputParser()
 
-summary = summarize_chain.invoke({"report_text": "Market research shows 73% prefer personalized experiences..."})
-trends = extract_chain.invoke({"summary": summary})
-email = email_chain.invoke({"trends_json": str(trends)})
-print(email)
-```
+    summary = summarize_chain.invoke({"report_text": "Market research shows 73% prefer personalized experiences..."})
+    trends = extract_chain.invoke({"summary": summary})
+    email = email_chain.invoke({"trends_json": str(trends)})
+    print(email)
+    ```
 
 **Explanation:**
 This advanced example demonstrates a three-step workflow for processing a market research report. The chain summarizes the report, extracts trends with structured output, and generates an email. Using Pydantic models for structured output ensures data integrity between steps, and each step can be independently tested and optimized.
 
 ### Framework-Specific Examples
 
-#### LangGraph
-```python
-from langgraph.graph import StateGraph, END
-from langchain_openai import ChatOpenAI
-from typing import TypedDict
+??? LangGraph
+    ```python
+    from langgraph.graph import StateGraph, END
+    from langchain_openai import ChatOpenAI
+    from typing import TypedDict
 
-llm = ChatOpenAI(temperature=0)
+    llm = ChatOpenAI(temperature=0)
 
-class ChainState(TypedDict):
-    input_text: str
-    extracted: str
-    transformed: str
+    class ChainState(TypedDict):
+        input_text: str
+        extracted: str
+        transformed: str
 
-def extract_step(state: ChainState) -> ChainState:
-    result = llm.invoke(f"Extract specs from: {state['input_text']}")
-    return {**state, "extracted": result.content}
+    def extract_step(state: ChainState) -> ChainState:
+        result = llm.invoke(f"Extract specs from: {state['input_text']}")
+        return {**state, "extracted": result.content}
 
-def transform_step(state: ChainState) -> ChainState:
-    result = llm.invoke(f"Transform to JSON: {state['extracted']}")
-    return {**state, "transformed": result.content}
+    def transform_step(state: ChainState) -> ChainState:
+        result = llm.invoke(f"Transform to JSON: {state['extracted']}")
+        return {**state, "transformed": result.content}
 
-graph = StateGraph(ChainState)
-graph.add_node("extract", extract_step)
-graph.add_node("transform", transform_step)
-graph.set_entry_point("extract")
-graph.add_edge("extract", "transform")
-graph.add_edge("transform", END)
+    graph = StateGraph(ChainState)
+    graph.add_node("extract", extract_step)
+    graph.add_node("transform", transform_step)
+    graph.set_entry_point("extract")
+    graph.add_edge("extract", "transform")
+    graph.add_edge("transform", END)
 
-result = graph.invoke({"input_text": "3.5GHz CPU, 16GB RAM, 1TB SSD"})
-print(result["transformed"])
-```
+    result = graph.invoke({"input_text": "3.5GHz CPU, 16GB RAM, 1TB SSD"})
+    print(result["transformed"])
+    ```
 
-#### Google ADK
-```python
-from google.adk.agents import Agent
+??? "Google ADK"
+    ```python
+    from google.adk.agents import Agent
 
-agent = Agent(
-    name="SpecProcessor",
-    model="gemini-2.0-flash",
-    instruction="""Process specifications in steps:
-    1. Extract from input text
-    2. Transform to JSON format"""
-)
-```
+    agent = Agent(
+        name="SpecProcessor",
+        model="gemini-2.0-flash",
+        instruction="""Process specifications in steps:
+        1. Extract from input text
+        2. Transform to JSON format"""
+    )
+    ```
 
 ## Context Engineering
 
@@ -210,12 +210,11 @@ This pattern is often combined with:
 - **Context Engineering** - Each step benefits from well-engineered context
 - **Reflection** - Chains can include reflection steps to review and refine outputs
 
-## References
-
-- LangChain Documentation on LCEL: https://python.langchain.com/v0.2/docs/core_modules/expression_language/
-- LangGraph Documentation: https://langchain-ai.github.io/langgraph/
-- Prompt Engineering Guide - Chaining Prompts: https://www.promptingguide.ai/techniques/chaining
-- OpenAI API Documentation: https://platform.openai.com/docs/guides/gpt/prompting
-- Crew AI Documentation: https://docs.crewai.com/
-- Google AI for Developers: https://cloud.google.com/discover/what-is-prompt-engineering?hl=en
-- Vertex Prompt Optimizer: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/prompt-optimizer
+??? "References"
+    - LangChain Documentation on LCEL: https://python.langchain.com/v0.2/docs/core_modules/expression_language/
+    - LangGraph Documentation: https://langchain-ai.github.io/langgraph/
+    - Prompt Engineering Guide - Chaining Prompts: https://www.promptingguide.ai/techniques/chaining
+    - OpenAI API Documentation: https://platform.openai.com/docs/guides/gpt/prompting
+    - Crew AI Documentation: https://docs.crewai.com/
+    - Google AI for Developers: https://cloud.google.com/discover/what-is-prompt-engineering?hl=en
+    - Vertex Prompt Optimizer: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/prompt-optimizer

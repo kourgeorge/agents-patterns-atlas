@@ -508,7 +508,7 @@ This pattern is often combined with:
 - **Natural Language Negotiation** - Agents negotiate and build consensus through debate-like dialogue
 - **Tool Use** - Debating agents can use tools to gather evidence for arguments
 
-## References
+??? "References"
 
 - **Multi-Agent Debate (MAD) Framework:** Encouraging Divergent Thinking in Large Language Models through Multi-Agent Debate (Liang et al., 2024) - https://arxiv.org/abs/2305.19118
 - **Consensus Through Debate:** Improving Factuality and Reasoning in Language Models through Multiagent Debate (Du et al., 2023) - https://arxiv.org/abs/2305.14325

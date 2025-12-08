@@ -44,7 +44,9 @@ The primary method is **vector search**, which uses embeddings and semantic dist
 
 **Example: Hybrid Search Implementation**
 
-```python
+??? "**Chunking of Documents**"
+
+    ```python
 from typing import List, Dict, Tuple
 
 class HybridSearchRAG:
@@ -98,7 +100,9 @@ This technology is implemented in various forms, from managed databases like **P
 
 The following example demonstrates a basic RAG system with document chunking, embedding generation, and vector similarity search:
 
-```python
+??? "**Basic RAG Implementation**"
+
+    ```python
 from typing import List, Dict, Tuple
 import numpy as np
 from dataclasses import dataclass
@@ -169,7 +173,9 @@ Answer:"""
 
 For production systems, vector databases provide scalable storage and efficient querying. This example shows integration with Chroma DB:
 
-```python
+??? "**Vector Database Integration**"
+
+    ```python
 from typing import List, Dict, Optional
 import chromadb
 from chromadb.config import Settings
@@ -225,7 +231,9 @@ class VectorDatabaseRAG:
 
 Hybrid search combines the precision of keyword matching (BM25) with the contextual understanding of semantic search:
 
-```python
+??? "**Hybrid Search: Combining BM25 and Semantic Search**"
+
+    ```python
 class HybridSearchRAG:
     """
     Hybrid RAG system combining BM25 (keyword-based) and semantic search
@@ -310,7 +318,9 @@ Fourth, an agent can identify knowledge gaps and use external tools. Suppose a u
 
 The following example demonstrates an Agentic RAG system that actively evaluates, validates, and refines retrieved information:
 
-```python
+??? "**Agentic RAG Implementation**"
+
+    ```python
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from datetime import datetime

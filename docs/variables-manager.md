@@ -531,7 +531,7 @@ This pattern differs from:
 - **Filesystem as Context / RAG** - Filesystem as Context provides semantic search over documents; Variable Manager provides exact-name lookup for execution variables
 - **Persistent Task Lists (Recitation)** - Recitation tracks tasks; Variable Manager tracks data values
 
-## References
+??? "References"
 
 - LangChain State Management: https://python.langchain.com/docs/modules/memory/
 - LangGraph State Management: https://langchain-ai.github.io/langgraph/concepts/low_level/#state-management

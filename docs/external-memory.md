@@ -449,7 +449,7 @@ This pattern is often combined with:
 
 - **Multi-Agent Architectures:** Subagents write findings to shared external memory, and the orchestrator retrieves only relevant portions when synthesizing results.
 
-## References
+??? "References"
 
 - Agentic AI System Design Patterns
 - Context Engineering for AI Agents: Lessons from Building Manus

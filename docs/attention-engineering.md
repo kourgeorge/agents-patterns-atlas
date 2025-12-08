@@ -520,7 +520,7 @@ This pattern is often combined with:
 
 - **Long-Horizon Planning:** Attention Engineering maintains goal visibility throughout extended tasks by exploiting recency bias through recitation.
 
-## References
+??? "References"
 
 - Liu, N. F., et al. (2023). "Lost in the Middle: How Language Models Use Long Contexts." *arXiv preprint arXiv:2307.03172*. https://arxiv.org/abs/2307.03172
 

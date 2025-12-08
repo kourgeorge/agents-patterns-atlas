@@ -91,7 +91,7 @@ The journey ahead is exciting. You're about to learn patterns that will enable y
 Let's begin this hands-on journey into building intelligent, agentic systems!
 
 
-## Bibliography
+??? "Bibliography"
 
 Each module in this book includes its own bibliography with references specific to that pattern or topic. This section collects the main sources that have informed the overall content and structure of the book.
 Much of the content in this book is based on **"Agentic Design Patterns: A Hands-On Guide to Building Intelligent Systems"** by **Antonio Gulli**, published by Springer.

@@ -633,7 +633,7 @@ This pattern is often combined with:
 - **Tool Use** - Evaluator may use specialized tools (static analysis, testing, fact-checking)
 - **Pattern: Exception Handling** - Handle cases where evaluation fails or convergence isn't reached
 
-## References
+??? "References"
 
 - Iterative Refinement: Iterative Refinement for Machine Learning (various)
 - Code Review Practices: Best Practices for Code Review (Google, Microsoft)

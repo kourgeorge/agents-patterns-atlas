@@ -433,7 +433,7 @@ This pattern is often combined with:
 
 - **Agent-as-Tool Pattern:** The alternative Planner sub-agent approach follows the Agent-as-Tool pattern, treating planning as a deterministic function call rather than persistent conversation state.
 
-## References
+??? "References"
 
 - Agentic AI System Design Patterns
 - Context Engineering for AI Agents: Lessons from Building Manus

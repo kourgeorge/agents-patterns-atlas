@@ -67,227 +67,227 @@ Prioritization is essential for building efficient, goal-aligned agentic systems
 pip install langchain langchain-openai python-dotenv pydantic
 ```
 
-### Basic Example
-```python
-from typing import List, Dict
-from enum import Enum
+??? "Basic Example"
+    ```python
+    from typing import List, Dict
+    from enum import Enum
 
-class Priority(Enum):
-    P0 = 0  # Critical/Urgent
-    P1 = 1  # High
-    P2 = 2  # Medium
-    P3 = 3  # Low
+    class Priority(Enum):
+        P0 = 0  # Critical/Urgent
+        P1 = 1  # High
+        P2 = 2  # Medium
+        P3 = 3  # Low
 
-class Task:
-    def __init__(self, id: str, description: str, urgency: int = 0, 
-                 importance: int = 0, deadline: float = None):
-        self.id = id
-        self.description = description
-        self.urgency = urgency  # 0-10 scale
-        self.importance = importance  # 0-10 scale
-        self.deadline = deadline  # Unix timestamp
-        self.priority_score = self._calculate_priority()
-    
-    def _calculate_priority(self) -> float:
-        """Calculate priority score based on urgency and importance."""
-        # Weighted combination
-        base_score = (self.urgency * 0.6) + (self.importance * 0.4)
+    class Task:
+        def __init__(self, id: str, description: str, urgency: int = 0, 
+                    importance: int = 0, deadline: float = None):
+            self.id = id
+            self.description = description
+            self.urgency = urgency  # 0-10 scale
+            self.importance = importance  # 0-10 scale
+            self.deadline = deadline  # Unix timestamp
+            self.priority_score = self._calculate_priority()
         
-        # Boost for approaching deadlines
-        if self.deadline:
-            import time
-            time_until_deadline = self.deadline - time.time()
-            if time_until_deadline < 3600:  # Less than 1 hour
-                base_score += 5.0
-            elif time_until_deadline < 86400:  # Less than 1 day
-                base_score += 2.0
+        def _calculate_priority(self) -> float:
+            """Calculate priority score based on urgency and importance."""
+            # Weighted combination
+            base_score = (self.urgency * 0.6) + (self.importance * 0.4)
+            
+            # Boost for approaching deadlines
+            if self.deadline:
+                import time
+                time_until_deadline = self.deadline - time.time()
+                if time_until_deadline < 3600:  # Less than 1 hour
+                    base_score += 5.0
+                elif time_until_deadline < 86400:  # Less than 1 day
+                    base_score += 2.0
+            
+            return base_score
         
-        return base_score
-    
-    def get_priority_level(self) -> Priority:
-        """Convert score to priority level."""
-        if self.priority_score >= 8:
-            return Priority.P0
-        elif self.priority_score >= 5:
-            return Priority.P1
-        elif self.priority_score >= 2:
-            return Priority.P2
-        else:
-            return Priority.P3
+        def get_priority_level(self) -> Priority:
+            """Convert score to priority level."""
+            if self.priority_score >= 8:
+                return Priority.P0
+            elif self.priority_score >= 5:
+                return Priority.P1
+            elif self.priority_score >= 2:
+                return Priority.P2
+            else:
+                return Priority.P3
 
-class TaskPrioritizer:
-    """Simple task prioritization system."""
-    
-    def __init__(self):
-        self.tasks: List[Task] = []
-    
-    def add_task(self, task: Task):
-        """Add a task to the prioritizer."""
-        self.tasks.append(task)
-    
-    def get_prioritized_tasks(self) -> List[Task]:
-        """Get tasks sorted by priority (highest first)."""
-        return sorted(self.tasks, key=lambda t: t.priority_score, reverse=True)
-    
-    def get_next_task(self) -> Task:
-        """Get the highest priority task."""
-        prioritized = self.get_prioritized_tasks()
-        return prioritized[0] if prioritized else None
+    class TaskPrioritizer:
+        """Simple task prioritization system."""
+        
+        def __init__(self):
+            self.tasks: List[Task] = []
+        
+        def add_task(self, task: Task):
+            """Add a task to the prioritizer."""
+            self.tasks.append(task)
+        
+        def get_prioritized_tasks(self) -> List[Task]:
+            """Get tasks sorted by priority (highest first)."""
+            return sorted(self.tasks, key=lambda t: t.priority_score, reverse=True)
+        
+        def get_next_task(self) -> Task:
+            """Get the highest priority task."""
+            prioritized = self.get_prioritized_tasks()
+            return prioritized[0] if prioritized else None
 
-# Example usage
-prioritizer = TaskPrioritizer()
+    # Example usage
+    prioritizer = TaskPrioritizer()
 
-# Add tasks with different priorities
-prioritizer.add_task(Task("T1", "Fix critical security bug", urgency=10, importance=10))
-prioritizer.add_task(Task("T2", "Update documentation", urgency=2, importance=3))
-prioritizer.add_task(Task("T3", "Review pull request", urgency=5, importance=4))
+    # Add tasks with different priorities
+    prioritizer.add_task(Task("T1", "Fix critical security bug", urgency=10, importance=10))
+    prioritizer.add_task(Task("T2", "Update documentation", urgency=2, importance=3))
+    prioritizer.add_task(Task("T3", "Review pull request", urgency=5, importance=4))
 
-# Get prioritized list
-for task in prioritizer.get_prioritized_tasks():
-    print(f"{task.id}: {task.description} - Priority: {task.get_priority_level().name}")
+    # Get prioritized list
+    for task in prioritizer.get_prioritized_tasks():
+        print(f"{task.id}: {task.description} - Priority: {task.get_priority_level().name}")
 
-# Get next task to work on
-next_task = prioritizer.get_next_task()
-print(f"\nNext task: {next_task.description}")
-```
+    # Get next task to work on
+    next_task = prioritizer.get_next_task()
+    print(f"\nNext task: {next_task.description}")
+    ```
 
 **Explanation:**
 This basic example demonstrates a simple prioritization system that calculates priority scores based on urgency and importance, with additional boosts for approaching deadlines. Tasks are sorted by their priority scores, and the system can return the highest priority task for execution.
 
-### Advanced Example: LLM-Based Prioritization
-```python
-import os
-from typing import List, Optional, Dict
-from dotenv import load_dotenv
-from pydantic import BaseModel, Field
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.tools import Tool
-from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.memory import ConversationBufferMemory
+??? "Advanced Example: LLM-Based Prioritization"
+    ```python
+    import os
+    from typing import List, Optional, Dict
+    from dotenv import load_dotenv
+    from pydantic import BaseModel, Field
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.tools import Tool
+    from langchain_openai import ChatOpenAI
+    from langchain.agents import AgentExecutor, create_react_agent
+    from langchain.memory import ConversationBufferMemory
 
-load_dotenv()
-llm = ChatOpenAI(temperature=0.5, model="gpt-4o-mini")
+    load_dotenv()
+    llm = ChatOpenAI(temperature=0.5, model="gpt-4o-mini")
 
-class Task(BaseModel):
-    """Represents a single task in the system."""
-    id: str
-    description: str
-    priority: Optional[str] = None  # P0, P1, P2
-    assigned_to: Optional[str] = None
+    class Task(BaseModel):
+        """Represents a single task in the system."""
+        id: str
+        description: str
+        priority: Optional[str] = None  # P0, P1, P2
+        assigned_to: Optional[str] = None
 
-class TaskManager:
-    """In-memory task manager."""
-    def __init__(self):
-        self.tasks: Dict[str, Task] = {}
-        self.next_task_id = 1
-    
-    def create_task(self, description: str) -> Task:
-        """Creates and stores a new task."""
-        task_id = f"TASK-{self.next_task_id:03d}"
-        new_task = Task(id=task_id, description=description)
-        self.tasks[task_id] = new_task
-        self.next_task_id += 1
-        return new_task
-    
-    def update_task(self, task_id: str, **kwargs) -> Optional[Task]:
-        """Updates a task."""
-        task = self.tasks.get(task_id)
-        if task:
-            update_data = {k: v for k, v in kwargs.items() if v is not None}
-            updated_task = task.model_copy(update=update_data)
-            self.tasks[task_id] = updated_task
-            return updated_task
-        return None
-    
-    def list_all_tasks(self) -> str:
-        """Lists all tasks currently in the system."""
-        if not self.tasks:
-            return "No tasks in the system."
-        task_strings = []
-        for task in self.tasks.values():
-            task_strings.append(
-                f"ID: {task.id}, Desc: '{task.description}', "
-                f"Priority: {task.priority or 'N/A'}, "
-                f"Assigned To: {task.assigned_to or 'N/A'}"
-            )
-        return "Current Tasks:\n" + "\n".join(task_strings)
+    class TaskManager:
+        """In-memory task manager."""
+        def __init__(self):
+            self.tasks: Dict[str, Task] = {}
+            self.next_task_id = 1
+        
+        def create_task(self, description: str) -> Task:
+            """Creates and stores a new task."""
+            task_id = f"TASK-{self.next_task_id:03d}"
+            new_task = Task(id=task_id, description=description)
+            self.tasks[task_id] = new_task
+            self.next_task_id += 1
+            return new_task
+        
+        def update_task(self, task_id: str, **kwargs) -> Optional[Task]:
+            """Updates a task."""
+            task = self.tasks.get(task_id)
+            if task:
+                update_data = {k: v for k, v in kwargs.items() if v is not None}
+                updated_task = task.model_copy(update=update_data)
+                self.tasks[task_id] = updated_task
+                return updated_task
+            return None
+        
+        def list_all_tasks(self) -> str:
+            """Lists all tasks currently in the system."""
+            if not self.tasks:
+                return "No tasks in the system."
+            task_strings = []
+            for task in self.tasks.values():
+                task_strings.append(
+                    f"ID: {task.id}, Desc: '{task.description}', "
+                    f"Priority: {task.priority or 'N/A'}, "
+                    f"Assigned To: {task.assigned_to or 'N/A'}"
+                )
+            return "Current Tasks:\n" + "\n".join(task_strings)
 
-task_manager = TaskManager()
+    task_manager = TaskManager()
 
-# Tools for the Project Manager Agent
-class CreateTaskArgs(BaseModel):
-    description: str = Field(description="A detailed description of the task.")
+    # Tools for the Project Manager Agent
+    class CreateTaskArgs(BaseModel):
+        description: str = Field(description="A detailed description of the task.")
 
-class PriorityArgs(BaseModel):
-    task_id: str = Field(description="The ID of the task to update, e.g., 'TASK-001'.")
-    priority: str = Field(description="The priority to set. Must be one of: 'P0', 'P1', 'P2'.")
+    class PriorityArgs(BaseModel):
+        task_id: str = Field(description="The ID of the task to update, e.g., 'TASK-001'.")
+        priority: str = Field(description="The priority to set. Must be one of: 'P0', 'P1', 'P2'.")
 
-def create_new_task_tool(description: str) -> str:
-    """Creates a new project task with the given description."""
-    task = task_manager.create_task(description)
-    return f"Created task {task.id}: '{task.description}'."
+    def create_new_task_tool(description: str) -> str:
+        """Creates a new project task with the given description."""
+        task = task_manager.create_task(description)
+        return f"Created task {task.id}: '{task.description}'."
 
-def assign_priority_to_task_tool(task_id: str, priority: str) -> str:
-    """Assigns a priority (P0, P1, P2) to a given task ID."""
-    if priority not in ["P0", "P1", "P2"]:
-        return "Invalid priority. Must be P0, P1, or P2."
-    task = task_manager.update_task(task_id, priority=priority)
-    return f"Assigned priority {priority} to task {task.id}." if task else f"Task {task_id} not found."
+    def assign_priority_to_task_tool(task_id: str, priority: str) -> str:
+        """Assigns a priority (P0, P1, P2) to a given task ID."""
+        if priority not in ["P0", "P1", "P2"]:
+            return "Invalid priority. Must be P0, P1, or P2."
+        task = task_manager.update_task(task_id, priority=priority)
+        return f"Assigned priority {priority} to task {task.id}." if task else f"Task {task_id} not found."
 
-pm_tools = [
-    Tool(
-        name="create_new_task",
-        func=create_new_task_tool,
-        description="Use this first to create a new task and get its ID.",
-        args_schema=CreateTaskArgs
-    ),
-    Tool(
-        name="assign_priority_to_task",
-        func=assign_priority_to_task_tool,
-        description="Use this to assign a priority to a task after it has been created.",
-        args_schema=PriorityArgs
-    ),
-    Tool(
-        name="list_all_tasks",
-        func=task_manager.list_all_tasks,
-        description="Use this to list all current tasks and their status."
-    ),
-]
+    pm_tools = [
+        Tool(
+            name="create_new_task",
+            func=create_new_task_tool,
+            description="Use this first to create a new task and get its ID.",
+            args_schema=CreateTaskArgs
+        ),
+        Tool(
+            name="assign_priority_to_task",
+            func=assign_priority_to_task_tool,
+            description="Use this to assign a priority to a task after it has been created.",
+            args_schema=PriorityArgs
+        ),
+        Tool(
+            name="list_all_tasks",
+            func=task_manager.list_all_tasks,
+            description="Use this to list all current tasks and their status."
+        ),
+    ]
 
-# Project Manager Agent
-pm_prompt_template = ChatPromptTemplate.from_messages([
-    ("system", """You are a focused Project Manager LLM agent. Your goal is to manage project tasks efficiently.
-When you receive a new task request, follow these steps:
-1. First, create the task with the given description using the `create_new_task` tool.
-2. Next, analyze the user's request to determine priority:
-   - If urgent/critical/ASAP mentioned → P0
-   - If important but not urgent → P1
-   - Otherwise → P2
-3. Assign the priority using `assign_priority_to_task`.
-4. Use `list_all_tasks` to show the final state.
+    # Project Manager Agent
+    pm_prompt_template = ChatPromptTemplate.from_messages([
+        ("system", """You are a focused Project Manager LLM agent. Your goal is to manage project tasks efficiently.
+    When you receive a new task request, follow these steps:
+    1. First, create the task with the given description using the `create_new_task` tool.
+    2. Next, analyze the user's request to determine priority:
+    - If urgent/critical/ASAP mentioned → P0
+    - If important but not urgent → P1
+    - Otherwise → P2
+    3. Assign the priority using `assign_priority_to_task`.
+    4. Use `list_all_tasks` to show the final state.
 
-Priority levels: P0 (highest), P1 (medium), P2 (lowest)
-"""),
-    ("placeholder", "{chat_history}"),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}")
-])
+    Priority levels: P0 (highest), P1 (medium), P2 (lowest)
+    """),
+        ("placeholder", "{chat_history}"),
+        ("human", "{input}"),
+        ("placeholder", "{agent_scratchpad}")
+    ])
 
-pm_agent = create_react_agent(llm, pm_tools, pm_prompt_template)
-pm_agent_executor = AgentExecutor(
-    agent=pm_agent,
-    tools=pm_tools,
-    verbose=True,
-    handle_parsing_errors=True,
-    memory=ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-)
+    pm_agent = create_react_agent(llm, pm_tools, pm_prompt_template)
+    pm_agent_executor = AgentExecutor(
+        agent=pm_agent,
+        tools=pm_tools,
+        verbose=True,
+        handle_parsing_errors=True,
+        memory=ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    )
 
-# Example usage
-result = pm_agent_executor.invoke({
-    "input": "Create a task to implement a new login system. It's urgent and critical."
-})
-```
+    # Example usage
+    result = pm_agent_executor.invoke({
+        "input": "Create a task to implement a new login system. It's urgent and critical."
+    })
+    ```
 
 **Explanation:**
 This advanced example demonstrates LLM-based prioritization where an agent analyzes task descriptions and automatically assigns priorities based on urgency and importance cues. The agent uses tools to create tasks, assign priorities, and manage the task list, making intelligent prioritization decisions based on natural language input.
@@ -311,9 +311,9 @@ This pattern is often combined with:
 - **Goal Setting and Monitoring** - Priorities are often tied to goal achievement
 - **Dynamic Re-prioritization** - Priorities change as circumstances evolve
 
-## References
+??? "References"
 
-- LangChain Agents: https://python.langchain.com/docs/modules/agents/
-- Task Prioritization in AI Systems: Research on multi-criteria decision making for agents
-- Project Management with AI: Best practices for automated task prioritization
+    - LangChain Agents: https://python.langchain.com/docs/modules/agents/
+    - Task Prioritization in AI Systems: Research on multi-criteria decision making for agents
+    - Project Management with AI: Best practices for automated task prioritization
 

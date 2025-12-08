@@ -60,207 +60,212 @@ Routing is essential for building adaptive agentic systems that can handle diver
 
 ## Implementation
 
-### Prerequisites
-```bash
-pip install langchain langchain-google-genai langgraph
-# or
-pip install google-adk
-```
+??? "Prerequisites"
 
-### Basic Example
-```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableBranch, RunnablePassthrough
+    ```bash
+    pip install langchain langchain-google-genai langgraph
+    # or
+    pip install google-adk
+    ```
 
-# Initialize LLM
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+??? "Basic Example"
 
-# Define router prompt
-router_prompt = ChatPromptTemplate.from_messages([
-    ("system", """Analyze the user's request and output ONE word:
-    - 'booking' for flight/hotel bookings
-    - 'info' for general questions
-    - 'support' for technical issues
-    Output only: booking, info, or support"""),
-    ("user", "{request}")
-])
+    ```python
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser
+    from langchain_core.runnables import RunnableBranch, RunnablePassthrough
 
-# Define handlers
-def booking_handler(request: str) -> str:
-    return f"Processing booking: {request}"
+    # Initialize LLM
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-def info_handler(request: str) -> str:
-    return f"Answering question: {request}"
+    # Define router prompt
+    router_prompt = ChatPromptTemplate.from_messages([
+        ("system", """Analyze the user's request and output ONE word:
+        - 'booking' for flight/hotel bookings
+        - 'info' for general questions
+        - 'support' for technical issues
+        Output only: booking, info, or support"""),
+        ("user", "{request}")
+    ])
 
-def support_handler(request: str) -> str:
-    return f"Escalating support: {request}"
+    # Define handlers
+    def booking_handler(request: str) -> str:
+        return f"Processing booking: {request}"
 
-# Create router chain
-router_chain = router_prompt | llm | StrOutputParser()
+    def info_handler(request: str) -> str:
+        return f"Answering question: {request}"
 
-# Create routing branches
-routing_branch = RunnableBranch(
-    (lambda x: "booking" in x['decision'].lower(), 
-     RunnablePassthrough.assign(output=lambda x: booking_handler(x['request']))),
-    (lambda x: "support" in x['decision'].lower(),
-     RunnablePassthrough.assign(output=lambda x: support_handler(x['request']))),
-    RunnablePassthrough.assign(output=lambda x: info_handler(x['request']))
-)
+    def support_handler(request: str) -> str:
+        return f"Escalating support: {request}"
 
-# Combine into agent
-agent = {
-    "decision": router_chain,
-    "request": RunnablePassthrough()
-} | routing_branch
+    # Create router chain
+    router_chain = router_prompt | llm | StrOutputParser()
 
-# Use
-result = agent.invoke({"request": "Book me a flight to Paris"})
-print(result['output'])
-```
+    # Create routing branches
+    routing_branch = RunnableBranch(
+        (lambda x: "booking" in x['decision'].lower(), 
+         RunnablePassthrough.assign(output=lambda x: booking_handler(x['request']))),
+        (lambda x: "support" in x['decision'].lower(),
+         RunnablePassthrough.assign(output=lambda x: support_handler(x['request']))),
+        RunnablePassthrough.assign(output=lambda x: info_handler(x['request']))
+    )
 
-**Explanation:**
-This example demonstrates LLM-based routing. The router chain uses an LLM to classify the user's request into one of three categories. The RunnableBranch then routes to the appropriate handler based on the classification. This pattern enables dynamic decision-making while keeping the code structure clear and maintainable.
+    # Combine into agent
+    agent = {
+        "decision": router_chain,
+        "request": RunnablePassthrough()
+    } | routing_branch
 
-### Advanced Example
-```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.runnables import RunnableBranch, RunnablePassthrough
+    # Use
+    result = agent.invoke({"request": "Book me a flight to Paris"})
+    print(result['output'])
+    ```
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+    **Explanation:**
+    This example demonstrates LLM-based routing. The router chain uses an LLM to classify the user's request into one of three categories. The RunnableBranch then routes to the appropriate handler based on the classification. This pattern enables dynamic decision-making while keeping the code structure clear and maintainable.
 
-router_prompt = ChatPromptTemplate.from_messages([
-    ("system", """Return JSON: {"route": "booking|info|support", "confidence": 0.0-1.0}"""),
-    ("user", "{request}")
-])
+??? "Advanced Example"
 
-def route_handler(route_data: dict, request: str) -> dict:
-    route = route_data.get("route", "info")
-    handlers = {
-        "booking": lambda r: f"Booking: {r}",
-        "info": lambda r: f"Info: {r}",
-        "support": lambda r: f"Support: {r}"
-    }
-    return {"output": handlers.get(route, handlers["info"])(request)}
+    ```python
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import JsonOutputParser
+    from langchain_core.runnables import RunnableBranch, RunnablePassthrough
 
-router = (
-    router_prompt | llm | JsonOutputParser()
-    | (lambda x: route_handler(x, x.get("request", "")))
-)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-result = router.invoke({"request": "Book a flight"})
-print(result["output"])
-```
+    router_prompt = ChatPromptTemplate.from_messages([
+        ("system", """Return JSON: {"route": "booking|info|support", "confidence": 0.0-1.0}"""),
+        ("user", "{request}")
+    ])
 
-**Explanation:**
-This advanced example adds confidence scoring, structured JSON output, and error handling. The router returns not just a route decision but also confidence and reasoning, enabling the system to handle low-confidence cases by asking for clarification. This makes the routing more robust and transparent.
+    def route_handler(route_data: dict, request: str) -> dict:
+        route = route_data.get("route", "info")
+        handlers = {
+            "booking": lambda r: f"Booking: {r}",
+            "info": lambda r: f"Info: {r}",
+            "support": lambda r: f"Support: {r}"
+        }
+        return {"output": handlers.get(route, handlers["info"])(request)}
 
-### Complexity-Based Model Routing
+    router = (
+        router_prompt | llm | JsonOutputParser()
+        | (lambda x: route_handler(x, x.get("request", "")))
+    )
 
-```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableBranch, RunnablePassthrough
+    result = router.invoke({"request": "Book a flight"})
+    print(result["output"])
+    ```
 
-fast_model = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
-powerful_model = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
+    **Explanation:**
+    This advanced example adds confidence scoring, structured JSON output, and error handling. The router returns not just a route decision but also confidence and reasoning, enabling the system to handle low-confidence cases by asking for clarification. This makes the routing more robust and transparent.
 
-complexity_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Classify as 'simple' or 'complex'. Output only: simple or complex"),
-    ("user", "{question}")
-])
+??? "Complexity-Based Model Routing"
 
-def handle_simple(question: str) -> str:
-    chain = ChatPromptTemplate.from_template("Answer: {question}") | fast_model | StrOutputParser()
-    return chain.invoke({"question": question})
+    ```python
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import StrOutputParser
+    from langchain_core.runnables import RunnableBranch, RunnablePassthrough
 
-def handle_complex(question: str) -> str:
-    chain = ChatPromptTemplate.from_template("Think step-by-step: {question}") | powerful_model | StrOutputParser()
-    return chain.invoke({"question": question})
+    fast_model = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+    powerful_model = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
 
-classifier = complexity_prompt | fast_model | StrOutputParser()
-router = {
-    "complexity": classifier,
-    "question": RunnablePassthrough()
-} | RunnableBranch(
-    (lambda x: "simple" in x['complexity'].lower(),
-     RunnablePassthrough.assign(answer=lambda x: handle_simple(x['question']))),
-    RunnablePassthrough.assign(answer=lambda x: handle_complex(x['question']))
-)
+    complexity_prompt = ChatPromptTemplate.from_messages([
+        ("system", "Classify as 'simple' or 'complex'. Output only: simple or complex"),
+        ("user", "{question}")
+    ])
 
-result = router.invoke({"question": "What is Python?"})
-print(result['answer'])
-```
+    def handle_simple(question: str) -> str:
+        chain = ChatPromptTemplate.from_template("Answer: {question}") | fast_model | StrOutputParser()
+        return chain.invoke({"question": question})
 
-**Explanation:**
-This example demonstrates complexity-based routing for resource optimization. The router first classifies the question's complexity using a lightweight model, then routes simple questions to a fast, cost-efficient model and complex questions to a more capable (and expensive) model. This pattern enables automatic cost and performance optimization by matching task complexity to model capability.
+    def handle_complex(question: str) -> str:
+        chain = ChatPromptTemplate.from_template("Think step-by-step: {question}") | powerful_model | StrOutputParser()
+        return chain.invoke({"question": question})
+
+    classifier = complexity_prompt | fast_model | StrOutputParser()
+    router = {
+        "complexity": classifier,
+        "question": RunnablePassthrough()
+    } | RunnableBranch(
+        (lambda x: "simple" in x['complexity'].lower(),
+         RunnablePassthrough.assign(answer=lambda x: handle_simple(x['question']))),
+        RunnablePassthrough.assign(answer=lambda x: handle_complex(x['question']))
+    )
+
+    result = router.invoke({"question": "What is Python?"})
+    print(result['answer'])
+    ```
+
+    **Explanation:**
+    This example demonstrates complexity-based routing for resource optimization. The router first classifies the question's complexity using a lightweight model, then routes simple questions to a fast, cost-efficient model and complex questions to a more capable (and expensive) model. This pattern enables automatic cost and performance optimization by matching task complexity to model capability.
 
 
 ### Framework-Specific Examples
 
-#### LangGraph
-```python
-from langgraph.graph import StateGraph, END
-from langchain_openai import ChatOpenAI
-from typing import TypedDict
+??? "LangGraph Example"
 
-llm = ChatOpenAI(temperature=0)
+    ```python
+    from langgraph.graph import StateGraph, END
+    from langchain_openai import ChatOpenAI
+    from typing import TypedDict
 
-class RouterState(TypedDict):
-    request: str
-    route: str
-    output: str
+    llm = ChatOpenAI(temperature=0)
 
-def route_node(state: RouterState) -> RouterState:
-    route = llm.invoke(f"Route as 'booking' or 'info': {state['request']}").content
-    return {**state, "route": route.lower()}
+    class RouterState(TypedDict):
+        request: str
+        route: str
+        output: str
 
-def booking_node(state: RouterState) -> RouterState:
-    return {**state, "output": f"Booking: {state['request']}"}
+    def route_node(state: RouterState) -> RouterState:
+        route = llm.invoke(f"Route as 'booking' or 'info': {state['request']}").content
+        return {**state, "route": route.lower()}
 
-def info_node(state: RouterState) -> RouterState:
-    return {**state, "output": f"Info: {state['request']}"}
+    def booking_node(state: RouterState) -> RouterState:
+        return {**state, "output": f"Booking: {state['request']}"}
 
-graph = StateGraph(RouterState)
-graph.add_node("route", route_node)
-graph.add_node("booking", booking_node)
-graph.add_node("info", info_node)
-graph.set_entry_point("route")
-graph.add_conditional_edges("route", lambda s: s["route"], {"booking": "booking", "info": "info"})
-graph.add_edge("booking", END)
-graph.add_edge("info", END)
+    def info_node(state: RouterState) -> RouterState:
+        return {**state, "output": f"Info: {state['request']}"}
 
-result = graph.invoke({"request": "Book a flight"})
-print(result["output"])
-```
+    graph = StateGraph(RouterState)
+    graph.add_node("route", route_node)
+    graph.add_node("booking", booking_node)
+    graph.add_node("info", info_node)
+    graph.set_entry_point("route")
+    graph.add_conditional_edges("route", lambda s: s["route"], {"booking": "booking", "info": "info"})
+    graph.add_edge("booking", END)
+    graph.add_edge("info", END)
 
-#### Google ADK
-```python
-from google.adk.agents import Agent
+    result = graph.invoke({"request": "Book a flight"})
+    print(result["output"])
+    ```
 
-booking_agent = Agent(
-    name="Booker",
-    model="gemini-2.0-flash",
-    description="Handles booking requests"
-)
+??? "Google ADK Example"
 
-info_agent = Agent(
-    name="Info",
-    model="gemini-2.0-flash",
-    description="Answers general questions"
-)
+    ```python
+    from google.adk.agents import Agent
 
-coordinator = Agent(
-    name="Coordinator",
-    model="gemini-2.0-flash",
-    instruction="Route booking requests to Booker, questions to Info",
-    sub_agents=[booking_agent, info_agent]
-)
-```
+    booking_agent = Agent(
+        name="Booker",
+        model="gemini-2.0-flash",
+        description="Handles booking requests"
+    )
+
+    info_agent = Agent(
+        name="Info",
+        model="gemini-2.0-flash",
+        description="Answers general questions"
+    )
+
+    coordinator = Agent(
+        name="Coordinator",
+        model="gemini-2.0-flash",
+        instruction="Route booking requests to Booker, questions to Info",
+        sub_agents=[booking_agent, info_agent]
+    )
+    ```
 
 ## Key Takeaways
 
@@ -281,9 +286,9 @@ This pattern is often combined with:
 - **Prompt Chaining** - Routes can lead to different prompt chains for different scenarios
 - **Reflection** - Routing decisions can be reviewed and corrected through reflection
 
-## References
+??? "References"
 
-- LangChain Routing Documentation: https://python.langchain.com/docs/expression_language/how_to/routing
-- LangGraph Conditional Edges: https://langchain-ai.github.io/langgraph/how-tos/routing/
-- Google ADK Agents: https://github.com/google/generative-ai-python/tree/main/google/adk
+    - LangChain Routing Documentation: https://python.langchain.com/docs/expression_language/how_to/routing
+    - LangGraph Conditional Edges: https://langchain-ai.github.io/langgraph/how-tos/routing/
+    - Google ADK Agents: https://github.com/google/generative-ai-python/tree/main/google/adk
 

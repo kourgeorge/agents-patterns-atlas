@@ -786,7 +786,7 @@ This pattern is often combined with:
 - **Goal Setting and Monitoring** - Human oversight ensures goals are met appropriately
 - **Evaluation and Monitoring** - Human review is part of evaluation processes
 
-## References
+??? "References"
 
 - A Survey of Human-in-the-loop for Machine Learning: https://arxiv.org/abs/2109.02840
 - Google ADK Agents: https://google.github.io/adk-docs/agents/

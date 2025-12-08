@@ -1167,7 +1167,7 @@ This pattern is often combined with:
 
 - **Inter-Agent Communication:** Workers need mechanisms to communicate results back to the orchestrator.
 
-## References
+??? "References"
 
 ### Modern Frameworks
 
