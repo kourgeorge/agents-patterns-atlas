@@ -39,19 +39,25 @@ Multi-Agent Debate operates through structured argumentation rounds:
 
 1. **Position Taking:** Debater agents take initial positions—either adversarial (opposing stances) or divergent (different approaches). Each agent presents their solution, reasoning, or argument.
 2. **Argumentation Rounds:** Agents engage in multiple rounds of argumentation:
-   - **Present Arguments:** Each agent defends their position with reasoning and evidence
-   - **Critique Opponents:** Agents point out flaws, errors, or weaknesses in others' arguments
-   - **Refute Criticisms:** Agents address critiques and refine their positions
-   - **Iterate:** Process repeats for multiple rounds
+   
+    - **Present Arguments:** Each agent defends their position with reasoning and evidence
+    - **Critique Opponents:** Agents point out flaws, errors, or weaknesses in others' arguments
+    - **Refute Criticisms:** Agents address critiques and refine their positions
+    - **Iterate:** Process repeats for multiple rounds
+
 3. **Judgment (Optional):** A judge agent monitors the debate, evaluates arguments, and either:
-   - **Declares Winner:** Determines which side made the more convincing case
-   - **Synthesizes Answer:** Assembles a final answer from the best arguments across all sides
-   - **Provides Feedback:** Offers evaluation to guide further rounds
+
+    - **Declares Winner:** Determines which side made the more convincing case
+    - **Synthesizes Answer:** Assembles a final answer from the best arguments across all sides
+    - **Provides Feedback:** Offers evaluation to guide further rounds
+
 4. **Convergence:** Debate continues until:
-   - **Judge Decision:** Judge determines a winner or synthesizes final answer
-   - **Convergence:** Agents reach agreement through discussion
-   - **Round Limit:** Maximum debate rounds reached
-   - **Quality Threshold:** Solution quality meets criteria
+
+    - **Judge Decision:** Judge determines a winner or synthesizes final answer
+    - **Convergence:** Agents reach agreement through discussion
+    - **Round Limit:** Maximum debate rounds reached
+    - **Quality Threshold:** Solution quality meets criteria
+
 5. **Final Synthesis:** System produces final answer based on debate outcomes, judge decision, or convergence.
 
 ## When to Use This Pattern
@@ -140,7 +146,7 @@ Research by Yilun Du et al. (2023) showed that when multiple LLM instances debat
 - Error detection through cross-verification
 - Consensus-building through reconciliation
 
-### Challenges: Sycophancy and Groupthink
+## Challenges: Sycophancy and Groupthink
 
 Recent research highlights challenges in multi-agent debate:
 
@@ -366,7 +372,7 @@ pip install langchain langchain-openai langgraph
 **Explanation:**
 This example demonstrates the MAD framework: two debaters take opposing positions, argue in rounds, critique each other, and refute criticisms. A judge agent monitors the debate and makes a final decision. The adversarial process surfaces errors and leads to more robust solutions.
 
-??? Advanced Example: Peer Debate Without Judge
+??? "Advanced Example: Peer Debate Without Judge"
 
     # This example shows a peer-to-peer debate where all agents are equal:
 
@@ -494,6 +500,7 @@ This example demonstrates peer-to-peer debate where all agents are equal, can cr
 ## Related Patterns
 
 This pattern works well with:
+
 - **Pattern: Swarm/Consensus Architecture** - Debate can be part of consensus-building mechanisms
 - **Pattern: Evaluator-Optimizer** - Debate can serve as an evaluation mechanism for generated solutions
 - **Pattern: Planner-Checker** - Debate can be used by checker agents to verify plans or solutions
