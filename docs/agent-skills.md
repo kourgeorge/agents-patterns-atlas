@@ -18,13 +18,9 @@ The SKILL pattern brings this natural, progressive learning approach to agent sy
 
 > **"Skills turn an LLM from a speaker into a worker."** — LangChain / LangGraph
 
-> **"A tool is a permission. A skill is a contract."** — LangChain / LangGraph
-
 The SKILL pattern enables agents to discover capabilities through metadata, activate skills on demand, and access detailed instructions only when needed. This creates a scalable, composable system where the amount of knowledge an agent can access is effectively unbounded, limited only by storage, not by context window size.
 
-The pattern transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials.
-
-> **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup.
+The pattern transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials. Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup.
 
 ### Key Concepts
 

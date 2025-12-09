@@ -9,13 +9,7 @@ Humans don't store everything in working memory. We use notebooks, calendars, re
 
 **When to use:** When the agent needs to handle large data or unstructured observations (like web pages or PDF text) that would exceed context length limits. Also used for long-horizon tasks that require persistent, restorable information retention.
 
-**Why it matters:** It helps mitigate the fundamental constraint of the LLM's finite context window.
-
-> **"Long-term memory is the difference between an agent and a macro."** — Manus
-
-> **"Memory turns a chatbot into a person."** — Andrej Karpathy
-
-It reduces token costs and latency by allowing the agent to retrieve only the relevant information when needed.
+**Why it matters:** It helps mitigate the fundamental constraint of the LLM's finite context window. It reduces token costs and latency by allowing the agent to retrieve only the relevant information when needed.
 
 The Filesystem as Context pattern addresses one of the most fundamental constraints in LLM-based agent systems: the finite context window. As agents process complex tasks, they encounter large data sources—web search results, PDF documents, codebases, or extensive research findings—that would quickly exhaust the available context tokens. Simply truncating or summarizing this data risks losing critical information, while including everything inflates costs and can degrade performance due to attention dilution.
 

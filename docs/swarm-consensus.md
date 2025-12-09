@@ -6,13 +6,7 @@ Multiple experts discussing a problem can reach better solutions than any indivi
 Through natural language dialogue, debate, and consensus-building, groups of LLM agents can surface insights, catch errors, and converge on high-quality solutions that exceed what a single agent could achieve.
 The Swarm/Consensus Architecture pattern enables autonomous LLM agents to coordinate through natural language discussion, debate, voting, or consensus mechanisms, without requiring a central orchestrator.
 
-> **"We don't know how to build one super-human AI. But we can build 10 mediocre ones and let them debate."** — Andrej Karpathy
-
-> **"Coordination is emergent when communication channels are well-designed."** — Google DeepMind
-
 This pattern is essential when multiple perspectives are valuable, when errors need to be caught through cross-verification, or when collective intelligence can improve reasoning quality beyond individual capabilities.
-
-> **"Multi-agent is about role specialization, not redundancy."** — Manus Team
 
 ## Pattern Overview
 

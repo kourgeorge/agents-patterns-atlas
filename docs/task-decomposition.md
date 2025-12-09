@@ -11,20 +11,10 @@ Task decomposition planning in agents works the same way: taking a high-level go
 
 **When to use:** Use task decomposition when you need to delegate a complex goal that spans multiple applications or services, where the "how" needs to be discovered dynamically, rather than following a predetermined workflow.
 
-**Why it matters:** Task decomposition enables agents to move beyond reactive behavior to goal-oriented, strategic problem-solving.
-
-> **"Planning is compression: reducing the world to the next actionable step."** — Manus
-
-It transforms high-level objectives into structured, executable sequences of subtasks while maintaining adaptability to changing conditions and obstacles. 
+**Why it matters:** Task decomposition enables agents to move beyond reactive behavior to goal-oriented, strategic problem-solving. It transforms high-level objectives into structured, executable sequences of subtasks while maintaining adaptability to changing conditions and obstacles. 
 By breaking down complex tasks and assigning them to specialized applications, agents can handle multi-step workflows that would be impossible to execute atomically.
 
-> **"Agents hallucinate plans but execute real actions."** — Andrej Karpathy
-
-> **"Plans must be grounded in state, not in dreams."** — Andrej Karpathy
-
-Intelligent behavior often involves more than just reacting to immediate input.
-
-> **"Better agents come from better state, not longer thoughts."** — OpenAI Researchers 
+Intelligent behavior often involves more than just reacting to immediate input. 
 It requires foresight, breaking down complex tasks into smaller steps, and strategizing how to achieve a desired outcome.
 At its core, task decomposition allows an agent to analyze a goal, understand what applications and services are available, and create a structured plan that coordinates their use.
 In the context of AI agents, a task decomposition agent is like a project manager to whom you delegate a complex goal. 

@@ -8,11 +8,11 @@ Multi-agent architectures address these limitations by enabling specialized LLM 
 This chapter provides an overview of modern LLM-based multi-agent architectures, exploring when and why to use multiple agents, the benefits they provide, and the organizational patterns that enable effective collaboration. 
 For detailed implementation patterns, see the specific pattern modules referenced throughout this chapter.
 
+> "Agentic systems represent a new paradigm that breaks traditional barriers. More than tools, agents act as collaborators, assisting humans in dynamic environments and automating decision-making." - Aatrbin
+
 ## The Case for Multi-Agent Systems
 
 Multi-agent architectures represent a paradigm shift from pursuing a single, all-powerful super-agent toward sophisticated, collaborative systems of specialized LLM agents.
-
-> **"We don't know how to build one super-human AI. But we can build 10 mediocre ones and let them debate."** — Andrej Karpathy
 
 The collective strength lies in division of labor, natural language negotiation, and synergy created through coordinated effort.
 
@@ -46,11 +46,7 @@ Modern LLM-based multi-agent systems address these limitations through:
 - **Role-Based Specialization:** Each agent can be optimized for specific roles (researcher, writer, coder, reviewer, planner) with domain-specific prompts, tools, and Standard Operating Procedures (SOPs). Systems like ChatDev and MetaGPT demonstrate that role-based specialization produces higher quality outputs than filtering everything through a general coordinator.
 - **Parallel Execution:** Multiple agents can work simultaneously on independent tasks, dramatically reducing execution time. Parallel execution of specialized agents can reduce research time by up to 90% for complex queries that require exploring multiple directions simultaneously.
 - **Context Window Distribution:** Multi-agent systems effectively scale context capacity for tasks that exceed single-agent limits. By distributing work across agents with separate context windows, systems add capacity for parallel reasoning and reduce context compression losses.
-- **Debate and Verification:** Multiple agents can engage in natural language debate, discussion, or critique, catching errors that a single agent might miss.
-
-> **"Debate is a search algorithm embedded in communication."** — Anthropic
-
-This collaborative verification improves accuracy and reduces hallucinations.
+- **Debate and Verification:** Multiple agents can engage in natural language debate, discussion, or critique, catching errors that a single agent might miss. This collaborative verification improves accuracy and reduces hallucinations.
 
 > **"Coordination is emergent when communication channels are well-designed."** — Google DeepMind
 - **Dynamic Orchestration:** Modern systems like AgentVerse enable dynamic adjustment of team composition, spawning specialist agents as needed and releasing them when tasks complete, optimizing resource usage.

@@ -8,7 +8,6 @@ As AI systems shift from **passive classifiers to active problem-solvers**, engi
 
 The advent of powerful large language models (LLMs) has provided unprecedented capabilities for understanding and generating human-like content, serving as the cognitive engine for many of these agents. However, orchestrating these capabilities into systems that can reliably achieve complex goals requires more than just a powerful model. It requires structure, design, and a thoughtful approach to how the agent perceives, plans, acts, and interacts—grounded in an understanding of the fundamental principles of intelligence itself.
 
-
 This book is designed to be your practical guide through this transformation. It presents essential design patterns organized into comprehensive parts, covering everything from foundational workflow patterns to advanced multi-agent architectures, memory management, and production-ready safety mechanisms. Each pattern is battle-tested, clearly explained, and accompanied by practical code examples you can run, modify, and learn from.
 
 More importantly, this book provides AI agent engineers with a **shared conceptual language**, enabling you to build intelligent problem solvers with a common understanding of how intelligence works. By grounding agent design in cognitive principles, this framework helps engineers understand the limits of intelligence—from working memory constraints and cognitive load to executive control bottlenecks—while inspiring effective solutions that map naturally onto existing agentic architectures.
@@ -27,10 +26,28 @@ Agentic systems are characterized by autonomy, allowing them to act without cons
 
 Effectively realizing these characteristics introduces significant complexity. How does the agent maintain state across multiple steps? How does it decide when and how to use a tool? How is communication between different agents managed? How do you build resilience into the system to handle unexpected outcomes or errors? These are precisely the kinds of questions that cognitive science has been studying for decades, and engineers building agentic systems can now benefit from this accumulated wisdom.
 
+> **"Agents are software 3.0 — programs that you don't write, but steer."** — Andrej Karpathy
+
 ## Why Patterns Matter in Agent Development
 
 This complexity is precisely why agentic design patterns are indispensable. They are not rigid rules, but rather battle-tested templates or blueprints that offer proven approaches to standard design and implementation challenges in the agentic domain. By recognizing and applying these design patterns, you gain access to solutions that enhance the structure, maintainability, reliability, and efficiency of the agents you build.
 
 
 A great question we often hear is: "With AI changing so fast, why write a book that could be quickly outdated?" Our motivation is actually the opposite. It's precisely because things are moving so quickly that we need to step back and identify the underlying principles that are solidifying. Patterns like RAG, Reflection, Routing, Memory Management, Multi-Agent Coordination, and the others we discuss are becoming fundamental building blocks. More importantly, the cognitive principles underlying these patterns—how working memory works, how attention is allocated, how complex problems are decomposed—these are universal principles of intelligence that transcend specific technologies. This book is an invitation to reflect on these core ideas, which provide the foundation we need to build upon. Humans need these reflection moments on foundation patterns.
+
+## A Perspective on Intelligence
+
+Building AI agents represents a fundamental shift in what we are creating: systems that exhibit the properties of intelligence—reasoning, planning, memory, tool use, and collaboration. 
+It is a remarkable moment in engineering and cognitive science, where the boundaries between artificial and natural intelligence become blurred, and insights from one domain illuminate the other.
+
+
+This book approaches the challenge of building intelligent systems from a unique perspective: we strive to understand the mechanisms of building intelligence from the *intelligence* point of view, not merely from the artificial or technical point of view. 
+The patterns presented here are not just solutions to transient technical problems—they are solutions that solve fundamental problems of intelligence itself. 
+These patterns can inspire us to understand how natural intelligence works, revealing principles that apply equally to biological and artificial minds.
+We believe that the most effective agentic systems emerge when engineers understand not just *how* to implement a pattern, but *why* it works from a cognitive perspective.
+
+Throughout this book, you will encounter insights and sayings from pioneers who built agents early in this new era.
+Researchers and engineers from organizations like Anthropic, LangChain/LangGraph, Manus, and others who shaped the field. 
+These perspectives are included not as decoration, but because they inspire deeper understanding and allow us to see aspects of agentic design from interesting and illuminating angles. 
+These voices help us understand both the technical challenges and the deeper questions about intelligence that we are collectively exploring.
 

@@ -4,11 +4,11 @@
 
 We are standing on the precipice of a transformation in artificial intelligence that is as significant as the move from command-line interfaces to graphical user interfaces. As AI systems shift from **passive classifiers to active problem-solvers**, engineers face a critical challenge: building intelligent agents requires not just technical skills, but a deeper understanding of *how intelligence works*.
 
-> **"Agents are software 3.0 — programs that you don't write, but steer."** — Andrej Karpathy
-
 We are moving from models that simply generate content to systems that **achieve goals**. This is the fundamental shift from passive tools to active participants in problem-solving.
 
-> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy Large language models augmented with tools, memory, and multi-step reasoning are increasingly deployed as agents capable of planning, acting, and coordinating with humans and other agents. Yet despite rapid progress, the field lacks a **shared conceptual framework** that provides AI agent engineers with a common language that revolves around the key components of intelligence.
+> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
+
+Large language models augmented with tools, memory, and multi-step reasoning are increasingly deployed as agents capable of planning, acting, and coordinating with humans and other agents. Yet despite rapid progress, the field lacks a **shared conceptual framework** that provides AI agent engineers with a common language that revolves around the key components of intelligence.
 
 For the past few years, the spotlight has been on **Generative AI**. These models are impressive; they can write poetry, debug code, and summarize history. However, they remain fundamentally reactive. They wait for input, process it, and return output. They are stateless oracles.
 
@@ -24,7 +24,6 @@ For the past few years, the spotlight has been on **Generative AI**. These model
 * **Nature:** Active, iterative, goal-focused.
 * **Role:** The agent drives the process. It acts as a collaborator or an employee. It doesn't just answer a question; it navigates a problem space, corrects its own errors, and interacts with external software.
 
-> "Agentic systems represent a new paradigm that breaks traditional barriers. More than tools, agents act as collaborators, assisting humans in dynamic environments and automating decision-making." - Aatrbin
 
 ![Agentic Systems Overview](img1.png)
 
@@ -135,8 +134,6 @@ How the agent thinks, plans, and makes decisions. This is the core loop.
 
 ### 3. Tool Use & Execution (The Hands)
 How the agent interacts with the world. Without tools, an agent is a brain in a jar.
-
-> **"Tool-use is not a feature — it is the skeleton of an agent."** — Anthropic Engineers
 
 > **"An agent is a *policy* over tools, wrapped around a language model."** — Manus Creators
 
