@@ -2,6 +2,9 @@
 
 ## Welcome to the Agentic Era
 
+> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
+
+
 Welcome to **"Intelligence Patterns: An Evolving Handbook on Agentic Design"** - an interactive, breathing guide to building intelligent, goal-oriented AI systems. 
 The last few years have witnessed an unprecedented transformation - from simple, reactive programs to sophisticated, autonomous entities capable of understanding context, making decisions, and interacting dynamically with their environment and other systems. 
 
@@ -40,6 +43,23 @@ An agentic system, however, could perceive the nuances of a customer's query, ac
 Agentic systems are characterized by autonomy, allowing them to act without constant human oversight; proactiveness, initiating actions towards their goals; and reactiveness, responding effectively to changes in their environment. They are fundamentally goal-oriented, constantly working towards objectives. A critical capability is tool use, enabling them to interact with external APIs, databases, or services. They possess memory, retain information across interactions, and can engage in communication with users, other systems, or even other agents.
 
 Effectively realizing these characteristics introduces significant complexity. How does the agent maintain state across multiple steps? How does it decide when and how to use a tool? How is communication between different agents managed? How do you build resilience into the system to handle unexpected outcomes or errors? These are precisely the kinds of questions that cognitive science has been studying for decades, and engineers building agentic systems can now benefit from this accumulated wisdom.
+
+### Generative AI
+* **Flow:** `Prompt -> LLM -> Response`
+* **Nature:** Passive, one-shot, content-focused.
+* **Role:** The human drives the process. The human must verify the output and perform the subsequent action. The model is a fancy autocomplete engine.
+
+### Agentic AI
+* **Flow:** `Goal -> Agent (Think -> Act -> Observe Loop) -> Environment -> Goal Achieved`
+* **Nature:** Active, iterative, goal-focused.
+* **Role:** The agent drives the process. It acts as a collaborator or an employee. It doesn't just answer a question; it navigates a problem space, corrects its own errors, and interacts with external software.
+
+> **"Stateless models can't build relationships — agents can."** — Andrej Karpathy
+
+
+![Agentic Systems Overview](img1.png)
+
+
 
 ## Why Patterns Matter in Agent Development
 

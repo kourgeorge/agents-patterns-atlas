@@ -7,7 +7,7 @@ Each tool has a clear purpose, specific instructions for use, and predictable re
 Just as we learn to use tools by understanding their function and boundaries, agents need well-defined tools with clear descriptions, parameters, and constraints. 
 The Tool Use pattern creates this interface between an agent's reasoning and the external world.
 
-> **"Tools turn an LLM from a speaker into a worker."** — LangChain / LangGraph
+> **"Tools give models new limbs."** — Andrej Karpathy
 
 ## Pattern Overview
 
@@ -24,7 +24,7 @@ The success of tool use relies critically on the quality and robustness of the *
 The ACI is the tightly controlled, isolated execution runtime where the LLM's generated commands are translated into executable, verifiable code. 
 Just as a poor UI confuses a human user, poorly defined, ambiguous, or unreliable tools lead to agent hallucinations, costly loops, and ultimate failure.
 
-> **"An agent is a *policy* over tools, wrapped around a language model."** — Manus Creators
+> **"Tools turn an LLM from a speaker into a worker."** — LangChain / LangGraph
 
 ### Key Concepts
 
@@ -133,7 +133,7 @@ Use structured data types (like Pydantic schemas in Python or TypeScript interfa
 
 **Put yourself in the model's shoes:** Is it obvious how to use this tool based on the description and parameters? If you need to think carefully about it, the model will too. A good tool definition often includes example usage, edge cases, input format requirements, and clear boundaries from other tools.
 
-#### 1.5. Tool Format Design: Choosing LLM-Friendly Formats
+#### 1.5. Tool Design: Choosing LLM-Friendly Formats
 
 When designing tools, there are often multiple ways to specify the same action. However, some formats are significantly more difficult for LLMs to generate correctly than others. The format you choose can dramatically impact reliability and error rates.
 
@@ -141,21 +141,19 @@ When designing tools, there are often multiple ways to specify the same action. 
 
 1. **Give the model enough tokens to "think" before writing itself into a corner**
 
-   - Avoid formats that require precise counts or calculations before generation
-   - Example: Writing a diff requires knowing how many lines are changing in the chunk header before the new code is written—this is error-prone for LLMs
+    - Avoid formats that require precise counts or calculations before generation
+    - Example: Writing a diff requires knowing how many lines are changing in the chunk header before the new code is written—this is error-prone for LLMs
 
 2. **Keep formats close to what models see naturally in training data**
 
-   - Formats that appear frequently in the model's training corpus are easier to generate
-   - Example: Code in markdown code blocks is more natural than code inside JSON strings
+    - Formats that appear frequently in the model's training corpus are easier to generate
+    - Example: Code in markdown code blocks is more natural than code inside JSON strings
 
 3. **Minimize formatting "overhead"**
 
-   - Avoid formats that require complex escaping, counting, or precise formatting
-   - Example: Writing code inside JSON requires extra escaping of newlines and quotes, making it harder for the model
-   - Example: Requiring accurate line counts for thousands of lines of code is error-prone
-
-> **"Tools give models new limbs."** — Andrej Karpathy
+    - Avoid formats that require complex escaping, counting, or precise formatting
+    - Example: Writing code inside JSON requires extra escaping of newlines and quotes, making it harder for the model
+    - Example: Requiring accurate line counts for thousands of lines of code is error-prone
 
 **Practical Examples:**
 
@@ -221,35 +219,38 @@ Apply the Japanese concept of "poka-yoke" (mistake-proofing) to tool design by m
 - **Provide clear boundaries:** Explicitly state what the tool cannot do to prevent misuse.
 - **Use descriptive parameter names:** Parameter names should make their purpose obvious (e.g., `absolute_filepath` instead of `path`).
 
-**Example from Production:**
-
-When building a coding agent for SWE-bench, Anthropic found that the model made mistakes with tools using relative filepaths after the agent had moved out of the root directory. By changing the tool to always require absolute filepaths, the model used the method flawlessly.
+When building a coding agent for SWE-bench, Anthropic found that the model made mistakes with tools using relative filepaths after the agent had moved out of the root directory. 
+By changing the tool to always require absolute filepaths, the model used the method flawlessly.
 
 **Rule of Thumb:**
 
-Think about how much effort goes into Human-Computer Interfaces (HCI), and invest similar effort in creating good Agent-Computer Interfaces (ACI). Put yourself in the model's shoes: Is it obvious how to use this tool based on the description and parameters? If you need to think carefully about it, the model will too. A good tool definition often includes example usage, edge cases, input format requirements, and clear boundaries from other tools.
+Think about how much effort goes into Human-Computer Interfaces (HCI), and invest similar effort in creating good Agent-Computer Interfaces (ACI). 
+Put yourself in the model's shoes: Is it obvious how to use this tool based on the description and parameters? 
+If you need to think carefully about it, the model will too. 
+A good tool definition often includes example usage, edge cases, input format requirements, and clear boundaries from other tools.
 
 #### 2. Input & Output Validation and Pruning
 Add a crucial layer of security and robustness between the LLM and external systems:
 
 - **Pre-Execution Checks:** Verify that parameters generated by the LLM (file paths, database IDs, amounts) are safe, adhere to business logic (non-negative financial values, date ranges), and prevent security risks like path traversal attacks or injection attempts.
-
-- **Post-Execution Sanitization:** Simplify and prune complex, nested JSON or verbose API outputs into concise, token-efficient observations. Use structured querying languages (like JQ or JSONPath) to extract only the most relevant fields, preventing context window bloat.
+- **Post-Execution Sanitization:** Simplify and prune complex, nested JSON or verbose API outputs into concise, token-efficient observations. 
+Use structured querying languages (like JQ or JSONPath) to extract only the most relevant fields, preventing context window bloat.
 
 #### 3. Handling Context Switching
-When a tool is called, the orchestrator needs to pause the LLM's reasoning chain, execute the tool, and resume by injecting the observation. This context switch must be seamless. Prepend the observation directly to the history, ensuring it acts as the most recent, high-attention piece of data, mitigating the "Lost in the Middle" problem.
+When a tool is called, the orchestrator needs to pause the LLM's reasoning chain, execute the tool, and resume by injecting the observation. 
+This context switch must be seamless. 
+Prepend the observation directly to the history, ensuring it acts as the most recent, high-attention piece of data, mitigating the "Lost in the Middle" problem.
 
 #### 4. Constrained Tool Use & Execution Guardrails
 Implement safety mechanisms to prevent harmful, costly, or unproductive behavior:
 
 - **Safety and Recursive Guardrails:** Set strict maximum number of steps in the ReAct loop, use exponential backoff for retries, and proactively block recursive calls (same tool with same input repeatedly).
-
 - **Cost and Rate Monitoring:** Implement runtime counters and alerts for expensive tools, enforce per-session and global rate limits on external APIs.
-
 - **Tool Sandbox Isolation:** Fully sandbox the execution environment, particularly for tools that execute arbitrary code. Use containerization technologies like Docker or gVisor to ensure agent actions are strictly constrained.
 
 #### 5. Tool Result Management (Retrieve-then-Read)
 For large tool outputs, use a two-step process:
+
 - **Retrieve:** Get a pointer, list of resource IDs, or brief summary
 - **Read:** Selectively pull in only specific, relevant content snippets based on reasoning
 
@@ -257,7 +258,8 @@ This minimizes token consumption by avoiding full dumps of large data into the c
 
 #### 6. Hierarchical Action Spaces: Managing Tool Complexity
 
-Providing an LLM with 100+ tools leads to **Context Confusion**, where the model hallucinates parameters, calls the wrong tool, or becomes overwhelmed by choice. This is a failure mode where the LLM cannot distinguish between instructions, data, and structural markers due to too much information competing for attention.
+Providing an LLM with 100+ tools leads to **Context Confusion**, where the model hallucinates parameters, calls the wrong tool, or becomes overwhelmed by choice. 
+This is a failure mode where the LLM cannot distinguish between instructions, data, and structural markers due to too much information competing for attention.
 
 **The Three-Level Hierarchical Action Space:**
 
@@ -279,7 +281,8 @@ Example core tools:
 
 **Level 2 (Sandbox Utilities):**
 
-Instead of creating a specific tool for every utility (e.g., `grep`, `ffmpeg`, `curl`), instruct the model to use the `bash` tool (from Level 1) to call utilities via CLI. This keeps tool definitions out of the context window while still providing access to system capabilities.
+Instead of creating a specific tool for every utility (e.g., `grep`, `ffmpeg`, `curl`), instruct the model to use the `bash` tool (from Level 1) to call utilities via CLI. 
+This keeps tool definitions out of the context window while still providing access to system capabilities.
 
 **Example:** Instead of defining a `grep_file` tool:
 - Use the `bash` tool with instruction: "You can use bash to call grep: `bash('grep -r pattern /path/to/dir')`"
@@ -306,6 +309,7 @@ For complex logic chains requiring multiple steps (e.g., "Fetch city name → Ge
 **Critical Warning: Don't Use RAG for Tool Definitions**
 
 Fetching tool definitions dynamically per step based on semantic similarity often fails. This approach:
+
 - Creates shifting context that breaks KV-cache (different tools appear/disappear between turns)
 - Confuses the model with "hallucinated" tools that were present in turn 1 but disappeared in turn 2
 - Increases latency through additional retrieval steps
@@ -313,13 +317,17 @@ Fetching tool definitions dynamically per step based on semantic similarity ofte
 
 **Best Practice:**
 
-Maintain a stable, hierarchical tool set. Use the three-level structure to balance capability with clarity. Tools should be visible and consistent throughout a conversation, not dynamically retrieved based on similarity. If tools must change, do so at session boundaries, not mid-conversation.
+Maintain a stable, hierarchical tool set. 
+Use the three-level structure to balance capability with clarity.
+Tools should be visible and consistent throughout a conversation, not dynamically retrieved based on similarity. 
+If tools must change, do so at session boundaries, not mid-conversation.
 
 **Relationship to Other Patterns:**
 
 - **Pattern: Shortlisting** - Can be used to select from Level 1 core tools, but the core set should remain small and stable
 - **Pattern: Constrained Tool Use** - Logit masking can enforce Level 1/2/3 boundaries, ensuring the model only sees appropriate tools for the current context
-- **Context Confusion** - Hierarchical organization directly addresses this failure mode by limiting cognitive load
+- **Pattern: Tool Discovery** - Organizes tools into skills with progressive disclosure, enabling scalable tool management while maintaining the hierarchical structure
+
 
 ### Code Examples
 
@@ -424,6 +432,8 @@ Maintain a stable, hierarchical tool set. Use the three-level structure to balan
 - **Frameworks** like LangGraph, CrewAI, and Google ADK provide abstractions that simplify tool integration and execution.
 - **Google ADK** includes pre-built tools like Google Search, Code Execution, and Vertex AI Search that can be directly integrated.
 - **Tool Use** transforms language models from text generators into agents capable of real-world action and up-to-date information retrieval.
+
+> **"An agent is a *policy* over tools, wrapped around a language model."** — Manus Creators
 
 ## Related Patterns
 
