@@ -14,9 +14,17 @@ The SKILL pattern brings this natural, progressive learning approach to agent sy
 
 **When to use:** Use this pattern when building agents that need access to multiple specialized capabilities, when you want to organize procedural knowledge in a scalable way, or when you need to optimize token usage by loading information only as needed. This pattern is particularly valuable for multi-agent systems where different agents may need different skill sets.
 
-**Why it matters:** Traditional approaches load all tool definitions and instructions into the agent's context upfront, leading to context bloat and wasted tokens. The SKILL pattern enables agents to discover capabilities through metadata, activate skills on demand, and access detailed instructions only when needed. This creates a scalable, composable system where the amount of knowledge an agent can access is effectively unbounded, limited only by storage, not by context window size.
+**Why it matters:** Traditional approaches load all tool definitions and instructions into the agent's context upfront, leading to context bloat and wasted tokens.
 
-The pattern transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials. Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup.
+> **"Skills turn an LLM from a speaker into a worker."** — LangChain / LangGraph
+
+> **"A tool is a permission. A skill is a contract."** — LangChain / LangGraph
+
+The SKILL pattern enables agents to discover capabilities through metadata, activate skills on demand, and access detailed instructions only when needed. This creates a scalable, composable system where the amount of knowledge an agent can access is effectively unbounded, limited only by storage, not by context window size.
+
+The pattern transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials.
+
+> **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup.
 
 ### Key Concepts
 

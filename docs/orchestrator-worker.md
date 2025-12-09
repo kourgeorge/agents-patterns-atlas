@@ -13,6 +13,12 @@ The Orchestrator-Worker pattern mirrors this: a central coordinator breaks down 
 
 **Why it matters:** It enables **specialization** (assigning tasks to dedicated agents with specific skills), **parallelization** (often running subtasks concurrently for speed), and **resilience** (isolating failures to individual agents).
 
+> **"We don't know how to build one super-human AI. But we can build 10 mediocre ones and let them debate."** — Andrej Karpathy
+
+> **"Multi-agent is about role specialization, not redundancy."** — Manus Team
+
+> **"Coordination is emergent when communication channels are well-designed."** — Google DeepMind
+
 The Orchestrator-Worker pattern, also known as the "Coordinator pattern", represents one of the most fundamental and widely-used multi-agent architectures. 
 Unlike rigid, predefined workflows, this pattern enables dynamic task decomposition where the orchestrator agent analyzes the high-level goal and determines the necessary subtasks at runtime. 
 This flexibility makes it particularly powerful for handling complex, unpredictable tasks that require diverse expertise.

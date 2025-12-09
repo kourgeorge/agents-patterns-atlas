@@ -10,7 +10,15 @@ Humans extend their capabilities through tools: a hammer for construction, a cal
 
 **When to use:** Use this pattern whenever an agent needs to break out of the LLM's internal knowledge and interact with the outside world. This is essential for tasks requiring real-time data, accessing private or proprietary information, performing precise calculations, executing code, or triggering actions in other systems.
 
-**Why it matters:** LLMs are powerful text generators, but they are fundamentally disconnected from the outside world. Their knowledge is static, limited to training data, and they lack the ability to perform actions or retrieve real-time information. The Tool Use pattern transforms a language model from a text generator into an agent capable of sensing, reasoning, and acting in the digital or physical world.
+**Why it matters:** LLMs are powerful text generators, but they are fundamentally disconnected from the outside world. Their knowledge is static, limited to training data, and they lack the ability to perform actions or retrieve real-time information.
+
+> **"Tool-use is not a feature — it is the skeleton of an agent."** — Anthropic Engineers
+
+> **"Tools turn an LLM from a speaker into a worker."** — LangChain / LangGraph
+
+> **"Tools give models new limbs."** — Andrej Karpathy
+
+The Tool Use pattern transforms a language model from a text generator into an agent capable of sensing, reasoning, and acting in the digital or physical world.
 
 The success of tool use relies critically on the quality and robustness of the **Agent-Computer Interface (ACI)**. The ACI is the tightly controlled, isolated execution runtime where the LLM's generated commands are translated into executable, verifiable code. Just as a poor UI confuses a human user, poorly defined, ambiguous, or unreliable tools lead to agent hallucinations, costly loops, and ultimate failure.
 
@@ -18,6 +26,9 @@ The success of tool use relies critically on the quality and robustness of the *
 
 - **Function Calling:** The technical mechanism where an LLM generates structured output (often JSON) specifying which function to call and with what arguments.
 - **Tool Definition:** Clear descriptions of external functions or capabilities, including purpose, parameters, types, and boundaries.
+
+> **"A tool is a permission. A skill is a contract."** — LangChain / LangGraph
+
 - **Agent-Computer Interface (ACI):** The standardized contract between the generative model (planner) and the code execution environment (executor).
 - **Idempotency:** A critical principle where a tool call should produce the same observable side effect regardless of how many times it is executed.
 - **Tool Execution:** The orchestration layer that intercepts structured tool calls, executes the actual function, and returns results to the agent.
@@ -104,7 +115,11 @@ The Tool Use pattern is applicable in virtually any scenario where an agent need
 ### Engineering Best Practices
 
 #### 1. Explicit Tool Definitions & Quality
-Tools must have clear, distinct descriptions, strict boundaries, and required parameters. The quality of the tool description directly impacts the model's accuracy. Descriptions must detail:
+Tools must have clear, distinct descriptions, strict boundaries, and required parameters.
+
+> **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus
+
+The quality of the tool description directly impacts the model's accuracy. Descriptions must detail:
 - **Purpose:** What the tool solves
 - **Boundaries:** What it cannot do
 - **Parameter Names:** Use descriptive, obvious parameter names that make their purpose clear (e.g., `absolute_filepath` instead of `path`, `user_email_address` instead of `email`)

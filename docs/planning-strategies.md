@@ -2,13 +2,25 @@
 
 ## Introduction
 
-Planning is fundamental to agent autonomy. When an agent receives a high-level goal like "research a topic, summarize findings, and share insights," it must break this into actionable steps, allocate tasks to appropriate tools, and adapt its strategy as conditions change. Without effective planning, agents become reactive systems that respond to immediate requests but often yield suboptimal results, overlook long-term objectives, or fall into inefficient loops.
+Planning is fundamental to agent autonomy. When an agent receives a high-level goal like "research a topic, summarize findings, and share insights," it must break this into actionable steps, allocate tasks to appropriate tools, and adapt its strategy as conditions change.
+
+> **"Planning is compression: reducing the world to the next actionable step."** — Manus
+
+Without effective planning, agents become reactive systems that respond to immediate requests but often yield suboptimal results, overlook long-term objectives, or fall into inefficient loops.
 
 Modern LLM agents employ various planning mechanisms. At the token level, Chain-of-Thought (CoT) prompting enables step-by-step reasoning, while Tree-of-Thought (ToT) explores multiple reasoning paths in parallel. ReAct-style agents interleave CoT reasoning with tool calls, but they plan only one step at a time—often overlooking long-term goals and incurring extra LLM calls for each tool use. By contrast, explicit planning frameworks generate structured plans before execution, then execute multiple steps without re-planning. This approach reduces latency and cost: generating one plan then executing multiple steps (rather than calling the LLM per tool) speeds up execution and forces the model to consider the entire task upfront. These approaches range from simple prompt-chaining to sophisticated hierarchical decomposition where high-level managers break goals into subtasks for specialized agents.
 
 This module focuses on **task decomposition strategies**—the tactical techniques for breaking complex goals into manageable subtasks within explicit planning frameworks. Unlike design patterns that describe architectural solutions, strategies provide the specific methods for implementing decomposition. The strategies covered here—Exact, Flexible, and Type-Aware decomposition—determine how agents structure multi-step workflows, manage application boundaries, and coordinate tool usage.
 
-The choice of decomposition strategy significantly impacts agent performance. An Exact strategy (one subtask per application) provides predictability and clear boundaries, ideal for multi-domain tasks where each application has a distinct role. A Flexible strategy (logical decomposition) adapts to complex workflows that require multiple operations within the same application. These strategies, combined with best practices for abstraction, context preservation, and dependency handling, enable agents to transform high-level objectives into executable, coordinated sequences of actions.
+The choice of decomposition strategy significantly impacts agent performance.
+
+> **"Agents hallucinate plans but execute real actions."** — Andrej Karpathy
+
+> **"Plans must be grounded in state, not in dreams."** — Andrej Karpathy
+
+> **"Better agents come from better state, not longer thoughts."** — OpenAI Researchers
+
+An Exact strategy (one subtask per application) provides predictability and clear boundaries, ideal for multi-domain tasks where each application has a distinct role. A Flexible strategy (logical decomposition) adapts to complex workflows that require multiple operations within the same application. These strategies, combined with best practices for abstraction, context preservation, and dependency handling, enable agents to transform high-level objectives into executable, coordinated sequences of actions.
 
 ## Task Decomposition Strategies
 

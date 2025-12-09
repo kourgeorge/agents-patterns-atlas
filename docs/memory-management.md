@@ -2,7 +2,13 @@
 
 ## Introduction
 
-Memory is what transforms agents from stateless responders into intelligent systems capable of learning, adapting, and maintaining context across interactions. Without memory, agents cannot remember past conversations, learn from experience, or build upon previous work. Effective memory management is one of the most critical aspects of building production-ready agentic systems.
+Memory is what transforms agents from stateless responders into intelligent systems capable of learning, adapting, and maintaining context across interactions.
+
+> **"Memory turns a chatbot into a person."** — Andrej Karpathy
+
+> **"Stateless models can't build relationships — agents can."** — Andrej Karpathy
+
+Without memory, agents cannot remember past conversations, learn from experience, or build upon previous work. Effective memory management is one of the most critical aspects of building production-ready agentic systems.
 
 This chapter provides an overview of memory management strategies for agentic systems. We'll explore the different types of memory, the distinction between short-term and long-term memory, and the techniques used to extend memory beyond immediate context through persistent storage. For specific implementation patterns, see the pattern modules referenced throughout this chapter.
 
@@ -28,7 +34,11 @@ Short-term memory exists within the LLM's context window—the immediate working
 
 ### Long-Term Memory (Persistent Memory)
 
-Long-term memory acts as a repository for information agents need to retain across interactions, tasks, or extended periods. Data is stored outside the agent's immediate processing environment, typically in databases, knowledge graphs, or vector databases.
+Long-term memory acts as a repository for information agents need to retain across interactions, tasks, or extended periods.
+
+> **"Long-term memory is the difference between an agent and a macro."** — Manus
+
+Data is stored outside the agent's immediate processing environment, typically in databases, knowledge graphs, or vector databases.
 
 **Characteristics:**
 - **Unlimited Capacity:** Can store vast amounts of information
@@ -41,6 +51,8 @@ Long-term memory acts as a repository for information agents need to retain acro
 - **Relevance:** Must retrieve the right information at the right time
 - **Consistency:** Managing updates and ensuring data consistency
 - **Integration:** Seamlessly integrating retrieved information into context
+
+> **"Memory is not storage; it is context selection over time."** — LangChain
 
 ## Relationship to Context Patterns
 

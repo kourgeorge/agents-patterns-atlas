@@ -27,6 +27,9 @@ Agentic systems employ several reasoning techniques, each suited to different pr
 
 Chain-of-Thought is the simplest and most widely adopted reasoning technique. 
 It works by explicitly instructing the model to generate intermediate reasoning steps before producing a final answer.
+
+> **"Chain-of-thought is not reasoning — it is scaffolding for reasoning."** — Anthropic
+
 The agent is prompted to "think step-by-step" or show its work. 
 This forces the model to allocate tokens to reasoning, which significantly improves accuracy on complex problems.
 CoT is ideal for tasks requiring explicit step-by-step thinking, such as mathematical problems, logical deductions, or multi-step calculations. 
@@ -42,6 +45,8 @@ Answer: x = 4
 
 ReAct is the foundational pattern for adaptive, tool-using agents. 
 It creates a self-correcting loop that intertwines reasoning, action, and observation.
+
+> **"ReAct is planning as hypothesis testing."** — OpenAI Researchers
 
 **How it works:** The agent cycles through three phases:
 

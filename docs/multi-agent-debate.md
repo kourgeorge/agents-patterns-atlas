@@ -5,8 +5,15 @@
 In legal systems, adversarial proceedings expose flaws and reveal truth through structured argumentation. 
 In scientific discourse, peer review and debate surface errors and refine theories. 
 In human reasoning, considering opposing viewpoints prevents confirmation bias and leads to better decisions.
-The Multi-Agent Debate pattern applies this principle to LLM systems: multiple agents argue different positions, critique each other's reasoning, and surface errors through structured adversarial discussion. 
+The Multi-Agent Debate pattern applies this principle to LLM systems: multiple agents argue different positions, critique each other's reasoning, and surface errors through structured adversarial discussion.
+
+> **"We don't know how to build one super-human AI. But we can build 10 mediocre ones and let them debate."** — Andrej Karpathy
+
+> **"Debate is a search algorithm embedded in communication."** — Anthropic
+
 This pattern is essential when reasoning quality is critical, when hidden assumptions need exposure, or when a single model's initial approach might be flawed.
+
+> **"Multi-agent is about role specialization, not redundancy."** — Manus Team
 
 ## Pattern Overview
 

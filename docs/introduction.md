@@ -4,7 +4,11 @@
 
 We are standing on the precipice of a transformation in artificial intelligence that is as significant as the move from command-line interfaces to graphical user interfaces. As AI systems shift from **passive classifiers to active problem-solvers**, engineers face a critical challenge: building intelligent agents requires not just technical skills, but a deeper understanding of *how intelligence works*.
 
-We are moving from models that simply generate content to systems that **achieve goals**. This is the fundamental shift from passive tools to active participants in problem-solving. Large language models augmented with tools, memory, and multi-step reasoning are increasingly deployed as agents capable of planning, acting, and coordinating with humans and other agents. Yet despite rapid progress, the field lacks a **shared conceptual framework** that provides AI agent engineers with a common language that revolves around the key components of intelligence.
+> **"Agents are software 3.0 — programs that you don't write, but steer."** — Andrej Karpathy
+
+We are moving from models that simply generate content to systems that **achieve goals**. This is the fundamental shift from passive tools to active participants in problem-solving.
+
+> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy Large language models augmented with tools, memory, and multi-step reasoning are increasingly deployed as agents capable of planning, acting, and coordinating with humans and other agents. Yet despite rapid progress, the field lacks a **shared conceptual framework** that provides AI agent engineers with a common language that revolves around the key components of intelligence.
 
 For the past few years, the spotlight has been on **Generative AI**. These models are impressive; they can write poetry, debug code, and summarize history. However, they remain fundamentally reactive. They wait for input, process it, and return output. They are stateless oracles.
 
@@ -32,6 +36,10 @@ This shift represents a **fundamental transition in software engineering**: from
 
 It introduces novel challenges directly related to the limits of LLMs—challenges that traditional software engineering never faced. Effective context engineering, for instance, was not a problem in traditional software engineering. How do you manage working memory constraints? How do you allocate cognitive load across reasoning steps? How do you maintain executive control in multi-agent systems? These are questions that cognitive neuroscience has been studying for decades, and they are now central to building effective agentic systems.
 
+> **"Agents require an operating system of their own. The UX for AIs will not be the UX for humans."** — Andrej Karpathy
+
+> **"AI is becoming a collaborator, not a component."** — Andrej Karpathy
+
 **Thus, a new conceptual language is needed**, one that provides engineers with the vocabulary to reason about these cognitive operations. This gap has practical consequences. Engineers building agentic systems must make countless design decisions: how to decompose tasks, manage context, allocate work to tools, coordinate multi-step workflows, and enable learning. They lack a unified cognitive framework to guide these choices. Without a shared conceptual language, each team reinvents patterns, struggles to communicate design decisions, and misses opportunities to learn from decades of cognitive science research on how biological minds solve similar problems.
 
 ## The Evolution of AI Systems
@@ -45,6 +53,8 @@ The journey from simple language models to sophisticated agentic systems has bee
 **Phase 3: Individual AI Agents** - Agents capable of using various tools, planning, and executing multi-step tasks.
 
 **Phase 4: Agentic AI** - Teams of specialized agents working in concert to achieve complex goals, marking a significant leap in AI's collaborative power.
+
+> **"LLMs were step one. Agents are step two. Ecosystems are step three."** — Anthropic
 
 This evolution reflects a fundamental shift from static automation to dynamic, intelligent systems that can adapt, learn, and collaborate. The market reflects this transformation: AI agent startups raised over $2 billion by the end of 2024, with the market valued at $5.2 billion and projected to reach nearly $200 billion by 2034. According to recent studies, a majority of large IT companies are actively using agents, with a fifth of them starting within just the past year.
 
@@ -70,13 +80,21 @@ Agents are systems where LLMs dynamically direct their own processes and tool us
 * **Control:** The LLM decides the path at runtime.
 * **Example:** A system asked to "Find out why the server crashed." The agent might choose to check logs, or it might choose to check recent code commits. It decides its next step based on the result of the previous step.
 
+> **"Determinism comes not from the LLM, but from the graph around it."** — LangChain / LangGraph
+
 > **Note:** Simply augmenting an LLM with modules, tools, or predefined steps does not make it an agent; in any case, that would make it a workflow. If the "if/else" logic is in your Python code, it's a workflow. If the "if/else" logic is generated by the LLM, it's an agent.
 
 ---
 
 ## What Makes an AI System an Agent?
 
-In simple terms, an AI agent is a system designed to perceive its environment and take actions to achieve a specific goal. It's an evolution from a standard Large Language Model (LLM), enhanced with the abilities to plan, use tools, and interact with its surroundings. Think of an Agentic AI as a smart assistant that learns on the job. It follows a simple, five-step loop to get things done:
+In simple terms, an AI agent is a system designed to perceive its environment and take actions to achieve a specific goal. It's an evolution from a standard Large Language Model (LLM), enhanced with the abilities to plan, use tools, and interact with its surroundings.
+
+> **"An agent is a loop: perceive → think → act → observe → update."** — Anthropic Engineers
+
+> **"Agents are control systems built from LLMs."** — LangChain / LangGraph
+
+Think of an Agentic AI as a smart assistant that learns on the job. It follows a simple, five-step loop to get things done:
 
 1. **Get the Mission:** You give it a goal, like "organize my schedule."
 2. **Scan the Scene:** It gathers all the necessary information—reading emails, checking calendars, and accessing contacts—to understand what's happening.
@@ -117,11 +135,19 @@ How the agent thinks, plans, and makes decisions. This is the core loop.
 
 ### 3. Tool Use & Execution (The Hands)
 How the agent interacts with the world. Without tools, an agent is a brain in a jar.
+
+> **"Tool-use is not a feature — it is the skeleton of an agent."** — Anthropic Engineers
+
+> **"An agent is a *policy* over tools, wrapped around a language model."** — Manus Creators
+
 * **Function Calling:** The mechanism by which an LLM generates structured JSON to execute code.
 * **Capabilities:** This involves API calls (e.g., Stripe, Slack), file system manipulation (reading/writing code), and web browsing to fetch real-time data.
 
 ### 4. Multi-Agent Collaboration (Society of Minds)
 For complex tasks, a single agent often fails due to context overload or lack of specialization.
+
+> **"The challenge is not intelligence — it's *coordination*."** — Manus Creators
+
 * **Orchestration:** A "manager" agent delegating tasks to "specialist" agents (e.g., a Coder, a Researcher, and a Reviewer).
 * **Swarm Architectures:** Autonomous agents interacting to solve problems through consensus or division of labor.
 
@@ -155,6 +181,8 @@ Agents operate probabilistically, making them inherently less predictable than d
 ### 2. Context Management
 Agents must manage limited context windows while maintaining relevant information across long interactions. Balancing detail with efficiency is a constant challenge.
 
+> **"Agent failures are almost always context failures."** — Manus
+
 ### 3. Error Handling and Recovery
 When agents make mistakes or encounter unexpected situations, they need robust mechanisms to detect, understand, and recover from errors without human intervention.
 
@@ -180,6 +208,9 @@ Success in the LLM space isn't about building the most sophisticated system. It'
 
 ### 1. Start Simple
 Find the simplest solution possible, and only increase complexity when needed. Do not build an autonomous agent if a linear workflow suffices.
+
+> **"Think of agents as interns: great potential, zero context. Give them both."** — Andrej Karpathy
+
 * **Tradeoff:** Agentic systems trade latency (time) and cost (tokens) for better task performance and flexibility. They are slower and more expensive than workflows.
 * **Advice:** Start with a prompt. If that fails, try a chain (workflow). Only if the path to the solution is highly variable should you build an agent.
 
@@ -201,6 +232,9 @@ Assume things will go wrong and build resilience into your system from the start
 
 ### 5. Balance Autonomy with Control
 Give agents enough autonomy to be effective, but maintain appropriate oversight and control mechanisms.
+
+> **"An aligned model gives aligned outputs. An aligned agent gives aligned *actions*."** — Anthropic
+
 * **Human-in-the-Loop:** Know when to involve humans for critical decisions or validation.
 
 ---
@@ -211,7 +245,11 @@ Design patterns are battle-tested templates offering proven approaches to standa
 
 However, this book goes further: it provides AI agent engineers with a **shared conceptual language grounded in cognitive neuroscience**, enabling you to build intelligent problem solvers with a common understanding of how intelligence works. At the same time, cognitive neuroscience has spent decades studying how humans break down complex problems, focus attention, delegate work to tools or collaborators, integrate partial results, and improve through experience. These theories offer deep insights into the **structure and limitations of intelligence**—working memory constraints, cognitive load, executive control bottlenecks.
 
+> **"Graph structure is where reliability comes from."** — LangGraph
+
 Until the recent surge of LLMs, these cognitive theories seldom translated cleanly into engineering practice. Conversely, AI agent frameworks (e.g., ReAct, RAG pipelines, LangGraph, multi-agent orchestration) provide pragmatic mechanisms for controlling LLM-based agents but often lack a unifying cognitive perspective that explains *why* certain patterns work and how they relate to fundamental principles of intelligence. By grounding agent design in cognitive principles, this framework helps engineers understand the limits of intelligence while inspiring effective solutions that map naturally onto existing agentic architectures.
+
+> **"Good agents don't think more — they think *with better inputs*."** — Manus
 
 In agentic systems, these patterns address fundamental questions:
 
@@ -231,11 +269,15 @@ Using design patterns helps you avoid reinventing fundamental solutions and acce
 
 As we look ahead, several trends are shaping the future of agentic AI:
 
+> **"Software will be written for humans and for AIs — two different users."** — Andrej Karpathy
+
 * **Generalist Agents** - Evolution from narrow specialists to true generalists capable of managing complex, ambiguous, long-term goals
 * **Deep Personalization** - Agents that become proactive partners, learning from patterns and anticipating needs
 * **Embodiment** - Agents breaking free from digital confines to operate in the physical world through robotics
 * **Agent-Driven Economy** - Highly autonomous agents becoming active participants in economic systems
 * **Metamorphic Systems** - Goal-driven multi-agent systems that can modify their own architecture and improve autonomously
+
+> **"The agent is the new interface layer between humans and the internet."** — Manus
 
 The patterns in this book provide the foundation for building these future systems. They represent the stable principles that will remain relevant even as specific technologies evolve.
 
