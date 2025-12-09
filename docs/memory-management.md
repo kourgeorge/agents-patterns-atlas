@@ -4,13 +4,11 @@
 
 Memory is what transforms agents from stateless responders into intelligent systems capable of learning, adapting, and maintaining context across interactions.
 
-> **"Memory turns a chatbot into a person."** — Andrej Karpathy
-
-> **"Stateless models can't build relationships — agents can."** — Andrej Karpathy
-
 Without memory, agents cannot remember past conversations, learn from experience, or build upon previous work. Effective memory management is one of the most critical aspects of building production-ready agentic systems.
 
 This chapter provides an overview of memory management strategies for agentic systems. We'll explore the different types of memory, the distinction between short-term and long-term memory, and the techniques used to extend memory beyond immediate context through persistent storage. For specific implementation patterns, see the pattern modules referenced throughout this chapter.
+
+> **"Memory turns a chatbot into a person."** — Andrej Karpathy
 
 ## The Two Types of Agent Memory
 

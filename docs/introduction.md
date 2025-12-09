@@ -6,13 +6,13 @@ We are standing on the precipice of a transformation in artificial intelligence 
 
 We are moving from models that simply generate content to systems that **achieve goals**. This is the fundamental shift from passive tools to active participants in problem-solving.
 
-> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
-
 Large language models augmented with tools, memory, and multi-step reasoning are increasingly deployed as agents capable of planning, acting, and coordinating with humans and other agents. Yet despite rapid progress, the field lacks a **shared conceptual framework** that provides AI agent engineers with a common language that revolves around the key components of intelligence.
 
 For the past few years, the spotlight has been on **Generative AI**. These models are impressive; they can write poetry, debug code, and summarize history. However, they remain fundamentally reactive. They wait for input, process it, and return output. They are stateless oracles.
 
 **Agentic AI** changes the equation. It moves beyond text generation into the realm of action. An agent doesn't just say what *should* be done; it attempts to *do* it.
+
+> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
 
 ### Generative AI
 * **Flow:** `Prompt -> LLM -> Response`
@@ -23,6 +23,8 @@ For the past few years, the spotlight has been on **Generative AI**. These model
 * **Flow:** `Goal -> Agent (Think -> Act -> Observe Loop) -> Environment -> Goal Achieved`
 * **Nature:** Active, iterative, goal-focused.
 * **Role:** The agent drives the process. It acts as a collaborator or an employee. It doesn't just answer a question; it navigates a problem space, corrects its own errors, and interacts with external software.
+
+> **"Stateless models can't build relationships — agents can."** — Andrej Karpathy
 
 
 ![Agentic Systems Overview](img1.png)
@@ -36,8 +38,6 @@ This shift represents a **fundamental transition in software engineering**: from
 It introduces novel challenges directly related to the limits of LLMs—challenges that traditional software engineering never faced. Effective context engineering, for instance, was not a problem in traditional software engineering. How do you manage working memory constraints? How do you allocate cognitive load across reasoning steps? How do you maintain executive control in multi-agent systems? These are questions that cognitive neuroscience has been studying for decades, and they are now central to building effective agentic systems.
 
 > **"Agents require an operating system of their own. The UX for AIs will not be the UX for humans."** — Andrej Karpathy
-
-> **"AI is becoming a collaborator, not a component."** — Andrej Karpathy
 
 **Thus, a new conceptual language is needed**, one that provides engineers with the vocabulary to reason about these cognitive operations. This gap has practical consequences. Engineers building agentic systems must make countless design decisions: how to decompose tasks, manage context, allocate work to tools, coordinate multi-step workflows, and enable learning. They lack a unified cognitive framework to guide these choices. Without a shared conceptual language, each team reinvents patterns, struggles to communicate design decisions, and misses opportunities to learn from decades of cognitive science research on how biological minds solve similar problems.
 
@@ -134,8 +134,6 @@ How the agent thinks, plans, and makes decisions. This is the core loop.
 
 ### 3. Tool Use & Execution (The Hands)
 How the agent interacts with the world. Without tools, an agent is a brain in a jar.
-
-> **"An agent is a *policy* over tools, wrapped around a language model."** — Manus Creators
 
 * **Function Calling:** The mechanism by which an LLM generates structured JSON to execute code.
 * **Capabilities:** This involves API calls (e.g., Stripe, Slack), file system manipulation (reading/writing code), and web browsing to fetch real-time data.

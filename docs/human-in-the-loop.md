@@ -4,6 +4,8 @@
 
 Apprentices learn under a master's guidance. Surgeons have assistants for critical steps. Editors review writers' work before publication. Humans naturally incorporate oversight, feedback, and collaboration into complex processes. The Human-in-the-Loop pattern brings this to agents: integrating human judgment, feedback, and decision-making into agent workflows for safety, quality, and trust, especially in high-stakes situations.
 
+> **"AI is becoming a collaborator, not a component."** — Andrej Karpathy
+
 ## Pattern Overview
 **What it is:** Human-in-the-Loop (HITL) is a pattern that strategically integrates human oversight, judgment, and intervention into AI agent workflows, creating a symbiotic partnership between human intelligence and AI capabilities.
 

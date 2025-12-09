@@ -8,6 +8,10 @@ As model capabilities improve, we can now build general-purpose agents that inte
 
 The SKILL pattern brings this natural, progressive learning approach to agent systems, allowing agents to discover and use specialized capabilities efficiently without overwhelming their context window. This pattern transforms general-purpose agents into specialized agents that fit your needs by packaging expertise into composable resources.
 
+
+> **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus
+
+
 ## Pattern Overview
 
 **What it is:** The Agent Skills pattern (exemplified by the `SKILL.md` file structure) is an engineering approach for building specialized agents using files and folders. A skill is a directory containing a `SKILL.md` file that contains organized folders of instructions, scripts, and resources that give agents additional capabilities. This pattern provides procedural knowledge and organizational context to general-purpose agents, allowing them to accomplish complex, domain-specific tasks through progressive disclosure of information. Skills extend an agent's capabilities by packaging your expertise into composable resources, transforming general-purpose agents into specialized agents.

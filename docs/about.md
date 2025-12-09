@@ -1,5 +1,6 @@
 # About This Book
 
+## Intelligence Patterns: An Evolving Handbook on Agentic Design
 
 This book is a comprehensive guide to building intelligent, goal-oriented AI agents. 
 As we transition from the era of Generative AI—where models simply respond to prompts—to the era of Agentic AI—where systems actively pursue objectives and interact with their environment—developers need practical patterns and principles to construct reliable, scalable agentic systems. This book provides exactly that: a hands-on collection of **essential design patterns** that cover everything from foundational workflow patterns like prompt chaining and routing, to advanced capabilities such as multi-agent collaboration, memory management, and recovery mechanisms.
@@ -91,7 +92,7 @@ The journey ahead is exciting. You're about to learn patterns that will enable y
 Let's begin this hands-on journey into building intelligent, agentic systems!
 
 
-??? "Bibliography"
+## "Bibliography"
 
 Each module in this book includes its own bibliography with references specific to that pattern or topic. This section collects the main sources that have informed the overall content and structure of the book.
 Much of the content in this book is based on **"Agentic Design Patterns: A Hands-On Guide to Building Intelligent Systems"** by **Antonio Gulli**, published by Springer.

@@ -4,6 +4,9 @@
 
 Humans don't store everything in working memory. We use notebooks, calendars, reference books, and digital files as external memory. When needed, we retrieve relevant information. We can't remember every detail, but we know where to find it. The Filesystem as Context pattern gives agents this capability: treating persistent storage as unlimited memory, retrieving information just-in-time rather than trying to keep everything in the limited context window.
 
+
+> **"Memory is not storage; it is context selection over time."** — LangChain
+
 ## Pattern Overview
 **What it is:** A mechanism to treat an external persistent memory (like a filesystem or database) as an unlimited extension of the agent's working memory.
 
