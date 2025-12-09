@@ -1,6 +1,5 @@
 # About This Book
 
-## Intelligence Patterns: An Evolving Handbook on Agentic Design
 
 This book is a comprehensive guide to building intelligent, goal-oriented AI agents. 
 As we transition from the era of Generative AI—where models simply respond to prompts—to the era of Agentic AI—where systems actively pursue objectives and interact with their environment—developers need practical patterns and principles to construct reliable, scalable agentic systems. This book provides exactly that: a hands-on collection of **essential design patterns** that cover everything from foundational workflow patterns like prompt chaining and routing, to advanced capabilities such as multi-agent collaboration, memory management, and recovery mechanisms.
@@ -20,16 +19,15 @@ This book is a living resource that will be constantly updated as new design pat
 
 ## Book Structure
 
-The book is organized into **8 parts** containing **29 modules**:
+The book is organized into **7 parts** containing **32 modules**:
 
-1. **Introduction & Foundations** (3 modules) - Core concepts, context, and design pattern fundamentals
+1. **Introduction & Foundations** (4 modules) - Core concepts, context, and design pattern fundamentals
 2. **Core Workflow** (4 modules) - Fundamental patterns for building agent workflows
 3. **Tools** (4 modules) - Designing the Agent-Computer Interface
-4. **Reasoning & Planning** (3 modules) - Enabling agents to plan and reason effectively
-5. **Context** (4 modules) - Managing the finite context window and optimizing context usage
-6. **Memory** (4 modules) - Managing persistent and external memory for agents, including knowledge retrieval
-7. **Multi-Agent Systems** (4 modules) - Scaling up with multiple agents working together
-8. **Human input and Recovery** (3 modules) - Learning, adaptation, and human interaction
+4. **Reasoning & Planning** (4 modules) - Enabling agents to plan and reason effectively
+5. **Context and memory** (8 modules) - Managing the finite context window, optimizing context usage, and managing persistent and external memory for agents, including knowledge retrieval
+6. **Multi-Agent Systems** (5 modules) - Modern LLM-based multi-agent collaboration patterns
+7. **Human input and Recovery** (3 modules) - Learning, adaptation, and human interaction
 
 The patterns are organized to build concepts progressively, but you can also use this book as a reference, jumping to patterns that address specific challenges you face in your agent development projects.
 

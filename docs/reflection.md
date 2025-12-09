@@ -13,7 +13,11 @@ Writers revise their drafts, checking for clarity and flow. Scientists review th
 
 Even with sophisticated workflows using chaining, routing, and parallelization, an agent's initial output might not be optimal, accurate, or complete. The Reflection pattern introduces a feedback loop where the agent doesn't just produce an output; it examines that output, identifies potential issues or areas for improvement, and uses those insights to generate a better version or modify its future actions.
 
-The process typically involves: (1) Execution—the agent performs a task or generates an initial output, (2) Evaluation/Critique—the agent analyzes the result checking for accuracy, coherence, completeness, or adherence to instructions, (3) Reflection/Refinement—based on the critique, the agent determines how to improve, and (4) Iteration—the refined output can be executed again, with the reflection process repeating until satisfactory or a stopping condition is met.
+The process typically involves: 
+
+1. Execution—the agent performs a task or generates an initial output.
+2. Evaluation/Critique—the agent analyzes the result checking for accuracy, coherence, completeness, or adherence to instructions.
+3. Reflection/Refinement—based on the critique, the agent determines how to improve, and (4) Iteration—the refined output can be executed again, with the reflection process repeating until satisfactory or a stopping condition is met.
 
 A key and highly effective implementation separates the process into two distinct roles: a Producer and a Critic (Generator-Critic model). While a single agent can perform self-reflection, using two specialized agents (or two separate LLM calls with distinct system prompts) often yields more robust and unbiased results. The Producer focuses on generating content, while the Critic evaluates it with a fresh perspective, dedicated entirely to finding errors and areas for improvement.
 
