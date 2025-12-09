@@ -2,33 +2,34 @@
 
 ## Motivation
 
-Humans extend their capabilities through tools: a hammer for construction, a calculator for math, a smartphone for communication. Each tool has a clear purpose, specific instructions for use, and predictable results when used correctly. Just as we learn to use tools by understanding their function and boundaries, agents need well-defined tools with clear descriptions, parameters, and constraints. The Tool Use pattern creates this interface between an agent's reasoning and the external world.
-
-## Pattern Overview
-
-**What it is:** Tool Use (also known as Function Calling) is the pattern that enables agents to interact with external systems, APIs, databases, and services. It bridges the gap between an LLM's reasoning capabilities and the external world, allowing agents to perform actions, retrieve real-time data, execute code, and interact with other systems.
-
-**When to use:** Use this pattern whenever an agent needs to break out of the LLM's internal knowledge and interact with the outside world. This is essential for tasks requiring real-time data, accessing private or proprietary information, performing precise calculations, executing code, or triggering actions in other systems.
-
-**Why it matters:** LLMs are powerful text generators, but they are fundamentally disconnected from the outside world. Their knowledge is static, limited to training data, and they lack the ability to perform actions or retrieve real-time information.
-
-> **"Tool-use is not a feature — it is the skeleton of an agent."** — Anthropic Engineers
+Humans extend their capabilities through tools: a hammer for construction, a calculator for math, a smartphone for communication. 
+Each tool has a clear purpose, specific instructions for use, and predictable results when used correctly. 
+Just as we learn to use tools by understanding their function and boundaries, agents need well-defined tools with clear descriptions, parameters, and constraints. 
+The Tool Use pattern creates this interface between an agent's reasoning and the external world.
 
 > **"Tools turn an LLM from a speaker into a worker."** — LangChain / LangGraph
 
-> **"Tools give models new limbs."** — Andrej Karpathy
+## Pattern Overview
+
+**What it is:** Tool Use (also known as Function Calling) is the pattern that enables agents to interact with external systems, APIs, databases, and services. 
+It bridges the gap between an LLM's reasoning capabilities and the external world, allowing agents to perform actions, retrieve real-time data, execute code, and interact with other systems.
+
+**When to use:** Use this pattern whenever an agent needs to break out of the LLM's internal knowledge and interact with the outside world. 
+This is essential for tasks requiring real-time data, accessing private or proprietary information, performing precise calculations, executing code, or triggering actions in other systems.
+
+**Why it matters:** LLMs are powerful text generators, but they are fundamentally disconnected from the outside world. Their knowledge is static, limited to training data, and they lack the ability to perform actions or retrieve real-time information.
 
 The Tool Use pattern transforms a language model from a text generator into an agent capable of sensing, reasoning, and acting in the digital or physical world.
+The success of tool use relies critically on the quality and robustness of the **Agent-Computer Interface (ACI)**. 
+The ACI is the tightly controlled, isolated execution runtime where the LLM's generated commands are translated into executable, verifiable code. 
+Just as a poor UI confuses a human user, poorly defined, ambiguous, or unreliable tools lead to agent hallucinations, costly loops, and ultimate failure.
 
-The success of tool use relies critically on the quality and robustness of the **Agent-Computer Interface (ACI)**. The ACI is the tightly controlled, isolated execution runtime where the LLM's generated commands are translated into executable, verifiable code. Just as a poor UI confuses a human user, poorly defined, ambiguous, or unreliable tools lead to agent hallucinations, costly loops, and ultimate failure.
+> **"An agent is a *policy* over tools, wrapped around a language model."** — Manus Creators
 
 ### Key Concepts
 
 - **Function Calling:** The technical mechanism where an LLM generates structured output (often JSON) specifying which function to call and with what arguments.
 - **Tool Definition:** Clear descriptions of external functions or capabilities, including purpose, parameters, types, and boundaries.
-
-> **"A tool is a permission. A skill is a contract."** — LangChain / LangGraph
-
 - **Agent-Computer Interface (ACI):** The standardized contract between the generative model (planner) and the code execution environment (executor).
 - **Idempotency:** A critical principle where a tool call should produce the same observable side effect regardless of how many times it is executed.
 - **Tool Execution:** The orchestration layer that intercepts structured tool calls, executes the actual function, and returns results to the agent.
@@ -39,15 +40,10 @@ The success of tool use relies critically on the quality and robustness of the *
 The Tool Use pattern operates through a structured process:
 
 1. **Tool Definition:** External functions or capabilities are defined and described to the LLM. This description includes the function's purpose, name, parameters, types, and what it cannot do.
-
 2. **LLM Decision:** The LLM receives the user's request and available tool definitions. Based on its understanding, it decides if calling one or more tools is necessary to fulfill the request.
-
 3. **Function Call Generation:** If the LLM decides to use a tool, it generates structured output (often JSON) specifying the tool name and arguments extracted from the user's request.
-
 4. **Tool Execution:** The orchestration layer intercepts this structured output, identifies the requested tool, and executes the actual external function with the provided arguments.
-
 5. **Observation/Result:** The output or result from tool execution is returned to the agent as an observation.
-
 6. **LLM Processing:** The LLM receives the tool's output as context and uses it to formulate a final response or decide on the next step (which might involve calling another tool, reflecting, or providing a final answer).
 
 While "function calling" describes invoking specific, predefined code functions, "tool calling" is a broader concept. A tool can be a traditional function, a complex API endpoint, a database request, or even an instruction directed at another specialized agent. This perspective enables sophisticated systems where agents orchestrate across diverse digital resources and intelligent entities.
@@ -74,7 +70,9 @@ While "function calling" describes invoking specific, predefined code functions,
 
 ### Decision Guidelines
 
-Use Tool Use when the task requires information or capabilities beyond what the LLM can provide from its training data alone. If the task needs real-time data, interaction with external systems, or the ability to perform actions, Tool Use is essential. However, if the task can be completed with the LLM's internal knowledge and reasoning, avoid adding unnecessary complexity.
+Use Tool Use when the task requires information or capabilities beyond what the LLM can provide from its training data alone. 
+If the task needs real-time data, interaction with external systems, or the ability to perform actions, Tool Use is essential. 
+However, if the task can be completed with the LLM's internal knowledge and reasoning, avoid adding unnecessary complexity.
 
 ## Practical Applications & Use Cases
 
@@ -82,31 +80,37 @@ The Tool Use pattern is applicable in virtually any scenario where an agent need
 
 ### 1. Information Retrieval from External Sources
 **Use Case:** A weather agent that provides current weather conditions.
+
 - **Tool:** A weather API that takes a location and returns current weather conditions.
 - **Agent Flow:** User asks "What's the weather in London?", LLM identifies the need for the weather tool, calls the tool with "London", tool returns data, LLM formats the data into a user-friendly response.
 
 ### 2. Interacting with Databases and APIs
 **Use Case:** An e-commerce agent that checks inventory and order status.
+
 - **Tools:** API calls to check product inventory, get order status, or process payments.
 - **Agent Flow:** User asks "Is product X in stock?", LLM calls the inventory API, tool returns stock count, LLM tells the user the stock status.
 
 ### 3. Performing Calculations and Data Analysis
 **Use Case:** A financial agent that calculates profits and analyzes stock data.
+
 - **Tools:** A calculator function, a stock market data API, a spreadsheet tool.
 - **Agent Flow:** User asks "What's the current price of AAPL and calculate the potential profit if I bought 100 shares at $150?", LLM calls stock API, gets current price, then calls calculator tool, gets result, formats response.
 
 ### 4. Sending Communications
 **Use Case:** A personal assistant agent that sends emails.
+
 - **Tool:** An email sending API.
 - **Agent Flow:** User says "Send an email to John about the meeting tomorrow.", LLM calls an email tool with the recipient, subject, and body extracted from the request.
 
 ### 5. Executing Code
 **Use Case:** A coding assistant agent that runs and analyzes code.
+
 - **Tool:** A code interpreter.
 - **Agent Flow:** User provides a Python snippet and asks "What does this code do?", LLM uses the interpreter tool to run the code and analyze its output.
 
 ### 6. Controlling Other Systems or Devices
 **Use Case:** A smart home agent that controls IoT devices.
+
 - **Tool:** An API to control smart lights.
 - **Agent Flow:** User says "Turn off the living room lights." LLM calls the smart home tool with the command and target device.
 
@@ -116,10 +120,8 @@ The Tool Use pattern is applicable in virtually any scenario where an agent need
 
 #### 1. Explicit Tool Definitions & Quality
 Tools must have clear, distinct descriptions, strict boundaries, and required parameters.
-
-> **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus
-
 The quality of the tool description directly impacts the model's accuracy. Descriptions must detail:
+
 - **Purpose:** What the tool solves
 - **Boundaries:** What it cannot do
 - **Parameter Names:** Use descriptive, obvious parameter names that make their purpose clear (e.g., `absolute_filepath` instead of `path`, `user_email_address` instead of `email`)
@@ -138,17 +140,22 @@ When designing tools, there are often multiple ways to specify the same action. 
 **Key Principles for Tool Format Selection:**
 
 1. **Give the model enough tokens to "think" before writing itself into a corner**
+
    - Avoid formats that require precise counts or calculations before generation
    - Example: Writing a diff requires knowing how many lines are changing in the chunk header before the new code is written—this is error-prone for LLMs
 
 2. **Keep formats close to what models see naturally in training data**
+
    - Formats that appear frequently in the model's training corpus are easier to generate
    - Example: Code in markdown code blocks is more natural than code inside JSON strings
 
 3. **Minimize formatting "overhead"**
+
    - Avoid formats that require complex escaping, counting, or precise formatting
    - Example: Writing code inside JSON requires extra escaping of newlines and quotes, making it harder for the model
    - Example: Requiring accurate line counts for thousands of lines of code is error-prone
+
+> **"Tools give models new limbs."** — Andrej Karpathy
 
 **Practical Examples:**
 
@@ -429,8 +436,8 @@ Maintain a stable, hierarchical tool set. Use the three-level structure to balan
 
 ??? "References"
 
-    1. LangGraph Documentation (Tool Calling): https://langchain-ai.github.io/langgraph/how-tos/tool-calling/
-    2. Google Agent Developer Kit (ADK) Documentation (Tools): https://google.github.io/adk-docs/tools/
-    3. OpenAI Function Calling Documentation: https://platform.openai.com/docs/guides/function-calling
-    4. CrewAI Documentation (Tools): https://docs.crewai.com/concepts/tools
-    5. Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
+    - LangGraph Documentation (Tool Calling): https://langchain-ai.github.io/langgraph/how-tos/tool-calling/
+    - Google Agent Developer Kit (ADK) Documentation (Tools): https://google.github.io/adk-docs/tools/
+    - OpenAI Function Calling Documentation: https://platform.openai.com/docs/guides/function-calling
+    - CrewAI Documentation (Tools): https://docs.crewai.com/concepts/tools
+    - Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2

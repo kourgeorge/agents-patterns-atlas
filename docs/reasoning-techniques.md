@@ -8,6 +8,10 @@ This chapter provides an overview of reasoning techniques used in agentic system
 We'll explore how agents structure their thought processes, the different approaches available, and when each technique is most appropriate. 
 For detailed implementation patterns, see the specific pattern modules referenced throughout this chapter.
 
+
+> **"An agent is a loop: perceive → think → act → observe → update."** — Anthropic Engineers
+
+
 ## The Importance of Reasoning in Agentic Systems
 
 The quality of an agent's reasoning directly determines its success. 
