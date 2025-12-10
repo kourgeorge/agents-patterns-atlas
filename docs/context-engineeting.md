@@ -11,17 +11,13 @@ Unlike human memory, which can recall vast amounts of information, LLMs operate 
 
 This chapter provides a high-level overview of context engineering as a domain. We'll explore the fundamental challenges, key concepts, and the patterns available for managing context effectively. For specific implementation patterns, see the pattern modules referenced throughout this chapter.
 
-> **"The context window is the agent's working memory — its RAM."** — Andrej Karpathy 
+> **"Good agents don't think more — they think *with better inputs*."** — Manus
 
 > **"Prompt engineering is dead; it has become context engineering."** — Andrej Karpathy
-
 
 ## The Fundamental Challenge
 
 The finite context window creates a fundamental tension: agents need comprehensive information to reason effectively, but must balance this against the constraints of token limits, processing costs, and performance degradation.
-
-> **"Context engineering is the art of filling the window with exactly what the model needs for the next action."** — Andrej Karpathy
-
 This challenge manifests in several ways:
 
 ### Token Limits and Hard Boundaries

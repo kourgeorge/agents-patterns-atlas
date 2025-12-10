@@ -4,7 +4,8 @@ Before diving into specific patterns, it's essential to understand what we mean 
 
 ## Understanding Design Patterns
 
-A **design pattern** is an abstract, reusable solution to a recurring problem in system design. It's not a specific piece of code or a library you can import. Instead, it's a **template** or **blueprint** that describes:
+A **design pattern** is an abstract, reusable solution to a recurring problem in system design. 
+It's not a specific piece of code or a library you can import. Instead, it's a **template** or **blueprint** that describes:
 
 1. **The Problem:** A recurring challenge that appears across different agentic systems
 2. **The Solution Structure:** An abstract approach to solving that problem
@@ -12,7 +13,30 @@ A **design pattern** is an abstract, reusable solution to a recurring problem in
 4. **When to Use It:** Contexts where this pattern is appropriate
 5. **When Not to Use It:** Situations where alternative approaches are better
 
-Design patterns are **technology-agnostic**. The same pattern can be implemented using different frameworks (LangChain, LangGraph, Google ADK, CrewAI), different programming languages, or even different model providers. The pattern describes the *what* and *why*, while implementations show the *how*.
+Design patterns are **technology-agnostic**. 
+The same pattern can be implemented using different frameworks (LangChain, LangGraph, Google ADK, CrewAI), different programming languages, or even different model providers. The pattern describes the *what* and *why*, while implementations show the *how*.
+
+## The Four Universal Principles of Effective Problem-Solving
+
+All patterns in this book have similarities on how people (and especially engineers) solve problems in real life. 
+They are grounded in four universal principles represent the fundamental strategies that make problem-solving effective across domains—from human cognition to biological systems to artificial intelligence. 
+Understanding these principles provides a deeper appreciation for why certain patterns emerge and why they work.
+
+1. **Break down large problems into smaller sub-problems** — Decomposition enables manageable, focused solutions. 
+By dividing complex challenges into discrete, addressable components, we can tackle each piece systematically, reducing cognitive load and improving the likelihood of success.
+
+2. **Focus attention on relevant information** — Selective attention prevents cognitive overload and improves decision quality. 
+Rather than processing all available information, effective problem-solving requires filtering and prioritizing the most relevant data for the current sub-problem.
+
+3. **Diversity and specialization** — Multiple parties collaborating on a problem is better than a single entity; the different biases and perspectives each brings return the best ideas. Specialized agents or team members, each with distinct expertise and viewpoints, can explore solution spaces more thoroughly than any single generalist.
+
+4. **Spend more time thinking on the hard problem** — Reflected in more energy investment to get the best solution—like reflection. Deliberate, iterative consideration of problems and solutions leads to higher-quality outcomes than hasty, single-pass approaches.
+
+These principles manifest throughout the agentic design patterns in this book. 
+**Task decomposition** patterns break complex goals into manageable sub-tasks. 
+**Attention engineering** and **context management** patterns focus computational resources on relevant information. 
+**Multi-agent systems** leverage diversity and specialization through orchestrator-worker architectures and swarm consensus mechanisms. **Reflection** patterns invest additional computational cycles to evaluate and refine outputs. 
+By recognizing these underlying principles, you can better understand how patterns relate to each other and why certain combinations are particularly powerful.
 
 ## What Makes a Pattern "Agentic"?
 
@@ -33,14 +57,13 @@ It's crucial to distinguish between:
 
 - **The Pattern (Abstract):** The reusable solution template
   - Example: "The Reflection pattern enables agents to evaluate and refine their outputs through iterative feedback loops"
-
 - **The Implementation (Concrete):** A specific realization of the pattern using particular technologies
   - Example: "Using LangGraph to implement a Producer-Critic reflection loop with Gemini 2.0"
-
 - **The Framework (Tool):** A library or system that provides abstractions for implementing patterns
   - Example: "LangGraph provides state management and conditional edges that make it easier to implement the Reflection pattern"
 
 In this book, each pattern module includes:
+
 - **Pattern Overview:** The abstract description of the problem and solution
 - **When to Use:** Guidance on recognizing the recurring problem
 - **Implementation Examples:** Concrete code showing how the pattern can be realized
@@ -89,12 +112,14 @@ A common source of confusion is distinguishing between **patterns** (abstract so
 **The pattern is the abstract solution; the implementation mechanism is one way to build it.**
 
 For example:
+
 - **Pattern:** "Context Editing" — the abstract concept of automatically managing conversation context to stay within token limits
 - **Implementation mechanisms:**
-  - LangChain's `BaseMiddleware` API
-  - Python decorators wrapping agent functions
-  - SDK-level compaction features
-  - Server-side API configuration
+
+    - LangChain's `BaseMiddleware` API
+    - Python decorators wrapping agent functions
+    - SDK-level compaction features
+    - Server-side API configuration
 
 All of these mechanisms can implement the same Context Editing pattern, but they're different concrete tools.
 

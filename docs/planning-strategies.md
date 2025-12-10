@@ -3,9 +3,6 @@
 ## Introduction
 
 Planning is fundamental to agent autonomy. When an agent receives a high-level goal like "research a topic, summarize findings, and share insights," it must break this into actionable steps, allocate tasks to appropriate tools, and adapt its strategy as conditions change.
-
-> **"Planning is compression: reducing the world to the next actionable step."** — Manus
-
 Without effective planning, agents become reactive systems that respond to immediate requests but often yield suboptimal results, overlook long-term objectives, or fall into inefficient loops.
 
 Modern LLM agents employ various planning mechanisms. At the token level, Chain-of-Thought (CoT) prompting enables step-by-step reasoning, while Tree-of-Thought (ToT) explores multiple reasoning paths in parallel. ReAct-style agents interleave CoT reasoning with tool calls, but they plan only one step at a time—often overlooking long-term goals and incurring extra LLM calls for each tool use. By contrast, explicit planning frameworks generate structured plans before execution, then execute multiple steps without re-planning. This approach reduces latency and cost: generating one plan then executing multiple steps (rather than calling the LLM per tool) speeds up execution and forces the model to consider the entire task upfront. These approaches range from simple prompt-chaining to sophisticated hierarchical decomposition where high-level managers break goals into subtasks for specialized agents.

@@ -2,20 +2,34 @@
 
 ## Motivation
 
-When cooking a complex recipe, you don't try to do everything at once. You first gather ingredients, then prep them, then cook in stages, using the output of each step as input for the next. Similarly, when assembling furniture, you follow numbered steps sequentially, where each step builds on the previous one. Prompt chaining mirrors this natural human approach: breaking complex tasks into manageable, sequential steps where each stage produces results that inform the next.
+When cooking a complex recipe, you don't try to do everything at once. 
+You first gather ingredients, then prep them, then cook in stages, using the output of each step as input for the next. 
+Similarly, when assembling furniture, you follow numbered steps sequentially, where each step builds on the previous one. 
+Prompt chaining mirrors this natural human approach: breaking complex tasks into manageable, sequential steps where each stage produces results that inform the next.
+
+![The single prompt trap.](prompt_chaining_problem.png)
 
 ## Pattern Overview
-**What it is:** Prompt Chaining, sometimes referred to as the Pipeline Pattern, is a technique for handling intricate tasks with LLMs by breaking down complex problems into a sequence of smaller, manageable sub-problems. Each sub-problem is addressed through a specifically designed prompt, and the output from one prompt is strategically fed as input into the subsequent prompt in the chain.
+**What it is:** Prompt Chaining, sometimes referred to as the Pipeline Pattern, is a technique for handling intricate tasks with LLMs by breaking down complex problems into a sequence of smaller, manageable sub-problems. 
+Each sub-problem is addressed through a specifically designed prompt, and the output from one prompt is strategically fed as input into the subsequent prompt in the chain.
 
 **When to use:** Use prompt chaining when a task is too complex for a single prompt, involves multiple distinct processing stages, requires interaction with external tools between steps, or when building workflows that need to perform multi-step reasoning with a predetermined sequence.
 
-**Why it matters:** Complex tasks often overwhelm LLMs when handled within a single prompt, leading to instruction neglect, contextual drift, error propagation, and hallucinations. Prompt chaining addresses these challenges by breaking complex tasks into focused, sequential workflows, significantly improving reliability and control. This modular, divide-and-conquer strategy makes the process more manageable, easier to debug, and allows for the integration of external tools or structured data formats between steps.
+**Why it matters:** Complex tasks often overwhelm LLMs when handled within a single prompt, leading to instruction neglect, contextual drift, error propagation, and hallucinations. 
+Prompt chaining addresses these challenges by breaking complex tasks into focused, sequential workflows, significantly improving reliability and control. 
+This modular, divide-and-conquer strategy makes the process more manageable, easier to debug, and allows for the integration of external tools or structured data formats between steps.
 
-This sequential processing technique inherently introduces modularity and clarity into the interaction with LLMs. By decomposing a complex task, it becomes easier to understand and debug each individual step, making the overall process more robust and interpretable. Each step in the chain can be meticulously crafted and optimized to focus on a specific aspect of the larger problem, leading to more accurate and focused outputs.
+This sequential processing technique inherently introduces modularity and clarity into the interaction with LLMs. 
+By decomposing a complex task, it becomes easier to understand and debug each individual step, making the overall process more robust and interpretable. Each step in the chain can be meticulously crafted and optimized to focus on a specific aspect of the larger problem, leading to more accurate and focused outputs.
 
-The output of one step acting as the input for the next is crucial. This passing of information establishes a dependency chain, where the context and results of previous operations guide the subsequent processing. This allows the LLM to build on its previous work, refine its understanding, and progressively move closer to the desired solution.
+The output of one step acting as the input for the next is crucial. 
+This passing of information establishes a dependency chain, where the context and results of previous operations guide the subsequent processing. 
+This allows the LLM to build on its previous work, refine its understanding, and progressively move closer to the desired solution.
 
 **Key Distinction from Agents:** In prompt chaining, the engineer hardcodes the sequence. The LLM never decides *what* to do next—it only processes the input according to the predefined prompt. If the "if/else" logic is in your Python code, it's a workflow using prompt chaining. If the "if/else" logic is generated by the LLM, it's an agent.
+
+
+![The solution: Prompt Chaining](prompt_chaining_solution.png)
 
 ### Key Concepts
 - **Sequential Decomposition:** Breaking complex tasks into a sequence of smaller, focused sub-tasks that build upon each other.

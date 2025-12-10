@@ -6,6 +6,8 @@ When reading a long document, you naturally focus more on the beginning and end�
 
 Attention Engineering addresses this by strategically structuring and ordering prompts so that crucial instructions or facts appear in positions where the model is most likely to notice and prioritize them. Just as a skilled presenter emphasizes key points at the start and end of a presentation, Attention Engineering ensures important information receives adequate attention regardless of context length.
 
+> **"Context engineering is the art of filling the window with exactly what the model needs for the next action."** — Andrej Karpathy
+
 ## Pattern Overview
 
 **What it is:** Attention Engineering is a specialized prompt design pattern focused on manipulating where and how information appears in an AI model's context to deliberately steer the model's focus. It exploits the model's inherent attention biases (primacy and recency) by strategically positioning critical information at optimal locations in the prompt.
@@ -103,6 +105,8 @@ Attention Engineering operates through several complementary techniques:
 ### Decision Guidelines
 
 Use Attention Engineering whenever context length exceeds 10K tokens or when critical instructions must be reliably followed. The pattern is especially valuable for long-horizon tasks, complex multi-step workflows, and production systems requiring high reliability. Consider the trade-off: attention engineering adds some structural overhead but prevents costly goal drift and missed constraints. For contexts over 20K tokens or tasks with critical requirements, the benefits typically outweigh the costs.
+
+> **"You don't prompt a model; you stage a cognitive environment for it."** — Anthropic
 
 ## Practical Applications & Use Cases
 
