@@ -9,6 +9,8 @@ The Tool Use pattern creates this interface between an agent's reasoning and the
 
 > **"Tools give models new limbs."** — Andrej Karpathy
 
+![An LLM is a powerful speaker, but a powerless worker. Tools turn an LLM from a speaker into a worker.](llm_without_tools.png)
+
 ## Pattern Overview
 
 **What it is:** Tool Use (also known as Function Calling) is the pattern that enables agents to interact with external systems, APIs, databases, and services. 
@@ -25,6 +27,9 @@ The ACI is the tightly controlled, isolated execution runtime where the LLM's ge
 Just as a poor UI confuses a human user, poorly defined, ambiguous, or unreliable tools lead to agent hallucinations, costly loops, and ultimate failure.
 
 > **"Tools turn an LLM from a speaker into a worker."** — LangChain / LangGraph
+
+
+![Tool use pattern provides a stable, well difined ACI](llm_bridge_tools.png)
 
 ### Key Concepts
 
@@ -328,6 +333,7 @@ If tools must change, do so at session boundaries, not mid-conversation.
 - **Pattern: Constrained Tool Use** - Logit masking can enforce Level 1/2/3 boundaries, ensuring the model only sees appropriate tools for the current context
 - **Pattern: Tool Discovery** - Organizes tools into skills with progressive disclosure, enabling scalable tool management while maintaining the hierarchical structure
 
+![Tool use pattern provides a stable, well difined ACI](tool_use_patterns_summary.png)
 
 ### Code Examples
 

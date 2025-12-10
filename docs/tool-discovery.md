@@ -11,6 +11,8 @@ The SKILL pattern brings this natural, progressive learning approach to agent sy
 
 > **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus
 
+![Agent in a library.](agent_in_lib.png)
+
 
 ## Pattern Overview
 

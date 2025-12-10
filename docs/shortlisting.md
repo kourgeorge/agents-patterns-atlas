@@ -2,25 +2,51 @@
 
 ## Motivation
 
-A librarian faces thousands of books in a catalog and must find the most relevant ones for a researcher's query. They don't read every book—they analyze titles, descriptions, and keywords to create a shortlist of candidates. Similarly, agents often have access to hundreds or thousands of tools, APIs, or functions, but they can't include all of them in their context window. The challenge is: how do you identify the most relevant tools from a large catalog without overwhelming the agent's context or wasting computational resources?
-
+A librarian faces thousands of books in a catalog and must find the most relevant ones for a researcher's query. 
+They don't read every book—they analyze titles, descriptions, and keywords to create a shortlist of candidates. Similarly, agents often have access to hundreds or thousands of tools, APIs, or functions, but they can't include all of them in their context window. 
+The challenge is: how do you identify the most relevant tools from a large catalog without overwhelming the agent's context or wasting computational resources?
 Consider an agent that needs to interact with a large API catalog:
+
 - A digital sales platform with 200+ API endpoints
 - An OpenAPI specification with 50+ operations
 - A Model Context Protocol (MCP) server with 30+ tools
 - A codebase with hundreds of available functions
+Including all available tools in every prompt would be expensive, slow, and confusing for the agent. 
+The agent needs a way to intelligently filter and rank tools based on the specific task at hand, identifying not just relevant tools, but also understanding how they can work together in multi-step workflows.
 
-Including all available tools in every prompt would be expensive, slow, and confusing for the agent. The agent needs a way to intelligently filter and rank tools based on the specific task at hand, identifying not just relevant tools, but also understanding how they can work together in multi-step workflows.
+![Problem: Agent in a space withh too many tools.](many_tools.png)
 
 ## Pattern Overview
 
-**What it is:** The Shortlisting Pattern enables agents to analyze a large set of available tools, APIs, or functions and select the most relevant subset based on a task description. It uses LLM-based analysis to score and rank candidates, considering direct relevance, parameter matching, and potential for tool chaining in multi-step workflows.
+**What it is:** The Shortlisting Pattern enables agents to analyze a large set of available tools, APIs, or functions and select the most relevant subset based on a task description. 
+It uses LLM-based analysis to score and rank candidates, considering direct relevance, parameter matching, and potential for tool chaining in multi-step workflows.
 
 **When to use:** Use this pattern when agents have access to many tools/APIs but need to identify which ones are relevant for a specific task, especially when context window constraints make including all tools impractical.
 
-**Why it matters:** As agentic systems scale, they increasingly interact with large tool catalogs—OpenAPI specifications, MCP servers, codebases with many functions, or multi-agent systems with specialized capabilities. The Shortlisting Pattern reduces context window usage by filtering to relevant tools, improves decision-making by focusing the agent's attention, and enables discovery of tool chains that work together to accomplish complex goals.
+**Why it matters:** As agentic systems scale, they increasingly interact with large tool catalogs—OpenAPI specifications, MCP servers, codebases with many functions, or multi-agent systems with specialized capabilities. 
+The Shortlisting Pattern reduces context window usage by filtering to relevant tools, improves decision-making by focusing the agent's attention, and enables discovery of tool chains that work together to accomplish complex goals.
 
-Without shortlisting, agents face a fundamental tension: include too many tools and waste tokens while confusing the model, or include too few and risk missing critical capabilities. Shortlisting resolves this by providing an intelligent, task-aware filtering mechanism that identifies not just individual relevant tools, but also understands how tools can be chained together in workflows.
+Without shortlisting, agents face a fundamental tension: include too many tools and waste tokens while confusing the model, or include too few and risk missing critical capabilities. 
+Shortlisting resolves this by providing an intelligent, task-aware filtering mechanism that identifies not just individual relevant tools, but also understands how tools can be chained together in workflows.
+
+!!! note "What is MCP (Model Context Protocol)?"
+    The **Model Context Protocol (MCP)** is an open standard developed by Anthropic for connecting AI applications to external tools and data sources. 
+    MCP provides a standardized way for AI agents to discover, access, and interact with tools across different servers and services.
+    
+    **Key features:**
+    
+    - **Standardized Interface:** MCP defines a common protocol for exposing tools, resources, and prompts, making it easy to integrate diverse capabilities into AI agents.
+    - **Tool Discovery:** MCP servers expose tool definitions that agents can query and use, enabling dynamic tool discovery at runtime.
+    - **Multi-Server Architecture:** Agents can connect to multiple MCP servers simultaneously, each providing different sets of tools (e.g., database access, file system operations, API integrations).
+    - **Resource Access:** Beyond tools, MCP servers can expose resources (like documents, databases) and templates that agents can access.
+    - **Extensibility:** Developers can create custom MCP servers to expose any capabilities—from custom APIs to domain-specific tools.
+    
+    **Why it matters for shortlisting:**
+    
+    - When an agent connects to multiple MCP servers, the total number of available tools can quickly exceed 100+, making tool discovery and selection a critical challenge.
+    - Shortlisting becomes essential to filter through tools from multiple MCP servers and identify which ones are relevant for a specific task.
+    - Without shortlisting, agents would need to include tool definitions from all MCP servers in every prompt, consuming significant context and potentially confusing the model.
+
 
 ### Key Concepts
 
@@ -35,42 +61,51 @@ Without shortlisting, agents face a fundamental tension: include too many tools 
 The Shortlisting Pattern operates through a structured process that integrates seamlessly into agent workflows:
 
 1. **Trigger & Context Setup:** The shortlisting agent is triggered by a planning agent when it determines that API discovery is needed. The agent receives:
+
    - A task description (often enriched with context from the current sub-task)
    - A filtered catalog of available tools/APIs for a specific application
    - Application context (app name, description)
    - Optional memory tips from past successful shortlisting experiences
 
 2. **LLM-Based Analysis:** An LLM analyzes each tool against the task using a sophisticated prompt that emphasizes:
+
    - **Direct functional match:** Does the tool's purpose align with the task?
    - **Parameter availability:** Can required parameters be satisfied from:
-     - Direct user input (explicitly mentioned in the query)
-     - Output from other APIs (enabling chaining)
-     - **Critical constraint:** Do NOT assume missing parameters unless they can be realistically obtained from another API's output
+   
+        - Direct user input (explicitly mentioned in the query)
+        - Output from other APIs (enabling chaining)
+        - **Critical constraint:** Do NOT assume missing parameters unless they can be realistically obtained from another API's output
    - **Chaining potential:** Can this tool's output provide input parameters for other relevant tools?
    - **Schema compatibility:** Do response schemas match input requirements for chaining? (e.g., API A returns `id: integer`, API B requires `petId: integer`)
    - **Workflow position:** Is this tool for initial data gathering, intermediate processing, or final action?
 
 3. **Relevance Scoring:** Each tool receives a relevance score (0.0-1.0) with detailed reasoning that explains:
+
    - Why it was selected
    - How its required parameters can be satisfied
    - Its role in potential multi-step workflows
    - Its compatibility with other shortlisted APIs for chaining
 
 4. **Ranked Shortlist:** The agent returns a ranked list of relevant tools, ordered by relevance score (highest first), with:
+
    - At least 1 API (enforced minimum)
    - Detailed reasoning for each selection
    - Step-by-step thoughts explaining the analysis process
 
 5. **Post-Processing & State Management:** The shortlist is processed to:
+
    - Filter the full API catalog to only include shortlisted APIs
    - Build structured output summaries with app names, API names, descriptions, and reasoning
    - Store results in agent state history for future reference
    - Track the step for activity logging and debugging
 
 6. **Integration with Planning:** The shortlist feeds back into the planning agent, which:
+
    - Uses the filtered API set for subsequent planning decisions
    - Can trigger additional shortlisting if new APIs are needed
    - Passes shortlisted APIs to code generation agents for execution
+
+![Solution: An expert finding the best tools](lib_finding_best_tools.png)
 
 ## When to Use This Pattern
 
@@ -93,7 +128,11 @@ The Shortlisting Pattern operates through a structured process that integrates s
 
 ### Decision Guidelines
 
-Use Shortlisting when the benefits of intelligent filtering outweigh the added latency and cost. Consider catalog size: catalogs with 20+ tools benefit significantly from shortlisting. Consider task variability: if different tasks require different tool subsets, shortlisting provides value. Consider context constraints: if including all tools would exceed context limits or be prohibitively expensive, shortlisting is essential. However, if you have a small, fixed set of tools that are always used together, the overhead of shortlisting may not be justified.
+Use Shortlisting when the benefits of intelligent filtering outweigh the added latency and cost. 
+Consider catalog size: catalogs with 20+ tools benefit significantly from shortlisting. 
+Consider task variability: if different tasks require different tool subsets, shortlisting provides value. 
+Consider context constraints: if including all tools would exceed context limits or be prohibitively expensive, shortlisting is essential. 
+However, if you have a small, fixed set of tools that are always used together, the overhead of shortlisting may not be justified.
 
 ## Practical Applications & Use Cases
 
@@ -106,11 +145,13 @@ The Shortlisting Pattern is essential for building scalable agentic systems that
 **Challenge:** Including all 200+ API definitions in every prompt would consume thousands of tokens and confuse the agent. The agent needs to identify which APIs are relevant for specific tasks like "get the top account by revenue" or "update a customer's contact information."
 
 **Solution:** Shortlisting analyzes the task description against all available APIs, scoring each for relevance. For "get top account by revenue," it might shortlist:
+
 - `get_accounts` (relevance: 0.95) - retrieves all accounts with revenue data, no parameters required
 - `get_accounts_alt` (relevance: 0.80) - alternative account retrieval method
 - `get_account_by_id` (relevance: 0.60) - useful for getting details after identifying top account, can chain with first API's output
 
 **Real-World Flow:**
+
 1. User query: "get top account by revenue"
 2. Planning agent determines shortlisting is needed
 3. Shortlister receives task and all 200+ available APIs
@@ -207,6 +248,7 @@ The core agent that performs the analysis:
     ```
 
 **Key Design Decisions:**
+
 - **Structured Output:** Pydantic models ensure consistent, parseable results
 - **Relevance Scoring:** 0.0-1.0 scale enables ranking and filtering
 - **Reasoning Field:** Enables transparency and downstream agent understanding
@@ -257,6 +299,7 @@ Available Tools:
 ```
 
 **Key Prompt Features:**
+
 - **Enforced Minimum:** Requires at least 1 tool (prevents empty shortlists)
 - **Few-Shot Examples:** Include examples showing tool chaining scenarios
 - **Explicit Constraints:** Clear rules about parameter sourcing
@@ -413,7 +456,7 @@ Shortlisting integrates into agent workflows through a node-based architecture:
     get_account_by_id: 0.60 - Useful after identification, can chain with get_accounts output
     ```
 
-The examplw below demonstrates how shortlisting identifies tools that can be chained together:
+The example below demonstrates how shortlisting identifies tools that can be chained together:
 
 ??? "Advanced Example: Tool Chaining"
 
@@ -531,13 +574,13 @@ Shortlisting can be improved by learning from past experiences:
         ```
 
 **Benefits:**
+
 - **Learns Tool Combinations:** Recognizes which tools work well together
 - **Improves Scoring:** Better relevance scores over time
 - **Avoids Failures:** Memory can include explicit failure patterns to watch for
 - **Reduces Errors:** Learns from successful tool chains
 
 After shortlisting, filter the full tool catalog to only include shortlisted tools:
-
 
 ??? "Tool Filtering"
 
@@ -568,6 +611,7 @@ After shortlisting, filter the full tool catalog to only include shortlisted too
     ```
 
 **Benefits:**
+
 - **Context Reduction:** Reduces catalog from hundreds to 3-10 relevant tools
 - **Token Savings:** Dramatically reduces token usage in downstream agents
 - **Focus:** Downstream agents only see relevant tools, improving decision quality
@@ -633,6 +677,7 @@ After shortlisting, filter the full tool catalog to only include shortlisted too
     ```
 
 **General Pattern:**
+
 - Shortlisting node receives task and full tool catalog
 - Returns filtered shortlist
 - Downstream nodes use only shortlisted tools
@@ -640,19 +685,12 @@ After shortlisting, filter the full tool catalog to only include shortlisted too
 ## Key Takeaways
 
 - **Context Efficiency:** Shortlisting dramatically reduces context window usage by filtering large tool catalogs to relevant subsets (typically from 100+ APIs down to 3-10), enabling agents to work with extensive tool ecosystems without overwhelming the context. The filtering mechanism ensures downstream agents only receive relevant APIs, saving thousands of tokens per interaction.
-
 - **Parameter Matching is Critical:** Effective shortlisting must evaluate not just functional relevance, but whether required parameters can be satisfied—either from user input or from other tools' outputs in a chain. The prompt explicitly forbids assuming missing parameters unless they can be realistically obtained from another API's output, preventing incomplete selections.
-
 - **API Chaining Discovery:** The pattern's greatest value comes from identifying how tools can work together in multi-step workflows, where one tool's output feeds into another's input, enabling complex goal achievement. The system analyzes response schemas to match output fields with input parameter requirements, discovering chains that might not be obvious.
-
 - **Structured Output Enables Integration:** Returning ranked lists with scores and reasoning enables downstream agents (planners, executors) to make informed decisions and provides transparency for debugging. The structured output includes thoughts, relevance scores, and detailed reasoning for each API, creating a complete audit trail.
-
 - **Memory Integration Improves Accuracy:** Learning from past shortlisting experiences helps the agent improve over time, recognizing successful tool combinations and parameter patterns. Memory can also include explicit failure patterns to avoid, such as missing payment APIs for purchase tasks or incomplete API sets.
-
 - **Workflow Integration:** Shortlisting is not a one-time operation but an iterative process. Planning agents can trigger shortlisting multiple times as tasks evolve, and shortlisted APIs are stored in state history for reflection and future reference.
-
 - **Activity Tracking:** Each shortlisting step is tracked for observability, enabling debugging, performance analysis, and understanding of agent decision-making processes.
-
 - **When to Use:** Apply shortlisting for catalogs with 20+ tools, multi-step workflows requiring tool chaining, and scenarios where context window constraints make including all tools impractical. The pattern is especially valuable when different tasks require different tool subsets.
 
 ## Related Patterns
@@ -660,21 +698,15 @@ After shortlisting, filter the full tool catalog to only include shortlisted too
 This pattern works well with:
 
 - **Tool Use:** Shortlisting selects which tools to make available to the agent, filtering the tool catalog before tool use occurs.
-
 - **Routing:** Shortlisting can be viewed as a specialized form of routing—selecting which tools to route the task to from a large set of candidates.
-
 - **Planning:** Shortlisting typically precedes planning, as planners need to know which tools are available before creating action sequences. The shortlist informs the planning process.
-
 - **Orchestrator-Worker:** Shortlisting helps orchestrators identify which workers (and their tools) are relevant for a given task, enabling efficient multi-agent coordination.
-
 - **Knowledge Retrieval:** Shortlisting can use semantic search or RAG to find relevant tools from large catalogs, especially when tool descriptions are embedded in vector databases.
 
 This pattern differs from:
 
 - **Tool Use:** Tool Use is about executing tools; Shortlisting is about selecting which tools to consider for use.
-
 - **Routing:** Routing selects between different execution paths or agents; Shortlisting filters a catalog of tools/APIs before use.
-
 - **Planning:** Planning creates action sequences; Shortlisting identifies which tools are available for those sequences.
 
 ??? "References"

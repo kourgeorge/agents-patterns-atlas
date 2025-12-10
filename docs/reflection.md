@@ -2,35 +2,52 @@
 
 ## Motivation
 
-Writers revise their drafts, checking for clarity and flow. Scientists review their experiments before publication. Students review their answers before submitting. Reflection is our built-in quality control: stepping back, evaluating our work, identifying improvements, and refining until it meets our standards. The Reflection pattern gives agents this same ability: to review, critique, and improve their own outputs through iterative self-evaluation.
+Writers revise their drafts, checking for clarity and flow. 
+Scientists review their experiments before publication. 
+Students review their answers before submitting. 
+Reflection is our built-in quality control: stepping back, evaluating our work, identifying improvements, and refining until it meets our standards. 
+The Reflection pattern gives agents this same ability: to review, critique, and improve their own outputs through iterative self-evaluation.
+
+![The problem: first draft](reflection_problem.png)
 
 ## Pattern Overview
 **What it is:** Reflection is a pattern where an agent evaluates its own work, output, or internal state and uses that evaluation to improve its performance or refine its response through iterative feedback loops.
 
 **When to use:** Use reflection when output quality, accuracy, or adherence to complex constraints is critical, and you're willing to trade speed and cost for higher quality results.
 
-**Why it matters:** Reflection enables self-correction and iterative refinement, transforming agents from single-pass executors into systems capable of improving their own outputs. This pattern is essential for producing high-quality, accurate results that meet complex requirements.
+**Why it matters:** Reflection enables self-correction and iterative refinement, transforming agents from single-pass executors into systems capable of improving their own outputs. 
+This pattern is essential for producing high-quality, accurate results that meet complex requirements.
 
 Even with sophisticated workflows using chaining, routing, and parallelization, an agent's initial output might not be optimal, accurate, or complete. The Reflection pattern introduces a feedback loop where the agent doesn't just produce an output; it examines that output, identifies potential issues or areas for improvement, and uses those insights to generate a better version or modify its future actions.
 
 The process typically involves: 
 
-1. Execution—the agent performs a task or generates an initial output.
-2. Evaluation/Critique—the agent analyzes the result checking for accuracy, coherence, completeness, or adherence to instructions.
-3. Reflection/Refinement—based on the critique, the agent determines how to improve, and (4) Iteration—the refined output can be executed again, with the reflection process repeating until satisfactory or a stopping condition is met.
+1. **Execution**: the agent performs a task or generates an initial output.
+2. **Evaluation/Critique**: the agent analyzes the result checking for accuracy, coherence, completeness, or adherence to instructions.
+3. **Reflection/Refinement**: based on the critique, the agent determines how to improve
+4. **Iteration**: the refined output can be executed again, with the reflection process repeating until satisfactory or a stopping condition is met.
 
-A key and highly effective implementation separates the process into two distinct roles: a Producer and a Critic (Generator-Critic model). While a single agent can perform self-reflection, using two specialized agents (or two separate LLM calls with distinct system prompts) often yields more robust and unbiased results. The Producer focuses on generating content, while the Critic evaluates it with a fresh perspective, dedicated entirely to finding errors and areas for improvement.
+A key and highly effective implementation separates the process into two distinct roles: a Producer and a Critic (Generator-Critic model). 
+While a single agent can perform self-reflection, using two specialized agents (or two separate LLM calls with distinct system prompts) often yields more robust and unbiased results. 
+The Producer focuses on generating content, while the Critic evaluates it with a fresh perspective, dedicated entirely to finding errors and areas for improvement.
+
+![The solution: reflection](reflection_solution.png)
 
 ### Key Concepts
+
 - **Feedback Loop:** Reflection introduces a cyclical process of generation, evaluation, and refinement rather than linear execution.
 - **Producer-Critic Model:** Separating generation and evaluation into distinct agents or roles prevents cognitive bias and improves objectivity.
 - **Iterative Refinement:** The pattern enables multiple passes of improvement, with each iteration building on previous critiques.
 - **Quality vs. Speed Trade-off:** Reflection improves quality but increases latency and cost due to multiple LLM calls.
 
 ### How It Works
-Reflection works through a structured feedback cycle. First, a Producer agent generates initial output based on the task. Then, a Critic agent (or the same agent in a different role) evaluates this output against specific criteria—factual accuracy, code quality, stylistic requirements, completeness, or adherence to instructions. The Critic provides structured feedback identifying flaws and suggesting improvements.
+Reflection works through a structured feedback cycle. 
+First, a Producer agent generates initial output based on the task. 
+Then, a Critic agent (or the same agent in a different role) evaluates this output against specific criteria—factual accuracy, code quality, stylistic requirements, completeness, or adherence to instructions. The Critic provides structured feedback identifying flaws and suggesting improvements.
 
-This feedback is then passed back to the Producer, which uses it to generate a refined version. The cycle can repeat until the Critic determines the output is satisfactory (often signaled by a "PERFECT" or "SATISFACTORY" status) or a maximum iteration limit is reached. The separation of Producer and Critic roles is powerful because it prevents the cognitive bias of an agent reviewing its own work—the Critic approaches with a fresh perspective.
+This feedback is then passed back to the Producer, which uses it to generate a refined version. 
+The cycle can repeat until the Critic determines the output is satisfactory (often signaled by a "PERFECT" or "SATISFACTORY" status) or a maximum iteration limit is reached. 
+The separation of Producer and Critic roles is powerful because it prevents the cognitive bias of an agent reviewing its own work—the Critic approaches with a fresh perspective.
 
 Implementing reflection requires structuring workflows to include these feedback loops, often using state management and conditional transitions based on evaluation results. Frameworks like LangGraph support iterative loops natively, while LangChain can implement single reflection steps, and Google ADK facilitates reflection through sequential workflows where one agent's output is critiqued by another.
 
@@ -73,6 +90,7 @@ pip install google-adk
 ```
 
 ??? "Basic Example"
+
     ```python
     from langchain_openai import ChatOpenAI
     from langchain_core.messages import SystemMessage, HumanMessage
@@ -171,6 +189,7 @@ This advanced example implements a full ReflectionAgent class with structured ev
 ### Framework-Specific Examples
 
 ??? LangGraph
+
     ```python
     from langgraph.graph import StateGraph, END
     from langchain_openai import ChatOpenAI
@@ -259,6 +278,10 @@ This pattern works well with:
 This pattern is often combined with:
 - **Exception Handling** - Reflection can identify and correct errors before they cause failures
 - **Evaluation and Monitoring** - Structured evaluation metrics guide the reflection process
+
+
+![Architercural cheat sheet.](cheat_sheet.png)
+
 
 ??? "References"
 

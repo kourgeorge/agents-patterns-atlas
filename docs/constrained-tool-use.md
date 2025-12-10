@@ -2,18 +2,46 @@
 
 ## Motivation
 
-In a workshop, you might have a full toolbox but only need a few tools for a specific job. Rather than removing tools from the box, you simply focus on the ones you need, keeping others available but out of the way. Similarly, when working in a restricted environment, you adapt to what's available rather than changing your entire setup. Constrained Tool Use applies this principle: limiting tool availability through programmatic constraints while keeping the full toolset defined, preventing confusion and maintaining efficiency.
+In a workshop, you might have a full toolbox but only need a few tools for a specific job. 
+Rather than removing tools from the box, you simply focus on the ones you need, keeping others available but out of the way. 
+Similarly, when working in a restricted environment, you adapt to what's available rather than changing your entire setup. 
+Constrained Tool Use applies this principle: limiting tool availability through programmatic constraints while keeping the full toolset defined, preventing confusion and maintaining efficiency.
+
+
+!!! note "What is KV Cache?"
+    The **Key-Value Cache (KV-Cache)** is a performance optimization mechanism used in transformer language models during inference. When processing a sequence of tokens, the model computes key-value pairs for each position in the attention mechanism. These key-value pairs are cached so that when generating subsequent tokens, the model doesn't need to recompute the keys and values for all previous tokens.
+    
+    **Why it matters for tool definitions:**
+    
+    - Tool definitions typically appear near the front of the context window, forming a stable prefix that remains constant across multiple turns.
+    - When the context prefix (including tool definitions) stays unchanged, the KV-Cache can be reused entirely for that prefix, dramatically reducing computation.
+    - A single-token change in the prompt prefix invalidates the entire KV-Cache, forcing the model to recompute all key-value pairs from scratch.
+    - This can lead to up to **10× cost increases** in uncached tokens, significantly impacting both latency and API costs.
+    - By keeping tool definitions stable and using programmatic constraints (logit masking) instead of dynamically modifying definitions, the KV-Cache remains valid, ensuring efficient inference throughout the conversation.
+
+![Problem: the context is fragile.](fragile_context.png)
+
 
 ## Pattern Overview
 **What it is:** A mechanism to manage tool availability by using programmatic constraints (like logit masking) to prevent selection, rather than dynamically modifying the tool definitions in the context.
 
 **When to use:** When the set of available tools must remain stable but the agent's permission or capability to use a tool must change based on the current state.
 
-**Why it matters:** Dynamically altering tool definitions mid-run breaks the **KV-Cache** (Key-Value Cache) and confuses the model. Keeping tool definitions stable is critical for maintaining performance, reducing cost, and preventing the model from hallucinating tool actions.
+**Why it matters:** Dynamically altering tool definitions mid-run breaks the **KV-Cache** (Key-Value Cache) and confuses the model. 
+Keeping tool definitions stable is critical for maintaining performance, reducing cost, and preventing the model from hallucinating tool actions.
 
-As agents take on more capabilities, their action space naturally grows more complex—the number of tools explodes. With the popularity of MCP (Model Context Protocol) and user-configurable tools, agents can have hundreds of tools available. This complexity increases the likelihood of selecting the wrong action or taking an inefficient path. A natural reaction might be to design a dynamic action space—perhaps loading tools on demand using something RAG-like. However, experiments show a clear rule: unless absolutely necessary, avoid dynamically adding or removing tools mid-iteration.
 
-The Constrained Tool Use pattern addresses this challenge by maintaining stable tool definitions while programmatically constraining which tools can be selected at any given moment. This approach preserves KV-Cache efficiency, prevents model confusion, and ensures reliable tool invocation.
+As agents take on more capabilities, their action space naturally grows more complex—the number of tools explodes. With the popularity of MCP (Model Context Protocol) and user-configurable tools, agents can have hundreds of tools available. 
+This complexity increases the likelihood of selecting the wrong action or taking an inefficient path. 
+A natural reaction might be to design a dynamic action space—perhaps loading tools on demand using something RAG-like. 
+However, experiments show a clear rule: unless absolutely necessary, avoid dynamically adding or removing tools mid-iteration.
+
+The Constrained Tool Use pattern addresses this challenge by maintaining stable tool definitions while programmatically constraining which tools can be selected at any given moment. 
+This approach preserves KV-Cache efficiency, prevents model confusion, and ensures reliable tool invocation.
+
+
+![Solution: Focused workbench.](focused_workbench.png)
+
 
 ### Key Concepts
 - **Logit Masking:** Programmatically preventing the LLM from generating tokens corresponding to unavailable tools during decoding, without removing tool definitions from context.
@@ -69,6 +97,8 @@ The Constrained Tool Use pattern is essential for managing complex action spaces
 - **Workflow Stage Constraints:** Different stages of a workflow can have different tool availability (e.g., research stage allows only search tools, execution stage allows only action tools).
 
 - **Permission-Based Access:** Tools can be masked based on user permissions or security policies without removing them from the context.
+
+![Pragmattic tool constraint.](pragmattic_tools_constraint.png)
 
 ## Implementation
 

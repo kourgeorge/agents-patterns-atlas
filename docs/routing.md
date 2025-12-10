@@ -4,6 +4,8 @@
 
 A receptionist listens to each caller and routes them to the right department—sales, support, or billing. A triage nurse assesses patients and directs them to appropriate specialists. We constantly make routing decisions: choosing which tool to use, which person to ask, or which path to take. Routing in agents works the same way: evaluating the situation and directing tasks to the most appropriate handler, tool, or workflow path.
 
+![Routing: The problem.](routing_problem.png)
+
 ## Pattern Overview
 **What it is:** Routing is a mechanism that enables agents to dynamically select between multiple potential actions based on input, state, or conditions, introducing conditional logic into agent workflows.
 
@@ -16,6 +18,10 @@ While sequential processing via prompt chaining is foundational for deterministi
 The core mechanism of routing involves evaluating specific criteria to select from a set of possible subsequent actions. For instance, a customer service agent might first classify an incoming query to determine user intent, then route it to a specialized agent for question-answering, a database retrieval tool for account information, or an escalation procedure for complex issues—rather than defaulting to a single predetermined response pathway.
 
 Routing can be implemented at multiple junctures within an agent's operational cycle: at the outset to classify a primary task, at intermediate points within a processing chain to determine subsequent actions, or during subroutines to select the most appropriate tool from a given set. This flexibility makes routing essential for building adaptive, context-aware agentic systems.
+
+
+![Routing: The solution.](routing_solution.png)
+
 
 ### Key Concepts
 - **Dynamic Decision-Making:** Routing enables agents to evaluate conditions and make runtime decisions about execution paths, moving beyond fixed sequences.
