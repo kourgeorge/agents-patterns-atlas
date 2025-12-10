@@ -16,27 +16,28 @@ It's not a specific piece of code or a library you can import. Instead, it's a *
 Design patterns are **technology-agnostic**. 
 The same pattern can be implemented using different frameworks (LangChain, LangGraph, Google ADK, CrewAI), different programming languages, or even different model providers. The pattern describes the *what* and *why*, while implementations show the *how*.
 
+-- 
+
 ## The Four Universal Principles of Effective Problem-Solving
 
-All patterns in this book have similarities on how people (and especially engineers) solve problems in real life. 
-They are grounded in four universal principles represent the fundamental strategies that make problem-solving effective across domains—from human cognition to biological systems to artificial intelligence. 
-Understanding these principles provides a deeper appreciation for why certain patterns emerge and why they work.
+Across engineering, biology, human cognition, and artificial intelligence, effective problem-solving consistently reflects four universal principles. 
+These principles explain why the design patterns in this book work, and why they emerge repeatedly in both natural and artificial systems.
 
-1. **Break down large problems into smaller sub-problems** — Decomposition enables manageable, focused solutions. 
+1. **Devide-and-conquer** — Decomposition enables manageable, focused solutions. 
 By dividing complex challenges into discrete, addressable components, we can tackle each piece systematically, reducing cognitive load and improving the likelihood of success.
 
-2. **Focus attention on relevant information** — Selective attention prevents cognitive overload and improves decision quality. 
+2. **Selective Attention & Prioritization** — Selective attention prevents cognitive overload and improves decision quality. 
 Rather than processing all available information, effective problem-solving requires filtering and prioritizing the most relevant data for the current sub-problem.
 
-3. **Diversity and specialization** — Multiple parties collaborating on a problem is better than a single entity; the different biases and perspectives each brings return the best ideas. Specialized agents or team members, each with distinct expertise and viewpoints, can explore solution spaces more thoroughly than any single generalist.
+3. **Diversity and Specialization** — Multiple parties collaborating on a problem is better than a single entity; the different biases and perspectives each brings return the best ideas. Specialized agents or team members, each with distinct expertise and viewpoints, can explore solution spaces more thoroughly than any single generalist.
 
-4. **Spend more time thinking on the hard problem** — Reflected in more energy investment to get the best solution—like reflection. Deliberate, iterative consideration of problems and solutions leads to higher-quality outcomes than hasty, single-pass approaches.
+4. **Deep Thinking on Hard Problems** — Reflected in more energy investment to get the best solution—like reflection. Deliberate, iterative consideration of problems and solutions leads to higher-quality outcomes than hasty, single-pass approaches.
 
-These principles manifest throughout the agentic design patterns in this book. 
-**Task decomposition** patterns break complex goals into manageable sub-tasks. 
-**Attention engineering** and **context management** patterns focus computational resources on relevant information. 
-**Multi-agent systems** leverage diversity and specialization through orchestrator-worker architectures and swarm consensus mechanisms. **Reflection** patterns invest additional computational cycles to evaluate and refine outputs. 
-By recognizing these underlying principles, you can better understand how patterns relate to each other and why certain combinations are particularly powerful.
+![The 4 pronciples of problem solving.](4_principles.png)
+
+
+
+--
 
 ## What Makes a Pattern "Agentic"?
 
@@ -50,6 +51,8 @@ An **agentic design pattern** is a design pattern specifically tailored to the u
 - **Human oversight** must be integrated into autonomous workflows
 
 Agentic design patterns differ from traditional software design patterns (like Singleton, Factory, Observer) because they account for the unique characteristics of LLM-based systems: non-determinism, context limitations, tool integration, and the need for transparency in decision-making.
+
+--
 
 ## The Relationship Between Patterns and Implementations
 
@@ -69,6 +72,8 @@ In this book, each pattern module includes:
 - **Implementation Examples:** Concrete code showing how the pattern can be realized
 - **Framework-Specific Examples:** How different tools can be used to implement the same pattern
 
+--
+
 ## Characteristics of Good Design Patterns
 
 Effective agentic design patterns share these characteristics:
@@ -78,6 +83,8 @@ Effective agentic design patterns share these characteristics:
 3. **Proven:** They represent solutions that have been tested and refined through real-world application
 4. **Composable:** They can be combined with other patterns to solve complex problems
 5. **Documented Trade-offs:** They clearly explain benefits, limitations, and when alternatives are better
+
+--
 
 ## Patterns vs. Frameworks vs. Libraries
 
@@ -92,6 +99,8 @@ Understanding these distinctions helps you choose the right tool for the right j
 | **Purpose** | Solve recurring problems | Provide structure for apps | Provide reusable functions |
 
 **Patterns** tell you *what* to build and *why*. **Frameworks** help you *how* to build it. **Libraries** give you the *pieces* to build with.
+
+--
 
 ## Patterns vs. Implementation Mechanisms
 
@@ -142,6 +151,8 @@ Throughout this book, you'll see patterns illustrated with specific implementati
 
 The pattern is the reusable knowledge. The implementation mechanism is just one tool in your toolbox.
 
+--
+
 ## How to Use This Book's Patterns
 
 When you encounter a pattern in this book:
@@ -153,6 +164,8 @@ When you encounter a pattern in this book:
 5. **Combine Patterns:** Real systems often use multiple patterns together
 
 Remember: **The pattern is the abstraction. The code examples are illustrations.** Your implementation will differ based on your specific requirements, but the core pattern structure remains the same.
+
+--
 
 ## Next Steps
 
