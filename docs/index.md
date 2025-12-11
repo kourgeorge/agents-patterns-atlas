@@ -37,7 +37,6 @@ The book is organized into **7 parts** containing **32 modules**:
 
 The patterns are organized to build concepts progressively, but you can also use this book as a reference, jumping to patterns that address specific challenges you face in your agent development projects.
 
-
 ## The Emphasis on Practical Application
 
 Throughout this book, the emphasis is on practical application. Every pattern includes runnable code examples that you can execute, modify, and learn from. We encourage you to:
@@ -49,7 +48,7 @@ Throughout this book, the emphasis is on practical application. Every pattern in
 
 The code examples are designed to clearly illustrate each pattern's core logic and its implementation, focusing on clarity and practicality over production-ready complexity.
 
---
+---
 
 ## The Creation Process: A New Paradigm for Book Writing
 

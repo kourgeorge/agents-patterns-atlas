@@ -4,6 +4,9 @@
 
 Facing a long to-do list, you assess what's urgent, what's important, and what depends on other tasks. You might tackle urgent deadlines first, then important but less urgent tasks, while considering what blocks other work. Doctors triage patients by severity. Project managers prioritize features by impact. Prioritization in agents mirrors this: evaluating tasks against criteria like significance, urgency, and dependencies to determine the optimal order of execution.
 
+
+![The prioritization need.](prioritization_problem.png)
+
 ## Pattern Overview
 **What it is:** Prioritization is a pattern that enables agents to assess and rank tasks, objectives, or actions based on their significance, urgency, dependencies, and established criteria. This ensures agents concentrate efforts on the most critical tasks, resulting in enhanced effectiveness and goal alignment.
 
@@ -29,6 +32,9 @@ Third, based on the evaluations, a scheduling algorithm selects the optimal next
 
 Finally, the system implements dynamic re-prioritization, continuously monitoring the environment and adjusting priorities when new information arrives, deadlines approach, or circumstances change.
 
+![The prioritization solution.](prioritization_solution.png)
+
+
 ## When to Use This Pattern
 
 ### ✅ Use this pattern when:
@@ -48,6 +54,8 @@ Finally, the system implements dynamic re-prioritization, continuously monitorin
 ### Decision Guidelines
 Choose this pattern when the benefits of intelligent task ordering outweigh the added complexity. Consider the prioritization method: rule-based prioritization is fast and deterministic but less flexible; scoring-based prioritization offers good balance but requires careful weight tuning; LLM-based prioritization is most flexible but adds latency and cost. The choice depends on your accuracy requirements, latency constraints, and the complexity of the prioritization decision.
 
+![The prioritization solution mechanics.](prioritization_mechanics.png)
+
 ## Practical Applications & Use Cases
 
 Prioritization is essential for building efficient, goal-aligned agentic systems that can manage complexity and resource constraints. Common applications include task management, resource allocation, and dynamic decision-making.
@@ -60,6 +68,10 @@ Prioritization is essential for building efficient, goal-aligned agentic systems
 - **Cybersecurity:** Agents monitoring network traffic prioritize alerts by assessing threat severity, potential impact, and asset criticality, ensuring immediate responses to the most dangerous threats.
 - **Personal Assistant AIs:** Utilize prioritization to manage daily lives, organizing calendar events, reminders, and notifications according to user-defined importance, upcoming deadlines, and current context.
 
+
+![The prioritization examples.](prioritization_examples.png)
+
+
 ## Implementation
 
 ### Prerequisites
@@ -68,6 +80,7 @@ pip install langchain langchain-openai python-dotenv pydantic
 ```
 
 ??? "Basic Example"
+
     ```python
     from typing import List, Dict
     from enum import Enum

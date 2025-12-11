@@ -2,63 +2,73 @@
 
 ## Motivation
 
-Humans don't store everything in working memory. We use notebooks, calendars, reference books, and digital files as external memory. When needed, we retrieve relevant information. We can't remember every detail, but we know where to find it. The Filesystem as Context pattern gives agents this capability: treating persistent storage as unlimited memory, retrieving information just-in-time rather than trying to keep everything in the limited context window.
-
+Humans don't store everything in working memory. 
+We use notebooks, calendars, reference books, and digital files as external memory. 
+When needed, we retrieve relevant information. 
+We can't remember every detail, but we know where to find it. 
+The Filesystem as Context pattern gives agents this capability: treating persistent storage as unlimited memory, retrieving information just-in-time rather than trying to keep everything in the limited context window.
 
 > **"Memory is not storage; it is context selection over time."** — LangChain
 
 ## Pattern Overview
-**What it is:** A mechanism to treat an external persistent memory (like a filesystem or database) as an unlimited extension of the agent's working memory.
+**What it is:** A mechanism to treat an external persistent memory (like a filesystem or database) as an unlimited extension of the agent's working memory (a.k.a **long term memory**).
 
-**When to use:** When the agent needs to handle large data or unstructured observations (like web pages or PDF text) that would exceed context length limits. Also used for long-horizon tasks that require persistent, restorable information retention.
+**When to use:** When the agent needs to handle large data or unstructured observations (like web pages or PDF text) that would exceed context length limits. 
+Also used for long-horizon tasks that require persistent, restorable information retention.
 
-**Why it matters:** It helps mitigate the fundamental constraint of the LLM's finite context window. It reduces token costs and latency by allowing the agent to retrieve only the relevant information when needed.
+**Why it matters:** It helps mitigate the fundamental constraint of the LLM's finite context window. 
+It reduces token costs and latency by allowing the agent to retrieve only the relevant information when needed.
 
-The Filesystem as Context pattern addresses one of the most fundamental constraints in LLM-based agent systems: the finite context window. As agents process complex tasks, they encounter large data sources—web search results, PDF documents, codebases, or extensive research findings—that would quickly exhaust the available context tokens. Simply truncating or summarizing this data risks losing critical information, while including everything inflates costs and can degrade performance due to attention dilution.
+The Filesystem as Context pattern addresses one of the most fundamental constraints in LLM-based agent systems: the finite context window. 
+As agents process complex tasks, they encounter large data sources—web search results, PDF documents, codebases, or extensive research findings—that would quickly exhaust the available context tokens. 
+Simply truncating or summarizing this data risks losing critical information, while including everything inflates costs and can degrade performance due to attention dilution.
 
-This pattern treats external storage (filesystem, databases, or other persistent stores) as an unlimited extension of the agent's working memory. Instead of keeping all data in the immediate context, the agent offloads large content to external storage and retains only lightweight references (file paths, URLs, or database keys). When specific information is needed, the agent performs targeted retrieval, pulling only the relevant portions back into context.
-
-The pattern is particularly powerful because it enables restorable compression: the agent can drop large content from context while maintaining the ability to retrieve it precisely when needed. This creates a "just-in-time" information architecture where context remains focused and efficient, while the agent retains access to an unlimited knowledge base.
+Instead of keeping all data in the immediate context, the agent offloads large content to external storage and retains only lightweight references (file paths, URLs, or database keys). 
+When specific information is needed, the agent performs targeted retrieval, pulling only the relevant portions back into context.
+The pattern is particularly powerful because it enables restorable compression: the agent can drop large content from context while maintaining the ability to retrieve it precisely when needed. 
+This creates a "just-in-time" information architecture where context remains focused and efficient, while the agent retains access to an unlimited knowledge base.
 
 ### Key Concepts
+
 - **Externalized Memory:** Large data stored outside the context window in persistent storage (filesystem, database, etc.).
 - **Scratchpad Memory Pattern:** Using temporary files or workspaces as intermediate storage for agent computations and observations.
 - **Restorable Compression:** Dropping large content from context while retaining a reference (path, URL, key) that allows precise retrieval later.
 - **Just-in-Time Retrieval:** Selectively reading only relevant portions of stored data when needed, rather than loading everything upfront.
-- **Context Engineering:** Strategic management of what information appears in the context window to optimize performance and cost.
 
 ### How It Works: Step-by-step Explanation
 
 1. **Offload Large Data:** The agent writes intermediate results, notes, or large data (such as a 10K token web search result) to an external persistent file (a scratch file) instead of keeping it in the immediate conversation context.
-
 2. **Retain Reference:** The compression strategy is always *restorable*—the agent drops the large content but retains a lightweight reference, such as the file path or URL, so it can be reloaded on demand.
-
 3. **Just-in-Time Retrieval:** When necessary for a subsequent step, the agent selectively reads only the relevant portions of the stored data. This can be done using dedicated tools like `grep` or `read_file` to pull in only what is needed.
-
 4. **Inject Context:** The small, relevant snippets are injected into the agent's next prompt, ensuring the context is focused and concise, thereby preventing the context window from being flooded.
 
 ## Relationship to Context Compression
 
-Filesystem as Context is the **primary externalization technique** within the broader Context Compression strategy. Understanding this relationship helps clarify how it fits into comprehensive context management.
+Filesystem as Context is the **primary externalization technique** within the broader Context Compression strategy. 
+Understanding this relationship helps clarify how it fits into comprehensive context management.
 
 ### Filesystem as Context as Externalization Component
 
-**Filesystem as Context** is the **externalization component** of Context Compression. It's the most powerful compression strategy because:
+**Filesystem as Context** is the **externalization component** of Context Compression. 
+It's the most powerful compression strategy because:
+
 - It enables unlimited storage beyond context limits
 - It provides restorable compression (maintains references for retrieval)
 - It supports just-in-time retrieval of only relevant portions
 - It's the first step in a layered compression approach
 
-**Note:** This pattern is the externalization component of Context Compression. The typical workflow is: first externalize large data (Filesystem as Context), then compress what remains in context (summarization/pruning via Context Compression).
+**Note:** The typical workflow is: first externalize large data (Filesystem as Context), then compress what remains in context (summarization/pruning via Context Compression).
 
 ### How It Works with Context Compression
 
 **Layered Compression Strategy:**
+
 1. **First:** Externalize large data using Filesystem as Context (offload to persistent storage)
 2. **Then:** Compress what remains in context using Context Compression techniques (summarization, pruning)
 3. **Result:** Maximum compression with unlimited external storage
 
 **Example:** An agent processing research papers might:
+
 - Use Filesystem as Context to write paper contents to files, keeping only file paths in context
 - Use Context Compression to summarize conversation history
 - Retrieve specific sections on-demand using targeted tools
@@ -66,17 +76,21 @@ Filesystem as Context is the **primary externalization technique** within the br
 ### How It Works with Context Editing
 
 **Automatic Management with External Storage:**
+
 - Externalize large tool results first using Filesystem as Context
 - Let Context Editing automatically clear old tool result references when context grows
 - Maintain references to externalized files for restorable compression
 
 **Example:** An agent with many tool calls might:
+
 - Write large tool results to files using Filesystem as Context
 - Keep only file paths in context
 - Let Context Editing automatically clear old tool result references
 - Retrieve specific results on-demand using file paths
 
 This combination provides automatic context management while maintaining restorable compression through external storage references.
+
+> **"Agent failures are almost always context failures."** — Manus
 
 ## When to Use This Pattern
 
