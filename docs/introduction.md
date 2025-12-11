@@ -1,5 +1,13 @@
 # Introduction: Foundations of Agentic Systems
 
+We stand at the threshold of a new engineering discipline: **agentic engineering**, the practice of building intelligent systems where AI agents autonomously perceive, reason, and act to achieve complex goals. 
+This represents Software 3.0—a paradigm shift from traditional deterministic code (Software 1.0) and machine learning models (Software 2.0) to systems where the logic itself is generated dynamically by language models at runtime. 
+Just as the Gang of Four's *Design Patterns: Elements of Reusable Object-Oriented Software* codified solutions to recurring problems in object-oriented programming, creating a shared vocabulary that transformed software development in the 1990s, we now need a similar framework for agentic systems. 
+This book serves that purpose: it provides a comprehensive catalog of design patterns specifically tailored for agentic AI, offering proven solutions to the unique challenges of building reliable, scalable, and maintainable agentic systems. 
+By grounding these patterns in cognitive neuroscience and extracting them from real-world implementations, we aim to establish the foundational principles and shared language that will enable engineers to build the next generation of intelligent software.
+
+> ** The hottest new programming language in English** -Andrej Karpathy
+
 ## The Evolution of AI Systems
 
 The journey from simple language models to sophisticated agentic systems has been rapid and transformative. 
