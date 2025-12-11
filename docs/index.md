@@ -8,7 +8,6 @@ While significant innovation in agentic patterns occurs within specialized commu
 Yet the deeper knowledge of design patterns for agentic AI—understanding when to use or avoid specific patterns and how to combine them effectively—remains fragmented across diverse resources.
 
 These design patterns have been collected from a growing corpus of literature on agentic systems, including engineering blogs from leading AI companies like Anthropic, Manus, and LangChain, insights from active developer bloggers, and an increasing number of academic publications and books.
-
 In addition, many patterns in this book were extracted directly from implementations of deep agents like IBM's CUGA (Configurable Generalist Agent) and LangChain's Deep Agents. 
 AI code-writing tools enabled analysis of these large codebases, identifying reusable patterns, design components, and principles that we've codified into transferable knowledge for building new agentic applications.
 
@@ -22,6 +21,7 @@ Whether you're building simple single-agent workflows or complex multi-agent arc
 
 **George Kour, Ph.D.** 
 
+---
 
 ## Book Structure
 
@@ -76,14 +76,15 @@ The content has been carefully reviewed and validated by the author to ensure ac
 
 If you encounter any issues, have suggestions for improvement, or notice any errors, we would greatly appreciate your feedback. Please contact the author at **kourgeorge@gmail.com**. Your input helps us maintain and improve the quality of this resource for the entire community.
 
---
+---
+
 ## Let's Begin
 
 This book is your guide to building intelligent, agentic systems. Whether you're just starting your journey into agentic AI or looking to deepen your understanding of proven patterns, we hope this resource empowers you to create systems that are robust, reliable, and effective.
 The journey ahead is exciting. You're about to learn patterns that will enable you to build systems that can reason, plan, act, and collaborate. These are the building blocks of the next generation of AI applications.
 Let's begin this hands-on journey into building intelligent, agentic systems!
 
---
+---
 
 ## Bibliography
 
