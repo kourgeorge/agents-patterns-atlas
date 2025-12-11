@@ -8,8 +8,9 @@ This chapter provides an overview of reasoning techniques used in agentic system
 We'll explore how agents structure their thought processes, the different approaches available, and when each technique is most appropriate. 
 For detailed implementation patterns, see the specific pattern modules referenced throughout this chapter.
 
-
 > **"An agent is a loop: perceive → think → act → observe → update."** — Anthropic Engineers
+
+![The Agentic Loop.](reasoning-techniques_agentic.png)
 
 
 ## The Importance of Reasoning in Agentic Systems
@@ -23,9 +24,13 @@ Effective reasoning enables agents to:
 - **Support Error Correction:** Structured reasoning allows agents to analyze failures, understand what went wrong, and adapt their approach
 - **Enable Strategic Planning:** Advanced reasoning techniques allow agents to explore multiple paths before committing to a solution
 
+
+
 ## Core Reasoning Approaches
 
 Agentic systems employ several reasoning techniques, each suited to different problem types and complexity levels:
+
+![The Agentic Loop.](reasoning-techniques_cot_react.png)
 
 ### Chain-of-Thought (CoT)
 

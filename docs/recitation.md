@@ -435,12 +435,12 @@ This pattern is often combined with:
 
 ??? "References"
 
-- Agentic AI System Design Patterns
-- Context Engineering for AI Agents: Lessons from Building Manus
-- Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
-- Implementing deepagents: a technical walkthrough
-- Deep Agents
-- How agents can use filesystems for context engineering
-- Agentic Design Patterns Engineering Playbook
-- Manus AI Agent Harness learnings from Peak Ji
+    - Agentic AI System Design Patterns
+    - Context Engineering for AI Agents: Lessons from Building Manus
+    - Context Engineering for AI Agents: Part 2 - https://www.philschmid.de/context-engineering-part-2
+    - Implementing deepagents: a technical walkthrough
+    - Deep Agents
+    - How agents can use filesystems for context engineering
+    - Agentic Design Patterns Engineering Playbook
+    - Manus AI Agent Harness learnings from Peak Ji
 
