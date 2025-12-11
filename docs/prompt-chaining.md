@@ -7,6 +7,8 @@ You first gather ingredients, then prep them, then cook in stages, using the out
 Similarly, when assembling furniture, you follow numbered steps sequentially, where each step builds on the previous one. 
 Prompt chaining mirrors this natural human approach: breaking complex tasks into manageable, sequential steps where each stage produces results that inform the next.
 
+> **"Graph structure is where reliability comes from."** — LangGraph
+
 ![The single prompt trap.](prompt_chaining_problem.png)
 
 ## Pattern Overview
@@ -40,7 +42,12 @@ This allows the LLM to build on its previous work, refine its understanding, and
 - **Workflow Pattern:** This is a workflow pattern, not an agentic pattern—the sequence is predetermined by the engineer.
 
 ### How It Works
-Prompt chaining operates through a sequential workflow where each step processes input and produces output that feeds into the next step. First, the complex task is decomposed into logical sub-tasks, each with a specific purpose (e.g., extraction, transformation, synthesis). Second, each sub-task is assigned a focused prompt that instructs the LLM to perform that specific operation. Third, the output from each step is captured, potentially validated or transformed, and passed as input to the next prompt. Fourth, structured output formats (JSON, XML) are used between steps to ensure data integrity and prevent parsing errors. Finally, the chain executes sequentially, with each step building upon the results of previous steps until the final output is produced.
+Prompt chaining operates through a sequential workflow where each step processes input and produces output that feeds into the next step. 
+First, the complex task is decomposed into logical sub-tasks, each with a specific purpose (e.g., extraction, transformation, synthesis). 
+Second, each sub-task is assigned a focused prompt that instructs the LLM to perform that specific operation. 
+Third, the output from each step is captured, potentially validated or transformed, and passed as input to the next prompt. 
+Fourth, structured output formats (JSON, XML) are used between steps to ensure data integrity and prevent parsing errors. 
+Finally, the chain executes sequentially, with each step building upon the results of previous steps until the final output is produced.
 
 ## When to Use This Pattern
 
@@ -60,11 +67,16 @@ Prompt chaining operates through a sequential workflow where each step processes
 - **Minimal complexity:** When the added complexity of chaining doesn't provide sufficient benefit over a single prompt.
 
 ### Decision Guidelines
-Choose prompt chaining when the benefits of modularity, reliability, and control outweigh the added complexity and latency of multiple sequential calls. Consider the task complexity: if a single prompt consistently fails or produces unreliable results, chaining is likely beneficial. Consider the processing stages: if the task naturally decomposes into distinct stages (extract → transform → synthesize), chaining is appropriate. Consider tool integration: if you need to use external tools between steps, chaining provides a natural structure. However, if the sequence should be dynamic or determined by the LLM, consider using an agentic pattern instead.
+Choose prompt chaining when the benefits of modularity, reliability, and control outweigh the added complexity and latency of multiple sequential calls. 
+Consider the task complexity: if a single prompt consistently fails or produces unreliable results, chaining is likely beneficial. 
+Consider the processing stages: if the task naturally decomposes into distinct stages (extract → transform → synthesize), chaining is appropriate. 
+Consider tool integration: if you need to use external tools between steps, chaining provides a natural structure. 
+However, if the sequence should be dynamic or determined by the LLM, consider using an agentic pattern instead.
 
 ## Practical Applications & Use Cases
 
-Prompt chaining is a versatile pattern applicable in a wide range of scenarios when building LLM-powered workflows. Common applications include information processing, complex query answering, and content generation.
+Prompt chaining is a versatile pattern applicable in a wide range of scenarios when building LLM-powered workflows. 
+Common applications include information processing, complex query answering, and content generation.
 
 - **Information Processing Workflows:** Processing raw information through multiple transformations (extract text → summarize → extract entities → query database → generate report).
 - **Complex Query Answering:** Answering questions that require multiple steps of reasoning or information retrieval (identify sub-questions → research each → synthesize answer).
@@ -84,6 +96,7 @@ pip install langchain langchain-community langchain-openai langgraph
 Note: `langchain-openai` can be substituted with the appropriate package for a different model provider (e.g., `langchain-google-genai` for Gemini).
 
 ??? "Basic Example"
+
     ```python
     from langchain_openai import ChatOpenAI
     from langchain_core.prompts import ChatPromptTemplate
@@ -110,6 +123,7 @@ Note: `langchain-openai` can be substituted with the appropriate package for a d
 This example demonstrates a two-step prompt chain that functions as a data processing pipeline. The initial stage extracts technical specifications from unstructured text, and the subsequent stage transforms the extracted output into a structured JSON format. The LangChain Expression Language (LCEL) elegantly chains these prompts together, with the output of the first chain automatically feeding into the second prompt.
 
 ??? "Advanced Example: Multi-Step Workflow"
+
     ```python
     from langchain_openai import ChatOpenAI
     from langchain_core.prompts import ChatPromptTemplate
@@ -145,11 +159,14 @@ This example demonstrates a two-step prompt chain that functions as a data proce
     ```
 
 **Explanation:**
-This advanced example demonstrates a three-step workflow for processing a market research report. The chain summarizes the report, extracts trends with structured output, and generates an email. Using Pydantic models for structured output ensures data integrity between steps, and each step can be independently tested and optimized.
+This advanced example demonstrates a three-step workflow for processing a market research report. 
+The chain summarizes the report, extracts trends with structured output, and generates an email. 
+Using Pydantic models for structured output ensures data integrity between steps, and each step can be independently tested and optimized.
 
 ### Framework-Specific Examples
 
 ??? LangGraph
+
     ```python
     from langgraph.graph import StateGraph, END
     from langchain_openai import ChatOpenAI
@@ -182,6 +199,7 @@ This advanced example demonstrates a three-step workflow for processing a market
     ```
 
 ??? "Google ADK"
+
     ```python
     from google.adk.agents import Agent
 
@@ -194,16 +212,6 @@ This advanced example demonstrates a three-step workflow for processing a market
     )
     ```
 
-## Context Engineering
-
-**Context Engineering** is the systematic discipline of designing, constructing, and delivering a complete informational environment to an AI model prior to token generation. This methodology asserts that the quality of a model's output is less dependent on the model's architecture itself and more on the richness of the context provided.
-
-Context Engineering expands beyond traditional prompt engineering to include several layers of information: system prompts defining operational parameters, retrieved documents from knowledge bases, tool outputs from external APIs, and implicit data such as user identity, interaction history, and environmental state. The core principle is that even advanced models underperform when provided with a limited or poorly constructed view of the operational environment.
-
-In prompt chaining, context engineering is crucial at each step. Each prompt in the chain should receive well-structured, relevant context from previous steps, along with any necessary external information. This ensures that each step has the information it needs to perform its specific operation effectively.
-
-Tools like Google's Vertex AI prompt optimizer can automate the improvement process at scale, systematically evaluating responses against sample inputs and predefined metrics to refine contextual inputs across different models.
-
 ## Key Takeaways
 
 - **Core Concept:** Prompt chaining breaks down complex tasks into a sequence of smaller, focused steps, improving reliability and manageability.
@@ -215,11 +223,13 @@ Tools like Google's Vertex AI prompt optimizer can automate the improvement proc
 ## Related Patterns
 
 This pattern works well with:
+
 - **Parallelization** - Independent sub-tasks can be processed in parallel before chaining dependent steps
 - **Routing** - Chains can branch to different paths based on conditions
 - **Tool Use** - External tools can be integrated at any step in the chain
 
 This pattern is often combined with:
+
 - **Structured Output** - Using JSON/XML formats between steps ensures data integrity
 - **Context Engineering** - Each step benefits from well-engineered context
 - **Reflection** - Chains can include reflection steps to review and refine outputs

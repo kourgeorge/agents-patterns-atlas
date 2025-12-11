@@ -3,6 +3,7 @@
 We stand at the threshold of a new engineering discipline: **agentic engineering**, the practice of building intelligent systems where AI agents autonomously perceive, reason, and act to achieve complex goals. 
 This represents Software 3.0—a paradigm shift from traditional deterministic code (Software 1.0) and machine learning models (Software 2.0) to systems where the logic itself is generated dynamically by language models at runtime. 
 Just as the Gang of Four's *Design Patterns: Elements of Reusable Object-Oriented Software* codified solutions to recurring problems in object-oriented programming, creating a shared vocabulary that transformed software development in the 1990s, we now need a similar framework for agentic systems. 
+
 This book serves that purpose: it provides a comprehensive catalog of design patterns specifically tailored for agentic AI, offering proven solutions to the unique challenges of building reliable, scalable, and maintainable agentic systems. 
 By grounding these patterns in cognitive neuroscience and extracting them from real-world implementations, we aim to establish the foundational principles and shared language that will enable engineers to build the next generation of intelligent software.
 
@@ -131,13 +132,21 @@ For complex tasks, a single agent often fails due to context overload or lack of
 Agents can be categorized into different levels of sophistication, each building upon the previous:
 
 ### Level 0: The Core Reasoning Engine
-While an LLM is not an agent in itself, it can serve as the reasoning core of a basic agentic system. In a 'Level 0' configuration, the LLM operates without tools, memory, or environment interaction, responding solely based on its pretrained knowledge. Its strength lies in leveraging its extensive training data to explain established concepts. The trade-off for this powerful internal reasoning is a complete lack of current-event awareness.
+While an LLM is not an agent in itself, it can serve as the reasoning core of a basic agentic system. 
+In a 'Level 0' configuration, the LLM operates without tools, memory, or environment interaction, responding solely based on its pretrained knowledge. 
+Its strength lies in leveraging its extensive training data to explain established concepts. The trade-off for this powerful internal reasoning is a complete lack of current-event awareness.
 
 ### Level 1: The Connected Problem-Solver
-At this level, the LLM becomes a functional agent by connecting to and utilizing external tools. Its problem-solving is no longer limited to its pre-trained knowledge. Instead, it can execute a sequence of actions to gather and process information from sources like the internet (via search) or databases (via Retrieval Augmented Generation, or RAG). This ability to interact with the outside world across multiple steps is the core capability of a Level 1 agent.
+At this level, the LLM becomes a functional agent by connecting to and utilizing external tools. 
+Its problem-solving is no longer limited to its pre-trained knowledge. 
+Instead, it can execute a sequence of actions to gather and process information from sources like the internet (via search) or databases (via Retrieval Augmented Generation, or RAG). 
+This ability to interact with the outside world across multiple steps is the core capability of a Level 1 agent.
 
 ### Level 2: The Strategic Problem-Solver
-At this level, an agent's capabilities expand significantly, encompassing strategic planning, proactive assistance, and self-improvement. The agent moves beyond single-tool use to tackle complex, multi-part problems through strategic problem-solving. It performs context engineering: the strategic process of selecting, packaging, and managing the most relevant information for each step. This level leads to proactive and continuous operation, and the agent achieves self-improvement by refining its own context engineering processes.
+At this level, an agent's capabilities expand significantly, encompassing strategic planning, proactive assistance, and self-improvement. 
+The agent moves beyond single-tool use to tackle complex, multi-part problems through strategic problem-solving. 
+It performs context engineering: the strategic process of selecting, packaging, and managing the most relevant information for each step. 
+This level leads to proactive and continuous operation, and the agent achieves self-improvement by refining its own context engineering processes.
 
 ### Level 3: The Rise of Collaborative Multi-Agent Systems
 At Level 3, we see a significant paradigm shift, moving away from the pursuit of a single, all-powerful super-agent and towards sophisticated, collaborative multi-agent systems. This approach recognizes that complex challenges are often best solved not by a single generalist, but by a team of specialists working in concert. The collective strength of such a system lies in the division of labor and the synergy created through coordinated effort.
@@ -154,7 +163,6 @@ Agents operate probabilistically, making them inherently less predictable than d
 ### 2. Context Management
 Agents must manage limited context windows while maintaining relevant information across long interactions. Balancing detail with efficiency is a constant challenge.
 
-> **"Agent failures are almost always context failures."** — Manus
 
 ### 3. Error Handling and Recovery
 When agents make mistakes or encounter unexpected situations, they need robust mechanisms to detect, understand, and recover from errors without human intervention.
@@ -171,7 +179,8 @@ Agents must interact with diverse external systems, each with different APIs, er
 ### 7. Coordination in Multi-Agent Systems
 When multiple agents work together, managing communication, state sharing, and task coordination becomes complex.
 
-These challenges are precisely why design patterns matter. They provide proven solutions to these recurring problems.
+These challenges are precisely why design patterns matter. 
+They provide proven solutions to these recurring problems.
 
 ---
 
@@ -182,13 +191,12 @@ Success in the LLM space isn't about building the most sophisticated system. It'
 ### 1. Start Simple
 Find the simplest solution possible, and only increase complexity when needed. Do not build an autonomous agent if a linear workflow suffices.
 
-> **"Think of agents as interns: great potential, zero context. Give them both."** — Andrej Karpathy
-
 * **Tradeoff:** Agentic systems trade latency (time) and cost (tokens) for better task performance and flexibility. They are slower and more expensive than workflows.
 * **Advice:** Start with a prompt. If that fails, try a chain (workflow). Only if the path to the solution is highly variable should you build an agent.
 
 ### 2. Prioritize Transparency
 Explicitly show the agent's planning steps (its "inner monologue").
+
 * **Why:** This helps with debugging and builds user trust. If an agent fails, you need to know if it failed because it *reasoned* poorly or because a *tool* returned an error.
 * **User Trust:** If users can see *why* an agent made a decision, they are more likely to accept the outcome, even if it takes longer to generate.
 
@@ -220,8 +228,6 @@ Design patterns are battle-tested templates offering proven approaches to standa
 
 However, this book goes further: it provides AI agent engineers with a **shared conceptual language grounded in cognitive neuroscience**, enabling you to build intelligent problem solvers with a common understanding of how intelligence works. At the same time, cognitive neuroscience has spent decades studying how humans break down complex problems, focus attention, delegate work to tools or collaborators, integrate partial results, and improve through experience. These theories offer deep insights into the **structure and limitations of intelligence**—working memory constraints, cognitive load, executive control bottlenecks.
 
-> **"Graph structure is where reliability comes from."** — LangGraph
-
 Until the recent surge of LLMs, these cognitive theories seldom translated cleanly into engineering practice. Conversely, AI agent frameworks (e.g., ReAct, RAG pipelines, LangGraph, multi-agent orchestration) provide pragmatic mechanisms for controlling LLM-based agents but often lack a unifying cognitive perspective that explains *why* certain patterns work and how they relate to fundamental principles of intelligence. By grounding agent design in cognitive principles, this framework helps engineers understand the limits of intelligence while inspiring effective solutions that map naturally onto existing agentic architectures.
 
 In agentic systems, these patterns address fundamental questions:
@@ -236,13 +242,13 @@ By recognizing and applying these patterns with an understanding of their cognit
 
 Using design patterns helps you avoid reinventing fundamental solutions and accelerates development, allowing you to focus on the unique aspects of your application rather than foundational mechanics. By connecting engineering practice with cognitive principles, we can build more robust, reliable, and effective agentic systems.
 
+> **"Software will be written for humans and for AIs — two different users."** — Andrej Karpathy
+
 ---
 
 ## The Future of Agentic Systems
 
 As we look ahead, several trends are shaping the future of agentic AI:
-
-> **"Software will be written for humans and for AIs — two different users."** — Andrej Karpathy
 
 * **Generalist Agents** - Evolution from narrow specialists to true generalists capable of managing complex, ambiguous, long-term goals
 * **Deep Personalization** - Agents that become proactive partners, learning from patterns and anticipating needs
@@ -272,3 +278,5 @@ The book is structured to guide you from foundational workflow patterns through 
 Remember the guiding principles: start simple, prioritize transparency, craft good interfaces, design for failure, and balance autonomy with control. These principles, combined with the patterns you'll learn, will enable you to build robust, reliable, and effective agentic systems.
 
 Proceed to the pattern modules to begin building intelligent, agentic systems!
+
+> **"Think of agents as interns: great potential, zero context. Give them both."** — Andrej Karpathy

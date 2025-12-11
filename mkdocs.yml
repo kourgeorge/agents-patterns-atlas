@@ -84,13 +84,13 @@ nav:
     - Reasoning Techniques: reasoning-techniques.md
     - Planning Strategies: planning-strategies.md
     - "Pattern: Task Decomposition": task-decomposition.md
+    - "Pattern: Recitation": recitation.md
     - "Pattern: Prioritization": prioritization.md
 - Context and memory:
     - Memory Management: memory-management.md
     - Context Engineering: context-engineeting.md
     - "Pattern: Attention Engineering": attention-engineering.md
     - "Pattern: Context Editing": context-editing.md
-    - "Pattern: Recitation": recitation.md
     - "Pattern: Filesystem as Context": external-memory.md
     - "Pattern: RAG": knowledge-retrieval.md
     - "Pattern: Variables Manager": variables-manager.md

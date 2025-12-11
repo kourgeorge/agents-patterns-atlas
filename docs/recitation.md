@@ -2,7 +2,11 @@
 
 ## Motivation
 
-When working on a long project, you keep a task list visible—on your desk, whiteboard, or screen—to stay focused on your goals. As you complete tasks, you update the list, but the main objectives remain visible. This prevents you from losing sight of the big picture amid daily details. The Persistent Task List pattern does the same for agents: maintaining a running plan in context to prevent goal drift during long, complex tasks.
+When working on a long project, you keep a task list visible—on your desk, whiteboard, or screen—to stay focused on your goals. 
+As you complete tasks, you update the list, but the main objectives remain visible. 
+This prevents you from losing sight of the big picture amid daily details. 
+The Persistent Task List pattern does the same for agents: maintaining a running plan in context to prevent goal drift during long, complex tasks.
+
 
 ## Pattern Overview
 **What it is:** A mechanism where the agent maintains a running plan (like a todo.md file) and continuously appends the updated plan to the end of the context.
@@ -11,11 +15,18 @@ When working on a long project, you keep a task list visible—on your desk, whi
 
 **Why it matters:** This deliberate "recitation" manipulates the model's attention, pushing the global plan into the most recent context and mitigating the "lost in the middle" problem that occurs in long contexts.
 
-The Persistent Task List (Recitation) pattern addresses a fundamental challenge in long-horizon agent design: maintaining focus on high-level objectives as the agent executes many intermediate steps. As agents process complex, multi-step tasks, the context window fills with detailed execution history, tool results, and intermediate reasoning. This accumulation can cause the agent's original goals and plan to become "lost in the middle" of the context, leading to goal drift and reduced effectiveness.
+The Persistent Task List (Recitation) pattern addresses a fundamental challenge in long-horizon agent design: maintaining focus on high-level objectives as the agent executes many intermediate steps. 
+As agents process complex, multi-step tasks, the context window fills with detailed execution history, tool results, and intermediate reasoning. 
+This accumulation can cause the agent's original goals and plan to become "lost in the middle" of the context, leading to goal drift and reduced effectiveness.
 
-Recitation is a context engineering strategy that actively manages the LLM's finite attention window. By continuously appending the updated plan to the end of the context, the pattern ensures that high-level objectives remain within the model's recent attention span. This manipulation of attention is deliberate and strategic—the plan is not just stored but actively recited into the context at each iteration, biasing the model's focus toward global objectives.
+Recitation is a context engineering strategy that actively manages the LLM's finite attention window. 
+By continuously appending the updated plan to the end of the context, the pattern ensures that high-level objectives remain within the model's recent attention span. 
+This manipulation of attention is deliberate and strategic—the plan is not just stored but actively recited into the context at each iteration, biasing the model's focus toward global objectives.
 
-The pattern is particularly effective because LLMs exhibit recency bias, paying more attention to information that appears later in the context. By keeping the plan recent, the agent maintains alignment with its original goals even as it navigates complex, branching workflows with hundreds of steps.
+The pattern is particularly effective because LLMs exhibit recency bias, paying more attention to information that appears later in the context. 
+By keeping the plan recent, the agent maintains alignment with its original goals even as it navigates complex, branching workflows with hundreds of steps.
+
+> **"Good agents don't think more — they think *with better inputs*."** — Manus
 
 ### Key Concepts
 - **Persistent Task List:** A running plan or to-do list that tracks the agent's high-level objectives and progress, typically stored in a persistent file or state.
@@ -27,11 +38,8 @@ The pattern is particularly effective because LLMs exhibit recency bias, paying 
 ### How It Works: Step-by-step Explanation
 
 1. **Maintain the Plan:** The agent is instructed to maintain a running to-do list or plan, often externalized to a persistent file (e.g., todo.md) or stored in the agent's state.
-
 2. **Update Progress:** At each step in the agent's iterative loop, it updates the task list by checking off completed subtasks.
-
 3. **Recite into Context:** The updated plan is then appended to the end of the context for the next iteration. This constant overwriting or appending ensures the objectives are always within the model's recent attention span.
-
 4. **Bias Attention:** By keeping the plan recent, the model's focus is biased toward the global objectives, reducing goal misalignment and avoiding the agent drifting off-topic.
 
 ## When to Use This Pattern
@@ -55,13 +63,9 @@ Use this pattern as a critical context engineering strategy to ensure the agent 
 The Persistent Task List (Recitation) pattern is essential for maintaining goal alignment in complex, multi-step agent workflows.
 
 - **Autonomous Research:** An agent tasked with writing a comprehensive research report uses a plan to track phases like information gathering, synthesis, and revision over hundreds of steps.
-
 - **Code Generation:** Systems like Claude Code use a no-op Todo list tool as a context engineering strategy to keep the agent on track during multi-file, multi-step coding tasks.
-
 - **Workflow Persistence:** Manus AI utilizes this pattern by making its agent create and continuously update a todo.md file as subtasks are completed, ensuring goal persistence.
-
 - **Filesystem Integration:** Writing a plan to the filesystem allows the agent to pull this information back into the context window later on, enabling goal persistence across sessions.
-
 - **Multi-Agent Orchestration:** Orchestrator agents maintain and recite plans as they delegate tasks to worker agents, ensuring the overall objective remains clear despite distributed execution.
 
 ## Implementation
@@ -77,7 +81,9 @@ pip install google-adk
 
 ### Basic Example: Planning Tool (Conceptual)
 
-The deepagents package incorporates a built-in Write to-dos tool, which is a key component of its deep agent architecture. Although conceptually acting as a planning tool, it is often a no-op function, meaning its primary purpose is manipulating context and attention rather than performing an external action. Its detailed description provided to the LLM guides the agent on how to manage tasks, prioritize them, and update their status in real time (e.g., pending, in progress, completed).
+The deepagents package incorporates a built-in Write to-dos tool, which is a key component of its deep agent architecture. 
+Although conceptually acting as a planning tool, it is often a no-op function, meaning its primary purpose is manipulating context and attention rather than performing an external action. 
+Its detailed description provided to the LLM guides the agent on how to manage tasks, prioritize them, and update their status in real time (e.g., pending, in progress, completed).
 
 ```python
 # Conceptual Tool Implementation (based on deepagents)
@@ -317,6 +323,7 @@ While the traditional Recitation pattern uses filesystem-based `todo.md` files t
 **The Problem with Persistent Todo.md Files:**
 
 In early versions of systems like Manus, plans were maintained through `todo.md` files that were constantly rewritten and appended to context at every turn. This approach:
+
 - Consumes tokens in every single turn (~30% token overhead in early Manus versions)
 - Requires parsing and updating markdown files
 - Adds complexity to the conversation history
@@ -324,7 +331,8 @@ In early versions of systems like Manus, plans were maintained through `todo.md`
 
 **The Alternative: Planner Sub-Agent Pattern**
 
-Instead of maintaining a persistent `todo.md` file, use a dedicated Planner sub-agent that returns a structured Plan object. This follows the **Agent-as-Tool** pattern, where planning becomes a deterministic function call rather than a persistent conversation state.
+Instead of maintaining a persistent `todo.md` file, use a dedicated Planner sub-agent that returns a structured Plan object. 
+This follows the **Agent-as-Tool** pattern, where planning becomes a deterministic function call rather than a persistent conversation state.
 
 **How It Works:**
 
@@ -344,12 +352,14 @@ Instead of maintaining a persistent `todo.md` file, use a dedicated Planner sub-
 **When to Use Each Approach:**
 
 **Use Traditional Recitation (todo.md) when:**
+
 - Plans need to be human-readable and editable
 - You want to track plan evolution through filesystem history
 - Plans are part of the agent's persistent state that should survive sessions
 - You need simple, text-based plan representation
 
 **Use Planner Sub-Agent when:**
+
 - Token efficiency is critical
 - Plans are used infrequently or only at specific decision points
 - You want structured, validated plan schemas
@@ -404,33 +414,23 @@ Both approaches are valid. The choice depends on your system's priorities: tradi
 ## Key Takeaways
 
 - **Core Concept:** Recitation is a context engineering strategy used to actively manage the LLM's finite context window by biasing its attention toward high-level goals.
-
 - **Best Practice:** The plan should be frequently overwritten or appended to the end of the prompt to maximize the effect of recency bias.
-
 - **Alternative Approach:** Using a Planner sub-agent that returns structured Plan objects can save ~30% tokens compared to persistent `todo.md` files, as plans are injected only when needed rather than every turn.
-
 - **Common Pitfall:** Avoid using this pattern for simple, single-turn tasks where the overhead outweighs the benefits. Also, ensure the plan doesn't become too verbose, as it adds to token costs.
-
 - **Performance Note:** This pattern is essential for avoiding the performance degradation associated with the "lost in the middle" problem in very long contexts. The tool used for managing the to-do list can be a logical no-op, as its function is simply to update the conversational context or state.
-
 - **Implementation Note:** The recitation mechanism works best when combined with stable, append-only context structures to maximize KV-Cache efficiency.
 
 ## Related Patterns
 
 This pattern works well with:
+
 - **Filesystem as Context:** The task list itself is often stored in an external persistent store (like a filesystem) so it can be reliably referenced and updated across many steps.
-
 - **Stable, Append-Only Context:** Recitation aligns with the need to keep the prompt prefix stable; the plan is appended to the context history rather than modifying the core instructions.
-
 - **Memory Management:** Recitation is a specific memory management technique for maintaining goal alignment in long-horizon tasks.
-
 This pattern is often combined with:
 - **Planning:** The Recitation pattern is the execution mechanism for ensuring the plan generated by the Planning pattern is followed throughout a long task.
-
 - **Orchestrator (Coordinator) Pattern:** The central Orchestrator agent typically maintains and recites the plan as it delegates and synthesizes results from worker agents.
-
 - **Goal Setting and Monitoring:** Recitation ensures that goals set at the beginning remain visible and actionable throughout execution.
-
 - **Agent-as-Tool Pattern:** The alternative Planner sub-agent approach follows the Agent-as-Tool pattern, treating planning as a deterministic function call rather than persistent conversation state.
 
 ??? "References"
