@@ -6,7 +6,9 @@ Just as the Gang of Four's *Design Patterns: Elements of Reusable Object-Oriente
 This book serves that purpose: it provides a comprehensive catalog of design patterns specifically tailored for agentic AI, offering proven solutions to the unique challenges of building reliable, scalable, and maintainable agentic systems. 
 By grounding these patterns in cognitive neuroscience and extracting them from real-world implementations, we aim to establish the foundational principles and shared language that will enable engineers to build the next generation of intelligent software.
 
-> ** The hottest new programming language in English** -Andrej Karpathy
+> **"The hottest new programming language in English"** - Andrej Karpathy
+
+---
 
 ## The Evolution of AI Systems
 
@@ -21,7 +23,8 @@ In just a few years, we've witnessed a dramatic evolution:
 
 **Phase 4: Agentic AI** - Teams of specialized agents working in concert to achieve complex goals, marking a significant leap in AI's collaborative power.
 
-This evolution reflects a fundamental shift from static automation to dynamic, intelligent systems that can adapt, learn, and collaborate. The market reflects this transformation: AI agent startups raised over $2 billion by the end of 2024, with the market valued at $5.2 billion and projected to reach nearly $200 billion by 2034. According to recent studies, a majority of large IT companies are actively using agents, with a fifth of them starting within just the past year.
+This evolution reflects a fundamental shift from static automation to dynamic, intelligent systems that can adapt, learn, and collaborate. The market reflects this transformation: AI agent startups raised over $2 billion by the end of 2024, with the market valued at $5.2 billion and projected to reach nearly $200 billion by 2034. 
+According to recent studies, a majority of large IT companies are actively using agents, with a fifth of them starting within just the past year.
 
 > **"LLMs were step one. Agents are step two. Ecosystems are step three."** — Anthropic
 
@@ -89,6 +92,7 @@ We can understand agentic patterns by mapping them to the core components of an 
 
 ### 1. Memory & Context (The Mind)
 An agent is useless if it cannot remember previous actions or retrieve relevant knowledge.
+
 * **Context Window:** The immediate "short-term" working memory.
 * **History Management:** Mechanisms to summarize or truncate long conversations to fit within the window.
 * **Memory Management:** Strategies for persistent memory and external storage to extend memory beyond immediate context.
@@ -98,6 +102,7 @@ An agent is useless if it cannot remember previous actions or retrieve relevant 
 
 ### 2. Reasoning & Planning (The Brain)
 How the agent thinks, plans, and makes decisions. This is the core loop.
+
 * **Chain-of-Thought (CoT):** Encouraging the model to "show its work" before answering.
 * **ReAct (Reason + Act):** A paradigm where the model generates a thought, performs an action, observes the output, and then reasons again.
 * **Tree-of-Thoughts:** Exploring multiple possible future paths before committing to one, allowing for strategic foresight.
@@ -189,11 +194,13 @@ Explicitly show the agent's planning steps (its "inner monologue").
 
 ### 3. Craft the Agent-Computer Interface (ACI)
 We have spent decades perfecting the Human-Computer Interface (HCI). We must now invest as much effort in creating a good Agent-Computer Interface (ACI).
+
 * **The Concept:** Tools and APIs are the UI for the model. If an API is messy or poorly documented, the human developer might figure it out, but the Agent will hallucinate or fail.
 * **Implementation:** This involves writing thorough tool documentation (which the LLM reads), clear docstrings, and robust error handling that returns meaningful error messages to the agent so it can self-correct.
 
 ### 4. Design for Failure
 Assume things will go wrong and build resilience into your system from the start.
+
 * **Error Recovery:** Implement retry mechanisms, fallback strategies, and graceful degradation.
 * **Validation:** Check outputs before using them, validate tool results, and verify goal achievement.
 * **Monitoring:** Consider tracking agent behavior, detecting anomalies, and measuring performance where appropriate.
