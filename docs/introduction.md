@@ -31,6 +31,26 @@ According to recent studies, a majority of large IT companies are actively using
 
 ---
 
+## Generative AI vs. Agentic AI
+
+Understanding the fundamental distinction between Generative AI and Agentic AI is crucial. While both leverage LLMs, they represent different paradigms of interaction and capability.
+
+### Generative AI
+* **Flow:** `Prompt -> LLM -> Response`
+* **Nature:** Passive, one-shot, content-focused.
+* **Role:** The human drives the process. The human must verify the output and perform the subsequent action. The model is a fancy autocomplete engine.
+
+### Agentic AI
+* **Flow:** `Goal -> Agent (Think -> Act -> Observe Loop) -> Environment -> Goal Achieved`
+* **Nature:** Active, iterative, goal-focused.
+* **Role:** The agent drives the process. It acts as a collaborator or an employee. It doesn't just answer a question; it navigates a problem space, corrects its own errors, and interacts with external software.
+
+This shift represents a **fundamental transition in software engineering**: from building systems that manage data flow to building systems that **embody intelligence**. Building systems that must themselves decompose general problems, intelligently select solvers for subproblems, and synchronize cognitive states across multiple reasoning steps represents a fundamentally different class of engineering problem than coordinating data pipelines or distributed processes. It introduces novel challenges directly related to the limits of LLMs—challenges that traditional software engineering never faced. Effective context engineering, for instance, was not a problem in traditional software engineering.
+
+> **"Agents are software 3.0 — programs that you don't write, but steer."** — Andrej Karpathy
+
+---
+
 ## Defining the Landscape: Workflows vs. Agents
 
 Before building, we must understand the architectural distinction. In the rush to adopt "agents," many engineers misclassify their systems. The difference lies in who controls the flow of execution: the code or the model. One follows a script; the other writes its own.
@@ -124,7 +144,7 @@ For complex tasks, a single agent often fails due to context overload or lack of
 * **Orchestration:** A "manager" agent delegating tasks to "specialist" agents (e.g., a Coder, a Researcher, and a Reviewer).
 * **Swarm Architectures:** Autonomous agents interacting to solve problems through consensus or division of labor.
 
-> **"The challenge is not intelligence — it's *coordination*."** — Manus Creators
+> **"The challenge is not intelligence — it's coordination!"** — Manus Creators
 ---
 
 ## Levels of Agent Complexity
@@ -224,9 +244,13 @@ Give agents enough autonomy to be effective, but maintain appropriate oversight 
 
 ## Why Design Patterns Matter: A Cognitive Framework
 
-Design patterns are battle-tested templates offering proven approaches to standard design and implementation challenges. The patterns presented in this book were extracted through careful analysis and dissection of real-world agent implementations, including systems like IBM's CUGA (Cognitive Understanding and Generation Agent). By examining how successful agent architectures are constructed, we've identified reusable patterns, design components, and principles that can be applied across different agentic systems. This pattern extraction methodology allows us to learn from proven implementations and codify their best practices into transferable knowledge.
+This complexity is precisely why agentic design patterns are indispensable. They are not rigid rules, but rather battle-tested templates or blueprints that offer proven approaches to standard design and implementation challenges in the agentic domain. By recognizing and applying these design patterns, you gain access to solutions that enhance the structure, maintainability, reliability, and efficiency of the agents you build.
 
-However, this book goes further: it provides AI agent engineers with a **shared conceptual language grounded in cognitive neuroscience**, enabling you to build intelligent problem solvers with a common understanding of how intelligence works. At the same time, cognitive neuroscience has spent decades studying how humans break down complex problems, focus attention, delegate work to tools or collaborators, integrate partial results, and improve through experience. These theories offer deep insights into the **structure and limitations of intelligence**—working memory constraints, cognitive load, executive control bottlenecks.
+The patterns presented in this book were extracted through careful analysis and dissection of real-world agent implementations, including systems like IBM's CUGA (Configurable Generalist Agent) and LangChain's Deep Agents. By examining how successful agent architectures are constructed, we've identified reusable patterns, design components, and principles that can be applied across different agentic systems. This pattern extraction methodology allows us to learn from proven implementations and codify their best practices into transferable knowledge.
+
+A great question we often hear is: "With AI changing so fast, why write a book that could be quickly outdated?" Our motivation is actually the opposite. It's precisely because things are moving so quickly that we need to step back and identify the underlying principles that are solidifying. Patterns like RAG, Reflection, Routing, Memory Management, Multi-Agent Coordination, and the others we discuss are becoming fundamental building blocks. More importantly, the cognitive principles underlying these patterns—how working memory works, how attention is allocated, how complex problems are decomposed—these are universal principles of intelligence that transcend specific technologies.
+
+This book goes further: it provides AI agent engineers with a **shared conceptual language grounded in cognitive neuroscience**, enabling you to build intelligent problem solvers with a common understanding of how intelligence works. Cognitive neuroscience has spent decades studying how humans break down complex problems, focus attention, delegate work to tools or collaborators, integrate partial results, and improve through experience. These theories offer deep insights into the **structure and limitations of intelligence**—working memory constraints, cognitive load, executive control bottlenecks.
 
 Until the recent surge of LLMs, these cognitive theories seldom translated cleanly into engineering practice. Conversely, AI agent frameworks (e.g., ReAct, RAG pipelines, LangGraph, multi-agent orchestration) provide pragmatic mechanisms for controlling LLM-based agents but often lack a unifying cognitive perspective that explains *why* certain patterns work and how they relate to fundamental principles of intelligence. By grounding agent design in cognitive principles, this framework helps engineers understand the limits of intelligence while inspiring effective solutions that map naturally onto existing agentic architectures.
 
@@ -262,18 +286,67 @@ The patterns in this book provide the foundation for building these future syste
 
 ---
 
+## Book Structure
+
+The book is organized into **7 parts** containing **32 modules**, building concepts progressively from foundational patterns to advanced multi-agent architectures:
+
+1. **Introduction & Foundations** (4 modules) - Core concepts, context, and design pattern fundamentals
+2. **Core Workflow** (4 modules) - Fundamental patterns for building agent workflows
+3. **Tools** (4 modules) - Designing the Agent-Computer Interface
+4. **Reasoning & Planning** (5 modules) - Enabling agents to plan and reason effectively
+5. **Context and Memory** (8 modules) - Managing the finite context window, optimizing context usage, and managing persistent and external memory for agents, including knowledge retrieval
+6. **Multi-Agent Systems** (5 modules) - Modern LLM-based multi-agent collaboration patterns
+7. **Human Input and Recovery** (3 modules) - Learning, adaptation, and human interaction
+
+The book parts and patterns are organized to build concepts progressively, but you can also use this book as a reference, jumping to patterns that address specific challenges you face in your agent development projects.
+
+---
+
+## How to Use This Book
+
+Throughout this book, the emphasis is on practical application. Every pattern includes runnable code examples that you can execute, modify, and learn from. We encourage you to:
+
+* **Run the examples** - Don't just read them; execute them and see how they work
+* **Experiment** - Modify the code, try different inputs, break things and fix them
+* **Adapt** - Use the patterns as starting points for your own applications
+* **Build** - Apply patterns to real problems you're trying to solve
+
+The code examples are designed to clearly illustrate each pattern's core logic and its implementation, focusing on clarity and practicality over production-ready complexity.
+
+### For Beginners
+
+If you're new to agentic systems, we recommend reading the modules sequentially. The book is structured to build concepts progressively:
+- Start with understanding what agents are and how they differ from workflows
+- Learn foundational workflow patterns before moving to advanced capabilities
+- Understand single-agent patterns before exploring multi-agent systems
+
+### For Experienced Developers
+
+If you're already familiar with agentic systems, you can use this book as a reference guide:
+- Jump directly to patterns that solve specific problems you're facing
+- Use the "When to Use" sections in each pattern module to quickly identify relevant solutions
+- Explore advanced patterns like multi-agent coordination or context engineering when needed
+
+Each pattern module follows a consistent structure:
+- **Pattern Overview:** What the pattern is and why it matters
+- **When to Use:** Guidance on recognizing when this pattern applies
+- **Practical Applications:** Real-world use cases
+- **Implementation:** Code examples showing how to realize the pattern
+- **Key Takeaways:** Summary of the pattern's core concepts
+
+---
+
 ## Next Steps
 
-Now that you understand the foundations of agentic systems, you're ready to explore the design patterns organized across 8 parts. Each pattern module provides clear explanations, practical guidance, real-world applications, and hands-on code examples.
+Now that you understand the foundations of agentic systems, you're ready to explore the design patterns organized across 7 parts. Each pattern module provides clear explanations, practical guidance, real-world applications, and hands-on code examples.
 
 The book is structured to guide you from foundational workflow patterns through advanced capabilities:
 - **Core Workflow** patterns for building reliable agent workflows
 - **Tools** for designing effective Agent-Computer Interfaces
 - **Reasoning & Planning** techniques for strategic problem-solving
-- **Context** management for optimizing limited context windows
-- **Memory** strategies for persistent and external memory
+- **Context and Memory** strategies for managing limited context windows and persistent memory
 - **Multi-Agent Systems** for scaling with multiple agents
-- **Human input and Recovery** for learning, adaptation, and error handling
+- **Human Input and Recovery** for learning, adaptation, and error handling
 
 Remember the guiding principles: start simple, prioritize transparency, craft good interfaces, design for failure, and balance autonomy with control. These principles, combined with the patterns you'll learn, will enable you to build robust, reliable, and effective agentic systems.
 

@@ -65,11 +65,10 @@ plugins:
       lang: en
 
 nav:
-- About: index.md
 - Preface: preface.md
-- Introduction & Foundations:
-    - Introduction: introduction.md
-    - What is an Agentic Design Pattern?: what-is-a-design-pattern.md
+- Introduction: introduction.md
+- What is an Agentic Design Pattern?: what-is-a-design-pattern.md
+- About: index.md
 - Core Workflow:
     - "Pattern: Prompt Chaining": prompt-chaining.md
     - "Pattern: Routing": routing.md

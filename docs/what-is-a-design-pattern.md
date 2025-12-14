@@ -16,7 +16,7 @@ It's not a specific piece of code or a library you can import. Instead, it's a *
 Design patterns are **technology-agnostic**. 
 The same pattern can be implemented using different frameworks (LangChain, LangGraph, Google ADK, CrewAI), different programming languages, or even different model providers. The pattern describes the *what* and *why*, while implementations show the *how*.
 
--- 
+--- 
 
 ## The Four Universal Principles of Effective Problem-Solving
 
@@ -36,8 +36,7 @@ Rather than processing all available information, effective problem-solving requ
 ![The 4 pronciples of problem solving.](4_principles.png)
 
 
-
---
+---
 
 ## What Makes a Pattern "Agentic"?
 
@@ -52,7 +51,7 @@ An **agentic design pattern** is a design pattern specifically tailored to the u
 
 Agentic design patterns differ from traditional software design patterns (like Singleton, Factory, Observer) because they account for the unique characteristics of LLM-based systems: non-determinism, context limitations, tool integration, and the need for transparency in decision-making.
 
---
+---
 
 ## The Relationship Between Patterns and Implementations
 
@@ -72,7 +71,7 @@ In this book, each pattern module includes:
 - **Implementation Examples:** Concrete code showing how the pattern can be realized
 - **Framework-Specific Examples:** How different tools can be used to implement the same pattern
 
---
+---
 
 ## Characteristics of Good Design Patterns
 
@@ -84,7 +83,7 @@ Effective agentic design patterns share these characteristics:
 4. **Composable:** They can be combined with other patterns to solve complex problems
 5. **Documented Trade-offs:** They clearly explain benefits, limitations, and when alternatives are better
 
---
+---
 
 ## Patterns vs. Frameworks vs. Libraries
 
@@ -100,7 +99,7 @@ Understanding these distinctions helps you choose the right tool for the right j
 
 **Patterns** tell you *what* to build and *why*. **Frameworks** help you *how* to build it. **Libraries** give you the *pieces* to build with.
 
---
+---
 
 ## Patterns vs. Implementation Mechanisms
 
@@ -165,7 +164,7 @@ When you encounter a pattern in this book:
 
 Remember: **The pattern is the abstraction. The code examples are illustrations.** Your implementation will differ based on your specific requirements, but the core pattern structure remains the same.
 
---
+---
 
 ## Next Steps
 
