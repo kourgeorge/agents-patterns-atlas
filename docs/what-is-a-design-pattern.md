@@ -2,8 +2,6 @@
 
 Before diving into specific patterns, it's essential to understand what we mean by an "agentic design pattern" and how it differs from concrete implementations, frameworks, or libraries.
 
-## Understanding Design Patterns
-
 A **design pattern** is an abstract, reusable solution to a recurring problem in system design. 
 It's not a specific piece of code or a library you can import. Instead, it's a **template** or **blueprint** that describes:
 
@@ -20,8 +18,9 @@ The same pattern can be implemented using different frameworks (LangChain, LangG
 
 ## The Four Universal Principles of Effective Problem-Solving
 
-Across engineering, biology, human cognition, and artificial intelligence, effective problem-solving consistently reflects four universal principles. 
-These principles explain why the design patterns in this book work, and why they emerge repeatedly in both natural and artificial systems.
+When building intelligent systems, whether biological or artificial, we find that effective problem-solving consistently reflects four universal principles. 
+These principles are not domain-specific—they represent fundamental aspects of how intelligence itself operates, transcending whether we're designing human cognition, biological systems, or AI agents. 
+The agentic design patterns in this book work precisely because they are grounded in these general principles of intelligence, which is why similar patterns emerge repeatedly across natural and artificial systems.
 
 1. **Devide-and-conquer** — Decomposition enables manageable, focused solutions. 
 By dividing complex challenges into discrete, addressable components, we can tackle each piece systematically, reducing cognitive load and improving the likelihood of success.
@@ -180,7 +179,7 @@ Throughout this book, you'll see patterns illustrated with specific implementati
 
 The pattern is the reusable knowledge. The implementation mechanism is just one tool in your toolbox.
 
---
+---
 
 ## How to Use This Book's Patterns
 
@@ -193,7 +192,6 @@ When you encounter a pattern in this book:
 5. **Combine Patterns:** Real systems often use multiple patterns together
 
 Remember: **The pattern is the abstraction. The code examples are illustrations.** Your implementation will differ based on your specific requirements, but the core pattern structure remains the same.
-
 
 > **"Stateless models can't build relationships — agents can."** — Andrej Karpathy
 
