@@ -1,41 +1,56 @@
-# Pattern: Tool Discovery 
+# Pattern: Skill Discovery 
 
 ## Motivation
 
-When learning a new skill, you don't start by memorizing every detail. You first understand what the skill does, then learn the basics, and only dive into advanced details when needed. A carpenter doesn't need to know every tool's full specification upfront—they know which tools exist, what each does, and can look up detailed instructions when working on a specific task. 
+A carpenter doesn't need to know every tool's full specification upfront—they know which tools exist, what each does, and can look up detailed instructions when working on a specific task. 
+When learning a new skill, you don't start by memorizing every detail. 
+You first understand what the skill does, then learn the basics, and only dive into advanced details when needed. 
 
-As model capabilities improve, we can now build general-purpose agents that interact with full-fledged computing environments. But as these agents become more powerful, we need more composable, scalable, and portable ways to equip them with domain-specific expertise. Building a skill for an agent is like putting together an onboarding guide for a new hire. Instead of building fragmented, custom-designed agents for each use case, anyone can now specialize their agents with composable capabilities by capturing and sharing their procedural knowledge.
 
-The SKILL pattern brings this natural, progressive learning approach to agent systems, allowing agents to discover and use specialized capabilities efficiently without overwhelming their context window. This pattern transforms general-purpose agents into specialized agents that fit your needs by packaging expertise into composable resources.
+As model capabilities improve, we can now build general-purpose agents that interact with full-fledged computing environments. 
+But as these agents become more powerful, we need more composable, scalable, and portable ways to equip them with domain-specific expertise. 
+Building a skill for an agent is like putting together an onboarding guide for a new hire. 
+Instead of building fragmented, custom-designed agents for each use case, anyone can now specialize their agents with composable capabilities by capturing and sharing their procedural knowledge.
+
+The Skill pattern (also known as the SKILL.md pattern or Agent Skills pattern) brings this natural, progressive learning approach to agent systems, serving two complementary purposes: (1) enabling agents to discover available capabilities through lightweight metadata, and (2) providing detailed procedural knowledge—step-by-step instructions, workflows, and best practices—that agents can load on demand. 
+This pattern transforms general-purpose agents into specialized agents that fit your needs by packaging expertise into composable resources.
+
+
+> **"Skills turn an LLM from a speaker into a worker."** — LangChain / LangGraph
+
+![Agent in a library.](agent_in_lib.png)
+
+## Pattern Overview
+
+**What it is:** The Agent Skills pattern (exemplified by the `SKILL.md` file structure) is an engineering approach for building specialized agents using files and folders. 
+A skill is a directory containing a `SKILL.md` file that contains organized folders of instructions, scripts, and resources that give agents additional capabilities. 
+This pattern serves a dual purpose: (1) **Capability Discovery**—enabling agents to discover what capabilities are available through lightweight metadata, and (2) **Procedural Knowledge Codification**—providing detailed step-by-step procedures, workflows, and best practices that agents can load on demand. 
+This pattern provides procedural knowledge and organizational context to general-purpose agents, allowing them to accomplish complex, domain-specific tasks through progressive disclosure of information. 
+Skills extend an agent's capabilities by packaging your expertise into composable resources, transforming general-purpose agents into specialized agents.
+
+**When to use:** Use this pattern when building agents that need access to multiple specialized capabilities, when you want to organize procedural knowledge in a scalable way, or when you need to optimize token usage by loading information only as needed. 
+This pattern is particularly valuable for multi-agent systems where different agents may need different skill sets.
+
+**Why it matters:** Traditional approaches load all tool definitions and instructions into the agent's context upfront, leading to context bloat and wasted tokens.
+
+The SKILL pattern enables agents to discover capabilities through metadata, activate skills on demand, and access detailed procedural instructions only when needed. 
+Unlike simple tool registries that only list available tools, skills encode complete workflows and procedures—the "how to" knowledge that enables agents to execute complex tasks consistently. 
+This creates a scalable, composable system where the amount of knowledge an agent can access is effectively unbounded, limited only by storage, not by context window size.
+This pattern practically transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials. 
+Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup.
 
 
 > **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus
 
-![Agent in a library.](agent_in_lib.png)
-
-
-## Pattern Overview
-
-**What it is:** The Agent Skills pattern (exemplified by the `SKILL.md` file structure) is an engineering approach for building specialized agents using files and folders. A skill is a directory containing a `SKILL.md` file that contains organized folders of instructions, scripts, and resources that give agents additional capabilities. This pattern provides procedural knowledge and organizational context to general-purpose agents, allowing them to accomplish complex, domain-specific tasks through progressive disclosure of information. Skills extend an agent's capabilities by packaging your expertise into composable resources, transforming general-purpose agents into specialized agents.
-
-**When to use:** Use this pattern when building agents that need access to multiple specialized capabilities, when you want to organize procedural knowledge in a scalable way, or when you need to optimize token usage by loading information only as needed. This pattern is particularly valuable for multi-agent systems where different agents may need different skill sets.
-
-**Why it matters:** Traditional approaches load all tool definitions and instructions into the agent's context upfront, leading to context bloat and wasted tokens.
-
-> **"Skills turn an LLM from a speaker into a worker."** — LangChain / LangGraph
-
-The SKILL pattern enables agents to discover capabilities through metadata, activate skills on demand, and access detailed instructions only when needed. This creates a scalable, composable system where the amount of knowledge an agent can access is effectively unbounded, limited only by storage, not by context window size.
-
-The pattern transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials. Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup.
 
 ### Key Concepts
 
 - **SKILL.md File:** A structured markdown file containing YAML frontmatter (metadata) and detailed instructions for a specific capability.
 - **Progressive Disclosure:** A three-level information loading strategy that minimizes context usage by loading only what's needed at each stage.
 - **Skill Directory:** A folder containing a `SKILL.md` file along with supporting files, scripts, and resources.
-- **Metadata Loading (Level 1):** Pre-loading only skill names and descriptions to enable capability discovery.
-- **Skill Activation (Level 2):** Loading the full `SKILL.md` contents when a skill is determined to be relevant.
-- **Targeted Detail (Level 3):** Navigating to linked files within the skill directory for additional context when needed.
+- **Metadata Loading (Level 1):** Pre-loading only skill names and descriptions to enable capability discovery—agents learn what skills exist and when to use them.
+- **Skill Activation (Level 2):** Loading the full `SKILL.md` contents when a skill is determined to be relevant—this includes complete procedural instructions, workflows, and step-by-step guidance.
+- **Targeted Detail (Level 3):** Navigating to linked files within the skill directory for additional context when needed—supporting documentation, examples, or advanced procedures.
 - **Filesystem as Context:** Treating the filesystem as an external, navigable knowledge base that agents can explore on demand.
 - **Code Execution:** Skills can include executable code (scripts, tools) that agents can run at their discretion, providing deterministic reliability and efficiency for operations better suited to traditional code execution.
 
@@ -43,15 +58,21 @@ The pattern transforms the filesystem into an external knowledge base that agent
 
 The SKILL pattern operates through a three-level progressive disclosure mechanism:
 
-1. **Level 1 (Metadata Loading):** At startup, the agent system pre-loads only the YAML frontmatter (name and description) from all installed skills. This lightweight metadata provides just enough information for the agent to understand what capabilities are available and when each skill should be used. This typically consumes only a few tokens per skill, regardless of how detailed the skill instructions are.
+1. **Level 1 (Metadata Loading):** At startup, the agent system pre-loads only the YAML frontmatter (name and description) from all installed skills. 
+This lightweight metadata provides just enough information for the agent to understand what capabilities are available and when each skill should be used. 
+This typically consumes only a few tokens per skill, regardless of how detailed the skill instructions are.
 
-2. **Level 2 (Skill Activation):** When the agent determines that a skill is relevant to the current task, it reads the full contents of the `SKILL.md` file into its context. This includes the complete instructions, procedures, and guidance for using the skill. The agent may use filesystem tools (like `read_file`) to load this content on demand.
+2. **Level 2 (Skill Activation):** When the agent determines that a skill is relevant to the current task, it reads the full contents of the `SKILL.md` file into its context. 
+This includes the complete procedural knowledge: step-by-step instructions, workflows, best practices, and detailed guidance for executing the skill's tasks. 
+The agent may use filesystem tools (like `read_file`) to load this content on demand.
 
-3. **Level 3 (Targeted Detail):** If the skill's complexity requires additional detail beyond what's in `SKILL.md`, the agent can navigate the skill directory and read linked files. This allows skills to bundle supporting documentation, examples, scripts, or other resources that are referenced from the main `SKILL.md` file.
+3. **Level 3 (Targeted Detail):** If the skill's complexity requires additional detail beyond what's in `SKILL.md`, the agent can navigate the skill directory and read linked files. 
+This allows skills to bundle supporting documentation, examples, scripts, or other resources that are referenced from the main `SKILL.md` file.
 
-This mechanism allows the agent to interact with the filesystem as its external context. Since the agent only reads files on demand, the amount of context that can be bundled into a skill is effectively unbounded—limited only by storage capacity, not by context window constraints.
-
-Like a well-organized manual that starts with a table of contents, then specific chapters, and finally a detailed appendix, skills let agents load information only as needed. Agents with a filesystem and code execution tools don't need to read the entirety of a skill into their context window when working on a particular task.
+This mechanism allows the agent to interact with the filesystem as its external context. 
+Since the agent only reads files on demand, the amount of context that can be bundled into a skill is effectively unbounded—limited only by storage capacity, not by context window constraints.
+Like a well-organized manual that starts with a table of contents, then specific chapters, and finally a detailed appendix, skills let agents load information only as needed. 
+Agents with a filesystem and code execution tools don't need to read the entirety of a skill into their context window when working on a particular task.
 
 ## When to Use This Pattern
 
@@ -75,27 +96,36 @@ Like a well-organized manual that starts with a table of contents, then specific
 
 ### Decision Guidelines
 
-Choose the SKILL pattern when the benefits of progressive disclosure, scalability, and composability outweigh the added complexity of file-based organization. Consider your skill count: if you have many skills (10+), progressive disclosure becomes valuable. Consider token costs: if loading all skill definitions would consume significant context, progressive disclosure saves tokens. Consider maintainability: if you want to add or modify skills without changing core agent code, the SKILL pattern provides clean separation. However, if your agent is simple and has few capabilities, the overhead may not be justified.
+Choose the SKILL pattern when the benefits of progressive disclosure, scalability, and composability outweigh the added complexity of file-based organization. 
+Consider your skill count: if you have many skills (10+), progressive disclosure becomes valuable. 
+Consider token costs: if loading all skill definitions would consume significant context, progressive disclosure saves tokens. 
+Consider maintainability: if you want to add or modify skills without changing core agent code, the SKILL pattern provides clean separation. 
+However, if your agent is simple and has few capabilities, the overhead may not be justified.
 
 ## Practical Applications & Use Cases
 
 The SKILL pattern is widely used in production agent systems for organizing and managing specialized capabilities:
 
 ### 1. Anthropic's Claude Agent Skills
-**Use Case:** Anthropic's Claude Code and Claude Agent SDK use the `SKILL.md` pattern to extend Claude's capabilities. Skills are supported across Claude.ai, Claude Code, the Claude Agent SDK, and the Claude Developer Platform.
+**Use Case:** Anthropic's Claude Code and Claude Agent SDK use the `SKILL.md` pattern to extend Claude's capabilities. 
+Skills are supported across Claude.ai, Claude Code, the Claude Agent SDK, and the Claude Developer Platform.
 
-**Real Example - PDF Skill:** Claude already knows a lot about understanding PDFs, but is limited in its ability to manipulate them directly (e.g., to fill out a form). A PDF skill provides Claude with these new abilities:
+**Real Example - PDF Skill:** Claude already knows a lot about understanding PDFs, but is limited in its ability to manipulate them directly (e.g., to fill out a form). 
+A PDF skill provides Claude with these new abilities:
+
 - The skill directory contains `SKILL.md` with instructions for PDF manipulation
 - Additional files like `reference.md` and `forms.md` are bundled for specific scenarios
 - The skill includes Python scripts that Claude can execute to extract form fields from PDFs
 - Claude loads the skill only when PDF-related tasks are detected
 
 - **Skill Structure:** Each skill is a directory containing `SKILL.md` with YAML frontmatter and detailed instructions.
-- **Agent Flow:** At startup, Claude pre-loads skill metadata (names and descriptions) into its system prompt. When a user request matches a skill description, Claude invokes a Bash tool to read the full `SKILL.md` contents, then proceeds with the task.
+- **Agent Flow:** At startup, Claude pre-loads skill metadata (names and descriptions) into its system prompt. 
+When a user request matches a skill description, Claude invokes a Bash tool to read the full `SKILL.md` contents, then proceeds with the task.
 - **Benefits:** Allows Claude to support many specialized capabilities without context bloat, and enables users to add custom skills by creating new directories. Skills can be shared across organizations and individuals.
 
 ### 2. Deep Agents Framework
-**Use Case:** Deep Agents uses the `SKILL.md` pattern to organize agent capabilities. Skills are stored as directories with `SKILL.md` files, and agents automatically discover and activate relevant skills based on user requests.
+**Use Case:** Lamgchain's Deep Agents uses the `SKILL.md` pattern to organize agent capabilities. 
+Skills are stored as directories with `SKILL.md` files, and agents automatically discover and activate relevant skills based on user requests.
 
 - **Skill Structure:** Each skill is a directory containing `SKILL.md` with YAML frontmatter and detailed instructions.
 - **Agent Flow:** The agent's system prompt includes skill metadata (names and descriptions). When a user request matches a skill, the agent reads the full `SKILL.md` file and executes the skill.
@@ -228,11 +258,16 @@ data_analysis_skill/
 
 #### 4. Executable Code
 
-Skills can also include code for agents to execute as tools at their discretion. Large language models excel at many tasks, but certain operations are better suited for traditional code execution. For example, sorting a list via token generation is far more expensive than simply running a sorting algorithm. Beyond efficiency concerns, many applications require the deterministic reliability that only code can provide.
+Skills can also include code for agents to execute as tools at their discretion. 
+Large language models excel at many tasks, but certain operations are better suited for traditional code execution. 
+For example, sorting a list via token generation is far more expensive than simply running a sorting algorithm. Beyond efficiency concerns, many applications require the deterministic reliability that only code can provide.
 
-In the PDF skill example, the skill includes a pre-written Python script that reads a PDF and extracts all form fields. The agent can run this script without loading either the script or the PDF into context. And because code is deterministic, this workflow is consistent and repeatable.
+In the PDF skill example, the skill includes a pre-written Python script that reads a PDF and extracts all form fields. 
+The agent can run this script without loading either the script or the PDF into context. 
+And because code is deterministic, this workflow is consistent and repeatable.
 
-When including code in skills, it should be clear whether the agent should run scripts directly or read them into context as reference. Code can serve as both executable tools and as documentation.
+When including code in skills, it should be clear whether the agent should run scripts directly or read them into context as reference. 
+Code can serve as both executable tools and as documentation.
 
 ### Basic Implementation
 
@@ -335,7 +370,8 @@ When including code in skills, it should be clear whether the agent should run s
     ```
 
 **Explanation:**
-This implementation demonstrates the three-level progressive disclosure. The `discover_skills()` method performs Level 1 metadata loading, `load_skill()` performs Level 2 activation, and `read_skill_file()` enables Level 3 targeted detail access.
+This implementation demonstrates the three-level progressive disclosure. 
+The `discover_skills()` method performs Level 1 metadata loading, `load_skill()` performs Level 2 activation, and `read_skill_file()` enables Level 3 targeted detail access.
 
 ??? "Advanced Implementation: Filesystem Tools Integration"
 
@@ -629,6 +665,7 @@ This progressive disclosure mechanism ensures the context window remains focused
 **Anthropic Claude:** Skills are supported across Claude.ai, Claude Code, the Claude Agent SDK, and the Claude Developer Platform. The framework automatically handles skill discovery, metadata loading, and skill activation through filesystem tools.
 
 **Deep Agents:** Frameworks like Deep Agents automatically read the relevant `SKILL.md` file and execute the skill when a request is related to it. The framework:
+
 1. Scans the skills directory at startup and loads metadata from all `SKILL.md` files into the agent's system prompt
 2. Analyzes user requests against available skill descriptions
 3. Invokes filesystem tools to read full `SKILL.md` contents when a skill matches
@@ -654,45 +691,38 @@ Monitor how the agent uses your skill in real scenarios and iterate based on obs
 
 ### Iterate with the Agent
 
-As you work on a task with the agent, ask it to capture its successful approaches and common mistakes into reusable context and code within a skill. If it goes off track when using a skill to complete a task, ask it to self-reflect on what went wrong. This process will help you discover what context the agent actually needs, instead of trying to anticipate it upfront.
+As you work on a task with the agent, ask it to capture its successful approaches and common mistakes into reusable context and code within a skill. 
+If it goes off track when using a skill to complete a task, ask it to self-reflect on what went wrong. 
+This process will help you discover what context the agent actually needs, instead of trying to anticipate it upfront.
 
 ## Security Considerations
 
-Skills provide agents with new capabilities through instructions and code. While this makes them powerful, it also means that malicious skills may introduce vulnerabilities in the environment where they're used or direct agents to exfiltrate data and take unintended actions.
+Skills provide agents with new capabilities through instructions and code. 
+While this makes them powerful, it also means that malicious skills may introduce vulnerabilities in the environment where they're used or direct agents to exfiltrate data and take unintended actions.
 
 **Best Practices:**
 
 - **Install from Trusted Sources:** We recommend installing skills only from trusted sources. When installing a skill from a less-trusted source, thoroughly audit it before use.
-
 - **Audit Skill Contents:** Start by reading the contents of the files bundled in the skill to understand what it does, paying particular attention to:
-  - Code dependencies and bundled resources like images or scripts
-  - Instructions or code that instruct the agent to connect to potentially untrusted external network sources
-  - File system access patterns and permissions required
+
+    - Code dependencies and bundled resources like images or scripts
+    - Instructions or code that instruct the agent to connect to potentially untrusted external network sources
+    - File system access patterns and permissions required
 
 - **Review Executable Code:** Since skills can include executable code, carefully review any scripts or tools included in the skill to ensure they don't perform unintended actions or access sensitive data.
-
 - **Sandbox Execution:** Consider running skills in sandboxed environments, especially when skills include executable code or interact with external systems.
 
 ## Key Takeaways
-
+- **Dual Purpose:** The SKILL pattern serves both tool discovery (finding what capabilities exist) and procedural knowledge codification (encoding how to perform tasks). Skills are more than tool registries—they contain complete workflows and procedures.
 - **Progressive Disclosure is Key:** The three-level disclosure mechanism (metadata → full instructions → linked files) prevents context bloat while enabling unlimited knowledge capacity.
-
 - **Filesystem as Context:** The pattern transforms the filesystem into an external, navigable knowledge base that agents can explore on demand, similar to how humans use reference materials.
-
 - **Scalability:** The amount of knowledge an agent can access is effectively unbounded, limited only by storage capacity, not by context window constraints.
-
 - **Composability:** Skills are modular, reusable units that can be mixed and matched across different agents and configurations.
-
 - **Token Efficiency:** Loading only skill metadata at startup and activating skills on demand dramatically reduces token usage compared to loading all definitions upfront.
-
 - **Organizational Knowledge:** Skills serve as living documentation that preserves institutional knowledge and enables consistent execution of complex procedures.
-
 - **Version Control:** Skills can be version-controlled, tested independently, and updated without modifying core agent systems.
-
-- **Best Practice:** Design skills with clear metadata (name and description) that enables accurate skill selection, and structure detailed instructions that are self-contained yet can reference supporting files when needed.
-
+- **Best Practice:** Design skills with clear metadata (name and description) that enables accurate skill selection, and structure detailed procedural instructions that are self-contained yet can reference supporting files when needed.
 - **Code Execution:** Skills can include executable code that agents run for deterministic, efficient operations, but code should be clearly distinguished from documentation.
-
 - **Security First:** Always audit skills from untrusted sources, paying attention to executable code, dependencies, and network access patterns.
 
 ## Related Patterns

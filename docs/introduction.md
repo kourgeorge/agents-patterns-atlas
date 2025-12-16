@@ -145,7 +145,6 @@ For complex tasks, a single agent often fails due to context overload or lack of
 * **Swarm Architectures:** Autonomous agents interacting to solve problems through consensus or division of labor.
 
 > **"The challenge is not intelligence — it's coordination!"** — Manus Creators
----
 
 ## Levels of Agent Complexity
 

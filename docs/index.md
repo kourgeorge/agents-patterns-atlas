@@ -2,9 +2,14 @@
 
 ## Book Origins and Evolution
 
-This book originated from study notes compiled to organize and refine understanding of the agentic AI domain. These design patterns have been collected from a growing corpus of literature on agentic systems, including engineering blogs from leading AI companies like Anthropic, Manus, and LangChain, insights from active developer bloggers, and an increasing number of academic publications and books. In addition, many patterns in this book were extracted directly from implementations of deep agents like IBM's CUGA (Configurable Generalist Agent) and LangChain's Deep Agents.
+This book originated from study notes compiled to organize and refine understanding of the agentic AI domain. 
+These design patterns have been collected from a growing corpus of literature on agentic systems, including engineering blogs from leading AI companies like Anthropic, Manus, and LangChain, insights from active developer bloggers, and an increasing number of academic publications and books. 
+In addition, many patterns in this book were extracted directly from implementations of deep agents like IBM's CUGA (Configurable Generalist Agent) and LangChain's Deep Agents.
 
-This book is a living resource that will be constantly updated as new design patterns and best practices emerge in the field of agentic AI development. As the community continues to build and refine agentic systems, new patterns will be identified, existing patterns will be refined, and our understanding of what works best will evolve. We encourage readers to revisit this resource regularly to stay current with the latest developments in software agent development. Whether you're returning after a few months or checking in periodically, you'll find that the content continues to grow and improve, reflecting the ongoing maturation of the agentic AI ecosystem.
+This book is a living resource that will be constantly updated as new design patterns and best practices emerge in the field of agentic AI development. 
+As the community continues to build and refine agentic systems, new patterns will be identified, existing patterns will be refined, and our understanding of what works best will evolve. 
+We encourage readers to revisit this resource regularly to stay current with the latest developments in software agent development. 
+Whether you're returning after a few months or checking in periodically, you'll find that the content continues to grow and improve, reflecting the ongoing maturation of the agentic AI ecosystem.
 
 ## The Creation Process: A New Paradigm for Book Writing
 
@@ -32,6 +37,61 @@ If you encounter any issues, have suggestions for improvement, or notice any err
 Author: **George Kour, Ph.D.**
 
 ---
+
+## How to Cite This Book
+
+Kour, G. (2025). *Intelligence Patterns: An Evolving Handbook on Agentic Design*. 
+
+### BibTeX
+
+```bibtex
+@book{kour2025intelligence,
+  title={Intelligence Patterns: An Evolving Handbook on Agentic Design},
+  author={Kour, George},
+  year={2025},
+  note={Living resource, continuously updated}
+}
+```
+
+**Note:** Since this is a living resource that is continuously updated, please include the date you accessed the material in your citation. 
+For specific patterns or sections, consider referencing the relevant module or pattern name in addition to the book citation.
+
+---
+
+## How to Use This Book
+
+Throughout this book, the emphasis is on practical application. Every pattern includes runnable code examples that you can execute, modify, and learn from. We encourage you to:
+
+* **Run the examples** - Don't just read them; execute them and see how they work
+* **Experiment** - Modify the code, try different inputs, break things and fix them
+* **Adapt** - Use the patterns as starting points for your own applications
+* **Build** - Apply patterns to real problems you're trying to solve
+
+The code examples are designed to clearly illustrate each pattern's core logic and its implementation, focusing on clarity and practicality over production-ready complexity.
+
+### For Beginners
+
+If you're new to agentic systems, we recommend reading the modules sequentially. The book is structured to build concepts progressively:
+- Start with understanding what agents are and how they differ from workflows
+- Learn foundational workflow patterns before moving to advanced capabilities
+- Understand single-agent patterns before exploring multi-agent systems
+
+### For Experienced Developers
+
+If you're already familiar with agentic systems, you can use this book as a reference guide:
+- Jump directly to patterns that solve specific problems you're facing
+- Use the "When to Use" sections in each pattern module to quickly identify relevant solutions
+- Explore advanced patterns like multi-agent coordination or context engineering when needed
+
+Each pattern module follows a consistent structure:
+- **Pattern Overview:** What the pattern is and why it matters
+- **When to Use:** Guidance on recognizing when this pattern applies
+- **Practical Applications:** Real-world use cases
+- **Implementation:** Code examples showing how to realize the pattern
+- **Key Takeaways:** Summary of the pattern's core concepts
+
+---
+
 
 ## Bibliography
 

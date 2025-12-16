@@ -78,7 +78,7 @@ nav:
     - "Pattern: Tool Use": tool-use.md
     - "Pattern: Shortlisting": shortlisting.md
     - "Pattern: Constrained Tool Use": constrained-tool-use.md
-    - "Pattern: Tool Discovery": tool-discovery.md
+    - "Pattern: Skill Discovery": skill-discovery.md
 - Reasoning & Planning:
     - Reasoning Techniques: reasoning-techniques.md
     - Planning Strategies: planning-strategies.md
