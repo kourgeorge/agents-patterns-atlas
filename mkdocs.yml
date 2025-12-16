@@ -33,7 +33,7 @@ theme:
   icon:
     repo: fontawesome/brands/github
   extra_css:
-    - assets/css/custom.css
+    - ../assets/css/custom.css
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -65,10 +65,10 @@ plugins:
       lang: en
 
 nav:
+- About: index.md
 - Preface: preface.md
 - Introduction: introduction.md
 - What is an Agentic Design Pattern?: what-is-a-design-pattern.md
-- About: index.md
 - Core Workflow:
     - "Pattern: Prompt Chaining": prompt-chaining.md
     - "Pattern: Routing": routing.md

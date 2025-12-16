@@ -73,6 +73,8 @@ Consider the processing stages: if the task naturally decomposes into distinct s
 Consider tool integration: if you need to use external tools between steps, chaining provides a natural structure. 
 However, if the sequence should be dynamic or determined by the LLM, consider using an agentic pattern instead.
 
+> **"You don't prompt a model; you stage a cognitive environment for it."** — Anthropic
+
 ## Practical Applications & Use Cases
 
 Prompt chaining is a versatile pattern applicable in a wide range of scenarios when building LLM-powered workflows. 
