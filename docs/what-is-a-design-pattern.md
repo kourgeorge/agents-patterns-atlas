@@ -38,6 +38,34 @@ Rather than processing all available information, effective problem-solving requ
 
 ---
 
+## Why Design Patterns Matter: A Cognitive Framework
+
+This complexity is precisely why agentic design patterns are indispensable. They are not rigid rules, but rather battle-tested templates or blueprints that offer proven approaches to standard design and implementation challenges in the agentic domain. By recognizing and applying these design patterns, you gain access to solutions that enhance the structure, maintainability, reliability, and efficiency of the agents you build.
+
+The patterns presented in this book were extracted through careful analysis and dissection of real-world agent implementations, including systems like IBM's CUGA (Configurable Generalist Agent) and LangChain's Deep Agents. By examining how successful agent architectures are constructed, we've identified reusable patterns, design components, and principles that can be applied across different agentic systems. This pattern extraction methodology allows us to learn from proven implementations and codify their best practices into transferable knowledge.
+
+A great question we often hear is: "With AI changing so fast, why write a book that could be quickly outdated?" Our motivation is actually the opposite. It's precisely because things are moving so quickly that we need to step back and identify the underlying principles that are solidifying. Patterns like RAG, Reflection, Routing, Memory Management, Multi-Agent Coordination, and the others we discuss are becoming fundamental building blocks. More importantly, the cognitive principles underlying these patterns—how working memory works, how attention is allocated, how complex problems are decomposed—these are universal principles of intelligence that transcend specific technologies.
+
+This book goes further: it provides AI agent engineers with a **shared conceptual language grounded in cognitive neuroscience**, enabling you to build intelligent problem solvers with a common understanding of how intelligence works. Cognitive neuroscience has spent decades studying how humans break down complex problems, focus attention, delegate work to tools or collaborators, integrate partial results, and improve through experience. These theories offer deep insights into the **structure and limitations of intelligence**—working memory constraints, cognitive load, executive control bottlenecks.
+
+Until the recent surge of LLMs, these cognitive theories seldom translated cleanly into engineering practice. Conversely, AI agent frameworks (e.g., ReAct, RAG pipelines, LangGraph, multi-agent orchestration) provide pragmatic mechanisms for controlling LLM-based agents but often lack a unifying cognitive perspective that explains *why* certain patterns work and how they relate to fundamental principles of intelligence. By grounding agent design in cognitive principles, this framework helps engineers understand the limits of intelligence while inspiring effective solutions that map naturally onto existing agentic architectures.
+
+In agentic systems, these patterns address fundamental questions:
+
+* How do you structure sequential operations?
+* How do you manage state and context within working memory constraints?
+* How do you handle errors and unexpected situations?
+* How do you coordinate multiple agents and allocate cognitive load?
+* How do you ensure quality and safety?
+
+By recognizing and applying these patterns with an understanding of their cognitive foundations, you gain access to solutions that enhance structure, maintainability, reliability, and efficiency. Patterns provide a common language that makes your agent's logic clearer and easier to understand, maintain, and extend. More importantly, this shared vocabulary—grounded in cognitive science—allows teams to reason about cognitive operations, understand the limits of intelligence, and communicate design decisions with a principled foundation.
+
+Using design patterns helps you avoid reinventing fundamental solutions and accelerates development, allowing you to focus on the unique aspects of your application rather than foundational mechanics. By connecting engineering practice with cognitive principles, we can build more robust, reliable, and effective agentic systems.
+
+> **"Software will be written for humans and for AIs — two different users."** — Andrej Karpathy
+
+---
+
 ## What Makes a Pattern "Agentic"?
 
 An **agentic design pattern** is a design pattern specifically tailored to the unique challenges of building AI agent systems. These patterns address problems that arise when:
@@ -163,6 +191,9 @@ When you encounter a pattern in this book:
 5. **Combine Patterns:** Real systems often use multiple patterns together
 
 Remember: **The pattern is the abstraction. The code examples are illustrations.** Your implementation will differ based on your specific requirements, but the core pattern structure remains the same.
+
+
+> **"Stateless models can't build relationships — agents can."** — Andrej Karpathy
 
 ---
 

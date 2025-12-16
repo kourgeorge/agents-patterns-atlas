@@ -11,22 +11,21 @@ As the community continues to build and refine agentic systems, new patterns wil
 We encourage readers to revisit this resource regularly to stay current with the latest developments in software agent development. 
 Whether you're returning after a few months or checking in periodically, you'll find that the content continues to grow and improve, reflecting the ongoing maturation of the agentic AI ecosystem.
 
-## The Creation Process: A New Paradigm for Book Writing
+---
 
-This book was created through an orchestrated collaboration between human vision and AI capability, representing a shift from traditional solitary writing to a new paradigm of knowledge creation. AI systems have reached a point where they can produce text that is not merely passable, but often clearer, more structured, and more comprehensive than what humans might produce alone. The mechanical task of writing, i.e., transforming ideas into well-formed sentences, organizing concepts into coherent sections, maintaining consistency across chapters, is increasingly becoming automated. This is not a replacement of human creativity, but rather its amplification.
+## Book Structure
 
-In this new paradigm, the human author's role transforms from *writer* to *editor-director*. The primary responsibilities shift to higher-order tasks that require human judgment and vision:
+The book is organized into **7 parts** containing **32 modules**, building concepts progressively from foundational patterns to advanced multi-agent architectures:
 
-- **Collecting and Curating**: Selecting valuable resources from research papers, blog posts, and other sources, then directing AI to incorporate and synthesize them into the narrative.
-- **Asking the Right Questions**: Formulating precise, strategically important questions that guide AI tools—whether code-writing assistants, research systems, or content generators—through the content generation process.
-- **Validation and Refinement**: Reading, evaluating, and iterating to ensure content aligns with the vision, fits the intended style, and matches the appropriate depth for each subject.
-- **Structural Orchestration**: Ensuring coherence across the entire work—logical chapter flow, concepts that build upon each other, and section length that matches significance.
+1. **Introduction & Foundations** (4 modules) - Core concepts, context, and design pattern fundamentals
+2. **Core Workflow** (4 modules) - Fundamental patterns for building agent workflows
+3. **Tools** (4 modules) - Designing the Agent-Computer Interface
+4. **Reasoning & Planning** (5 modules) - Enabling agents to plan and reason effectively
+5. **Context and Memory** (8 modules) - Managing the finite context window, optimizing context usage, and managing persistent and external memory for agents, including knowledge retrieval
+6. **Multi-Agent Systems** (5 modules) - Modern LLM-based multi-agent collaboration patterns
+7. **Human Input and Recovery** (3 modules) - Learning, adaptation, and human interaction
 
-The creation process follows an iterative cycle: the human defines direction and collects materials, AI generates and organizes content, the human validates and refines, and the cycle repeats. This approach enables rapid exploration of ideas, comprehensive coverage, and efficient incorporation of diverse sources, allowing the human to focus on vision, judgment, and creative direction.
-
-This book was created using the same principles it teaches: intelligent agents pursuing objectives, orchestrated workflows, and tools that achieve goals impossible through traditional means alone.
-
-The content has been carefully reviewed and validated by the author to ensure accuracy, quality, and alignment with the intended vision. However, given the collaborative nature of this creation process, there may occasionally be errors, inconsistencies, or areas that could benefit from improvement.
+The book parts and patterns are organized to build concepts progressively, but you can also use this book as a reference, jumping to patterns that address specific challenges you face in your agent development projects.
 
 ---
 
