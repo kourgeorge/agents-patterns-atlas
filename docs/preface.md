@@ -1,11 +1,10 @@
 # Preface
 
-> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
+> **Building intelligent agents requires more than technical skills; it requires a deeper understanding of *how intelligence works**. --The Author
 
+We stand at an inflection point that demands a fundamental shift in how we think about software.
 The last few years have witnessed an unprecedented transformation—from simple, reactive programs to sophisticated, autonomous entities capable of understanding context, making decisions, and interacting dynamically with their environment and other systems. 
-We stand at an inflection point that demands a fundamental shift in how we think about software engineering.
 
-Building intelligent agents requires more than technical skills; it requires a deeper understanding of *how intelligence works*. 
 Large language models (LLMs) augmented with tools, memory, and multi-step reasoning are increasingly deployed as agents capable of planning, acting, and coordinating with humans and other agents. 
 Yet despite rapid progress, the field lacks a **shared conceptual framework**—a common language that revolves around the key components and mechanisms of intelligence itself.
 Real progress comes from grasping how reasoning, creativity, and cognition work—not from traditional programming expertise alone.
@@ -30,6 +29,10 @@ Each pattern is battle-tested, clearly explained, and accompanied by practical c
 The journey ahead explores how to build systems that can reason, plan, act, and collaborate. These are the building blocks of the next generation of AI applications. Let's begin.
 
 **George Kour, Ph.D.**
+
+
+> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
+
 
 ---
 

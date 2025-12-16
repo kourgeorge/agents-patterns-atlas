@@ -1,5 +1,35 @@
 # About
 
+> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
+
+Agentic AI systems face a fundamental challenge when dealing with **long horizon tasks**-those complex objectives that require agents to plan and execute extended sequences of actions to achieve desired results. 
+Unlike simple, single-step interactions, these tasks demand sophisticated coordination across multiple reasoning steps, planning phases, and action executions.
+
+Early examples of long horizon agents that require multiple coordinated steps have emerged in the form of *"deep research agents"*, implemented by major LLM providers such as ChatGPT and Claude. 
+These systems demonstrate the power of structured agentic approaches when tackling complex research tasks that span multiple queries, information retrieval steps, analysis phases, and synthesis operations.
+
+However, the need for structured agentic design extends far beyond research applications. 
+Many real-world tasks—from software development and data analysis to content creation and system administration—require agents to orchestrate long chains of planning, reasoning, and action steps. 
+These agents demand architectural patterns and design structures that can support and coordinate such complex operational sequences.
+
+Current ReAct-style agents, which rely primarily on local, step-by-step decision making, often struggle with such long horizon problems. 
+While effective for straightforward tasks, their reactive nature limits their ability to maintain coherent long-term strategies, manage complex dependencies between actions, and effectively consolidate information across extended execution trajectories. 
+This limitation becomes particularly evident when tasks require:
+
+- Multi-step planning and reasoning chains
+- Coordinated execution across multiple tools and resources
+- Context management over extended sequences
+- Integration and synthesis of intermediate results
+
+To address these challenges, there is a critical need for **organizing the operational process** of agents. 
+The intelligence design patterns presented in this book provide structured solutions to systematically organize the thinking, planning, execution, and consolidation phases of long horizon trajectories. 
+
+The patterns in this book directly address the fundamental limitations of reasoning in LLMs and, more broadly, in artificial intelligence systems. 
+By providing systematic approaches to organizing agent behavior, these patterns enable more reliable, coherent, and effective long horizon task execution. They transform agents from reactive systems that make isolated decisions into structured systems capable of sustained, goal-directed behavior across extended operational sequences.
+
+> **Building smart systems requires minds trained to understand thinking itself—how minds process information, how teams coordinate work, and how organizations scale intelligence.** - The Author
+---
+
 ## Book Origins and Evolution
 
 This book originated from study notes compiled to organize and refine understanding of the agentic AI domain. 
@@ -32,26 +62,6 @@ The book parts and patterns are organized to build concepts progressively, but y
 ## Contact and Feedback
 
 If you encounter any issues, have suggestions for improvement, or notice any errors, we would greatly appreciate your feedback. Please contact the author at **kourgeorge@gmail.com**. Your input helps us maintain and improve the quality of this resource for the entire community.
-
----
-
-## How to Cite This Book
-
-Kour, G. (2025). *Intelligence Patterns: An Evolving Handbook on Agentic Design*. 
-
-### BibTeX
-
-```bibtex
-@book{kour2025intelligence,
-  title={Intelligence Patterns: An Evolving Handbook on Agentic Design},
-  author={Kour, George},
-  year={2025},
-  note={Living resource, continuously updated}
-}
-```
-
-**Note:** Since this is a living resource that is continuously updated, please include the date you accessed the material in your citation. 
-For specific patterns or sections, consider referencing the relevant module or pattern name in addition to the book citation.
 
 ---
 
@@ -89,6 +99,25 @@ Each pattern module follows a consistent structure:
 
 ---
 
+## How to Cite This Book
+
+Kour, G. (2025). *Intelligence Patterns: An Evolving Handbook on Agentic Design*. 
+
+### BibTeX
+
+```bibtex
+@book{kour2025intelligence,
+  title={Intelligence Patterns: An Evolving Handbook on Agentic Design},
+  author={Kour, George},
+  year={2025},
+  note={Living resource, continuously updated}
+}
+```
+
+**Note:** Since this is a living resource that is continuously updated, please include the date you accessed the material in your citation. 
+For specific patterns or sections, consider referencing the relevant module or pattern name in addition to the book citation.
+
+---
 
 ## Bibliography
 
