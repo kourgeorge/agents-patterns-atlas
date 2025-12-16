@@ -33,8 +33,6 @@ The book parts and patterns are organized to build concepts progressively, but y
 
 If you encounter any issues, have suggestions for improvement, or notice any errors, we would greatly appreciate your feedback. Please contact the author at **kourgeorge@gmail.com**. Your input helps us maintain and improve the quality of this resource for the entire community.
 
-Author: **George Kour, Ph.D.**
-
 ---
 
 ## How to Cite This Book

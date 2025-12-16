@@ -79,6 +79,8 @@ An **agentic design pattern** is a design pattern specifically tailored to the u
 
 Agentic design patterns differ from traditional software design patterns (like Singleton, Factory, Observer) because they account for the unique characteristics of LLM-based systems: non-determinism, context limitations, tool integration, and the need for transparency in decision-making.
 
+> **"Determinism comes not from the LLM, but from the graph around it."** — LangChain / LangGraph
+
 ---
 
 ## The Relationship Between Patterns and Implementations
