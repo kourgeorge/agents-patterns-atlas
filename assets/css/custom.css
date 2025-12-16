@@ -1,0 +1,63 @@
+/* Custom styles for larger table of contents font */
+
+/* Sidebar TOC (navigation) */
+.md-nav__link {
+    font-size: 0.95rem !important; /* Increase from default ~0.8rem */
+    line-height: 1.5 !important;
+}
+
+.md-nav__item .md-nav__link {
+    font-size: 0.9rem !important;
+}
+
+/* In-page TOC (if using [TOC] in markdown) */
+.md-typeset .toc {
+    font-size: 1.1rem; /* Increase base font size */
+}
+
+.md-typeset .toc li {
+    font-size: 1.05rem; /* Slightly larger for list items */
+    line-height: 1.6; /* Better spacing */
+}
+
+.md-typeset .toc a {
+    font-size: 1.05rem; /* Larger links */
+    font-weight: 500; /* Slightly bolder for better readability */
+}
+
+/* Make TOC headings more prominent */
+.md-typeset .toc h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Increase spacing between TOC items */
+.md-typeset .toc ul {
+    margin-top: 0.5rem;
+}
+
+.md-typeset .toc li {
+    margin-bottom: 0.4rem;
+}
+
+/* TOC navigation list items */
+.md-nav__list .md-nav__item {
+    font-size: 0.9rem;
+}
+
+.md-nav__list .md-nav__link {
+    padding: 0.4rem 0.6rem;
+}
+
+/* Compact list spacing for content */
+.md-typeset ul,
+.md-typeset ol {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.md-typeset li {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+    line-height: 1.5;
+}
