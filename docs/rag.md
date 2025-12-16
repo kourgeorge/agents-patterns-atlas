@@ -26,6 +26,8 @@ By integrating external knowledge, RAG transforms agents from simple conversatio
 The RAG pattern significantly enhances the capabilities of LLMs by granting them access to external knowledge bases before generating a response. 
 Instead of relying solely on their internal, pre-trained knowledge, RAG allows LLMs to "look up" information, much like a human might consult a book or search the internet. This process empowers LLMs to provide more accurate, up-to-date, and verifiable answers.
 
+RAG is composed of two main steps. First, the system retrieves relevant information from a large knowledge base—not just identifying relevant documents or links, but extracting the most pertinent text segments from those documents. This retrieval step goes beyond simple document matching; it must identify and extract the specific passages, sentences, or chunks that directly address the user's query. Second, the extracted information is augmented into the LLM's context, enabling the model to generate a direct answer to the query rather than simply returning a list of sources like a traditional search engine. The LLM synthesizes the retrieved context with its reasoning capabilities to produce a coherent, contextually grounded response.
+
 When a user poses a question or gives a prompt to an AI system using RAG, the query isn't sent directly to the LLM. 
 Instead, the system first scours a vast external knowledge base—a highly organized library of documents, databases, or web pages—for relevant information. 
 This search is not a simple keyword match; it's a **"semantic search"** that understands the user's intent and the meaning behind their words. 
@@ -79,57 +81,123 @@ Chunking is the process of breaking down large documents into smaller, more mana
 
 The primary method is **vector search**, which uses embeddings and semantic distance to find chunks that are conceptually similar to the user's question. An older, but still valuable, technique is **BM25**, a keyword-based algorithm that ranks chunks based on term frequency without understanding semantic meaning. To get the best of both worlds, **hybrid search** approaches are often used, combining the keyword precision of BM25 with the contextual understanding of semantic search. This fusion allows for more robust and accurate retrieval, capturing both literal matches and conceptual relevance.
 
+It is important to note that in RAG systems, the search and extraction phase—specifically, not just identifying relevant documents or links, but extracting the most relevant text segments from those documents—is typically the most challenging task. 
+The quality of the final response depends critically on the system's ability to pinpoint and extract the precise passages that directly address the user's query, rather than returning entire documents or irrelevant sections. 
+This challenge makes effective chunking strategies and precise retrieval mechanisms essential components of a successful RAG implementation.
+
+??? "**TF-IDF and BM25: Keyword-Based Search Approaches**"
+    
+    Before the advent of semantic search and embeddings, information retrieval systems relied on keyword-based approaches. Two fundamental algorithms in this domain are **TF-IDF** (Term Frequency-Inverse Document Frequency) and **BM25** (Best Matching 25). These methods excel at finding documents that contain specific keywords from a query, making them particularly effective for exact term matching and keyword-focused searches.
+    
+    ### **TF-IDF (Term Frequency-Inverse Document Frequency)**
+    
+    TF-IDF is a statistical measure that evaluates how important a word is to a document within a collection of documents. It combines two components:
+    
+    - **Term Frequency (TF)**: Measures how frequently a term appears in a document. The intuition is that words appearing more often in a document are likely more relevant to that document's topic.
+    
+    - **Inverse Document Frequency (IDF)**: Measures how rare or common a term is across the entire document collection. Common words (like "the", "is", "a") appear in many documents and receive low IDF scores, while rare, distinctive words receive high IDF scores.
+    
+    The TF-IDF score is calculated as:
+    
+    ```
+    TF-IDF(t, d) = TF(t, d) × IDF(t)
+    ```
+    
+    Where:
+    - `TF(t, d)` = (Number of times term t appears in document d) / (Total number of terms in document d)
+    - `IDF(t)` = log(Total number of documents / Number of documents containing term t)
+    
+    **Example**: If the word "quantum" appears 5 times in a 100-word document, and "quantum" appears in 10 out of 1000 documents:
+    - TF = 5/100 = 0.05
+    - IDF = log(1000/10) = log(100) ≈ 4.61
+    - TF-IDF = 0.05 × 4.61 ≈ 0.23
+    
+    **Strengths**: Simple, interpretable, effective for keyword matching, no training required.
+    
+    **Limitations**: Cannot capture semantic meaning, treats all word positions equally, doesn't understand synonyms or context.
+    
+    ### **BM25 (Best Matching 25)**
+    
+    BM25 is an evolution of TF-IDF that addresses some of its limitations. It's a probabilistic ranking function that scores documents based on how well they match a query. BM25 improves upon TF-IDF by:
+    
+    1. **Saturating term frequency**: Unlike TF-IDF, where term frequency grows linearly, BM25 uses a saturation function that prevents very frequent terms from dominating the score.
+    
+    2. **Length normalization**: BM25 normalizes scores by document length, preventing longer documents from having an unfair advantage simply because they contain more words.
+    
+    The BM25 formula is:
+    
+    ```
+    BM25(q, d) = Σ IDF(qi) × (f(qi, d) × (k1 + 1)) / (f(qi, d) + k1 × (1 - b + b × |d|/avgdl))
+    ```
+    
+    Where:
+    - `q` = query
+    - `d` = document
+    - `f(qi, d)` = frequency of query term qi in document d
+    - `|d|` = length of document d (number of words)
+    - `avgdl` = average document length in the collection
+    - `k1` = term frequency saturation parameter (typically 1.2-2.0)
+    - `b` = length normalization parameter (typically 0.75)
+    - `IDF(qi)` = inverse document frequency of query term qi
+    
+    **Key Improvements over TF-IDF**:
+    
+    - **Term frequency saturation**: The `(k1 + 1)` term in the numerator and the `f(qi, d) + k1 × ...` in the denominator create a saturation curve. After a term appears a certain number of times, additional occurrences contribute less to the score. This prevents documents with excessive repetition from scoring too high.
+    
+    - **Length normalization**: The `(1 - b + b × |d|/avgdl)` component penalizes longer documents. If `b = 0`, there's no length normalization. If `b = 1`, full normalization is applied. Typically `b = 0.75` provides a good balance.
+    
+    **Example**: Consider a query "machine learning" and two documents:
+    - Document A (50 words): "machine learning" appears 3 times
+    - Document B (500 words): "machine learning" appears 10 times
+    
+    With TF-IDF, Document B might score higher simply because it has more occurrences. With BM25, Document A could score higher because:
+    1. The term frequency is normalized by document length
+    2. The saturation function means the 3 occurrences in the shorter document are more significant than the 10 in the longer one
+    
+    **Strengths**: 
+    - Better handling of document length variations
+    - Term frequency saturation prevents over-weighting repeated terms
+    - Proven effectiveness in information retrieval (used by search engines like Elasticsearch)
+    - No training required, works out of the box
+    
+    **Limitations**: 
+    - Still keyword-based, cannot understand semantic meaning
+    - Doesn't handle synonyms or paraphrasing
+    - Requires exact term matches (though stemming can help)
+    
+    ### **When to Use TF-IDF vs BM25**
+    
+    - **Use TF-IDF** when:
+      - You need a simple, interpretable baseline
+      - Documents are roughly the same length
+      - You want to understand exactly why documents are ranked
+    
+    - **Use BM25** when:
+      - Documents vary significantly in length
+      - You want better ranking quality (BM25 generally outperforms TF-IDF)
+      - You're building a production search system
+    
+    ### **TF-IDF and BM25 in RAG Systems**
+    
+    In modern RAG systems, TF-IDF and BM25 are often used in **hybrid search** approaches:
+    
+    1. **Keyword precision**: BM25 excels at finding documents with exact keyword matches, which is crucial when users search for specific terms, product names, or technical jargon.
+    
+    2. **Complementing semantic search**: While semantic search (using embeddings) finds conceptually similar content, BM25 ensures that documents containing the exact query terms are not overlooked.
+    
+    3. **Handling rare terms**: BM25 is particularly effective for rare, specific terms that might not have strong semantic representations in embedding models.
+    
+    **Hybrid Approach**: Many production RAG systems combine BM25 and semantic search by:
+    - Running both searches in parallel
+    - Normalizing scores from both methods
+    - Combining scores with weighted averaging (e.g., 40% BM25 + 60% semantic)
+    - Returning the top-k results based on combined scores
+    
+    This hybrid approach leverages the strengths of both methods: BM25's precision for exact matches and semantic search's ability to find conceptually relevant content even without keyword overlap.
+
 ![RAG Core Concepts: Chunking, Embeddings, and Vector Database](fig1.png)
 
 **Fig.1: RAG Core Concepts: Chunking, Embeddings, and Vector Database**
-
-**Example: Hybrid Search Implementation**
-
-??? "**Chunking of Documents**"
-
-    ```python
-    from typing import List, Dict, Tuple
-
-    class HybridSearchRAG:
-        """
-        Hybrid RAG system combining BM25 (keyword-based) and semantic search
-        for robust retrieval that captures both literal matches and conceptual relevance.
-        """
-        
-        def hybrid_search(
-            self,
-            query: str,
-            top_k: int = 5,
-            bm25_weight: float = 0.4,
-            semantic_weight: float = 0.6
-        ) -> List[Tuple[int, float, Dict]]:
-            """
-            Combine BM25 and semantic search using weighted scores.
-            BM25 captures exact keyword matches, while semantic search
-            finds conceptually similar content even with different wording.
-            """
-            # Get results from both methods
-            bm25_results = self.bm25_search(query, top_k * 2)
-            semantic_results = self.semantic_search(query, top_k * 2)
-            
-            # Normalize scores to [0, 1] range
-            max_bm25 = max(score for _, score in bm25_results) if bm25_results else 1.0
-            max_semantic = max(score for _, score in semantic_results) if semantic_results else 1.0
-            
-            # Combine normalized scores
-            combined_scores = {}
-            for idx, bm25_score in bm25_results:
-                norm_bm25 = bm25_score / max_bm25 if max_bm25 > 0 else 0.0
-                combined_scores[idx] = combined_scores.get(idx, 0.0) + bm25_weight * norm_bm25
-            
-            for idx, semantic_score in semantic_results:
-                norm_semantic = semantic_score / max_semantic if max_semantic > 0 else 0.0
-                combined_scores[idx] = combined_scores.get(idx, 0.0) + semantic_weight * norm_semantic
-            
-            # Sort by combined score and return top_k
-            sorted_results = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
-            return sorted_results[:top_k]
-    ```
 
 ### **Vector Databases**
 
@@ -178,35 +246,116 @@ The following example demonstrates a basic RAG system with document chunking, em
         """
         
         def __init__(self, embedding_model=None):
+            """
+            Initialize RAG system.
+            
+            Args:
+                embedding_model: Function that takes text and returns embedding vector.
+                                If None, uses a simple TF-IDF-like approach for demo.
+            """
             self.documents: List[Document] = []
             self.embedding_model = embedding_model or self._simple_embedding
+            self.vocabulary: Dict[str, int] = {}  # Word to index mapping
+            self.vocab_built = False
+        
+        def _build_vocabulary(self, texts: List[str]):
+            """Build vocabulary from all documents."""
+            all_words = set()
+            for text in texts:
+                words = text.lower().split()
+                all_words.update(words)
             
+            # Create word to index mapping
+            self.vocabulary = {word: idx for idx, word in enumerate(sorted(all_words))}
+            self.vocab_built = True
+        
+        def _simple_embedding(self, text: str) -> np.ndarray:
+            """
+            Simple embedding function for demonstration.
+            In production, use models like OpenAI's text-embedding-ada-002,
+            Sentence-BERT, or similar.
+            """
+            if not self.vocab_built:
+                # If vocabulary not built yet, create a simple embedding
+                words = text.lower().split()
+                unique_words = list(set(words))
+                embedding = np.zeros(len(unique_words))
+                for word in words:
+                    if word in unique_words:
+                        embedding[unique_words.index(word)] += 1
+                norm = np.linalg.norm(embedding)
+                return embedding / norm if norm > 0 else embedding
+            
+            # Use consistent vocabulary
+            embedding = np.zeros(len(self.vocabulary))
+            words = text.lower().split()
+            for word in words:
+                if word in self.vocabulary:
+                    embedding[self.vocabulary[word]] += 1
+            # Normalize
+            norm = np.linalg.norm(embedding)
+            return embedding / norm if norm > 0 else embedding
+        
         def add_documents(self, texts: List[str], metadata: List[Dict] = None):
-            """Add documents to the knowledge base."""
+            """
+            Add documents to the knowledge base.
+            
+            Args:
+                texts: List of document texts (already chunked)
+                metadata: Optional list of metadata dictionaries
+            """
             if metadata is None:
                 metadata = [{}] * len(texts)
-                
+            
+            # Build vocabulary from all texts first
+            if not self.vocab_built:
+                self._build_vocabulary(texts)
+            
             for text, meta in zip(texts, metadata):
                 embedding = self.embedding_model(text)
                 doc = Document(content=text, metadata=meta, embedding=embedding)
                 self.documents.append(doc)
         
         def retrieve(self, query: str, top_k: int = 3) -> List[Tuple[Document, float]]:
-            """Retrieve most relevant documents using semantic similarity."""
+            """
+            Retrieve most relevant documents for a query using semantic similarity.
+            
+            Args:
+                query: User's query text
+                top_k: Number of top results to return
+                
+            Returns:
+                List of (document, similarity_score) tuples, sorted by relevance
+            """
+            # Generate query embedding
             query_embedding = self.embedding_model(query)
             
+            # Calculate cosine similarity with all documents
             similarities = []
             for doc in self.documents:
+                # Cosine similarity: dot product of normalized vectors
                 similarity = np.dot(query_embedding, doc.embedding)
                 similarities.append((doc, similarity))
             
+            # Sort by similarity (descending) and return top_k
             similarities.sort(key=lambda x: x[1], reverse=True)
             return similarities[:top_k]
         
         def query(self, query: str, top_k: int = 3) -> str:
-            """Complete RAG pipeline: retrieve relevant context and format for LLM."""
+            """
+            Complete RAG pipeline: retrieve relevant context and format for LLM.
+            
+            Args:
+                query: User's question
+                top_k: Number of context chunks to retrieve
+                
+            Returns:
+                Formatted context string ready for LLM prompt augmentation
+            """
+            # Retrieve relevant documents
             results = self.retrieve(query, top_k)
             
+            # Format context for LLM
             context_parts = []
             for i, (doc, score) in enumerate(results, 1):
                 context_parts.append(
@@ -214,6 +363,8 @@ The following example demonstrates a basic RAG system with document chunking, em
                 )
             
             context = "\n".join(context_parts)
+            
+            # Return augmented prompt
             return f"""Based on the following context, answer the question.
 
     Context:
@@ -222,6 +373,31 @@ The following example demonstrates a basic RAG system with document chunking, em
     Question: {query}
 
     Answer:"""
+
+    def main():
+        """Basic RAG example."""
+        # Initialize and add documents
+        rag = SimpleRAGSystem()
+        documents = [
+            "RAG enhances LLMs by retrieving relevant information from external knowledge bases.",
+            "Embeddings capture semantic meaning in a high-dimensional vector space.",
+            "Vector databases enable fast semantic search using algorithms like HNSW.",
+        ]
+        rag.add_documents(documents)
+        
+        # Query and retrieve
+        query = "How does RAG work with embeddings?"
+        results = rag.retrieve(query, top_k=2)
+        print(f"Query: {query}")
+        for doc, score in results:
+            print(f"  Score: {score:.3f} - {doc.content[:60]}...")
+        
+        # Get formatted prompt
+        prompt = rag.query(query, top_k=2)
+        print(f"\nAugmented prompt:\n{prompt[:150]}...")
+
+    if __name__ == "__main__":
+        main()
     ```
 
 ### **Vector Database Integration**
@@ -236,37 +412,73 @@ For production systems, vector databases provide scalable storage and efficient 
     from chromadb.config import Settings
 
     class VectorDatabaseRAG:
-        """RAG system using Chroma DB vector database for production-ready semantic search."""
+        """
+        RAG system using Chroma DB vector database for production-ready
+        semantic search at scale.
+        """
         
-        def __init__(self, collection_name: str = "knowledge_base", persist_directory: str = "./chroma_db"):
+        def __init__(self, collection_name: str = "knowledge_base", persist_directory: str = "./chroma_db", use_default_embeddings: bool = True):
+            """
+            Initialize RAG system with Chroma DB.
+            
+            Args:
+                collection_name: Name of the collection to store documents
+                persist_directory: Directory to persist the database
+                use_default_embeddings: If True, use Chroma's default embedding function
+            """
+            # Initialize Chroma client with persistence
             self.client = chromadb.PersistentClient(
                 path=persist_directory,
                 settings=Settings(anonymized_telemetry=False)
             )
+            
+            # Get or create collection
+            # If using default embeddings, Chroma will auto-generate them
+            # Otherwise, we'll provide our own
             self.collection = self.client.get_or_create_collection(
                 name=collection_name,
-                metadata={"hnsw:space": "cosine"}
+                metadata={"hnsw:space": "cosine"}  # Use cosine similarity
             )
+            self.use_default_embeddings = use_default_embeddings
         
         def add_documents(
             self,
             texts: List[str],
-            embeddings: List[List[float]],
+            embeddings: Optional[List[List[float]]] = None,
             metadatas: Optional[List[Dict]] = None,
             ids: Optional[List[str]] = None
         ):
-            """Add documents to the vector database."""
+            """
+            Add documents to the vector database.
+            
+            Args:
+                texts: List of document chunk texts
+                embeddings: Pre-computed embeddings for each text (optional if using default)
+                metadatas: Optional metadata for each document (source, timestamp, etc.)
+                ids: Optional unique IDs for each document
+            """
             if metadatas is None:
                 metadatas = [{}] * len(texts)
             if ids is None:
                 ids = [f"doc_{i}" for i in range(len(texts))]
             
-            self.collection.add(
-                embeddings=embeddings,
-                documents=texts,
-                metadatas=metadatas,
-                ids=ids
-            )
+            # If using default embeddings, don't provide embeddings parameter
+            if self.use_default_embeddings and embeddings is None:
+                self.collection.add(
+                    documents=texts,
+                    metadatas=metadatas,
+                    ids=ids
+                )
+            else:
+                # Use provided embeddings
+                if embeddings is None:
+                    raise ValueError("embeddings must be provided when use_default_embeddings=False")
+                self.collection.add(
+                    embeddings=embeddings,
+                    documents=texts,
+                    metadatas=metadatas,
+                    ids=ids
+                )
         
         def retrieve(
             self,
@@ -274,12 +486,118 @@ For production systems, vector databases provide scalable storage and efficient 
             top_k: int = 5,
             where: Optional[Dict] = None
         ) -> Dict:
-            """Retrieve relevant documents using semantic search."""
-            return self.collection.query(
+            """
+            Retrieve relevant documents using semantic search.
+            
+            Args:
+                query_embedding: Embedding vector of the query
+                top_k: Number of results to return
+                where: Optional metadata filter (e.g., {"source": "wiki"})
+                
+            Returns:
+                Dictionary with 'documents', 'metadatas', 'distances', and 'ids'
+            """
+            results = self.collection.query(
                 query_embeddings=[query_embedding],
                 n_results=top_k,
                 where=where
             )
+            return results
+        
+        def retrieve_by_text(
+            self,
+            query_text: str,
+            top_k: int = 5,
+            where: Optional[Dict] = None
+        ) -> Dict:
+            """
+            Retrieve using query text (requires embedding model).
+            
+            Note: In production, you'd use an embedding model here.
+            This is a placeholder showing the interface.
+            """
+            # In production: query_embedding = embedding_model(query_text)
+            # For demo, we'll use the collection's embedding function
+            results = self.collection.query(
+                query_texts=[query_text],
+                n_results=top_k,
+                where=where
+            )
+            return results
+        
+        def format_context_for_llm(self, results: Dict, query: str) -> str:
+            """
+            Format retrieved results into context for LLM prompt.
+            
+            Args:
+                results: Results from retrieve() or retrieve_by_text()
+                query: Original user query
+                
+            Returns:
+                Formatted context string with citations
+            """
+            if not results['documents'] or not results['documents'][0]:
+                return f"No relevant context found for: {query}"
+            
+            context_parts = []
+            documents = results['documents'][0]
+            metadatas = results.get('metadatas', [[]])[0] or [{}] * len(documents)
+            distances = results.get('distances', [[]])[0] or [0.0] * len(documents)
+            
+            for i, (doc, metadata, distance) in enumerate(zip(documents, metadatas, distances), 1):
+                source = metadata.get('source', 'Unknown')
+                similarity = 1 - distance  # Convert distance to similarity
+                context_parts.append(
+                    f"[Source {i}: {source}] (Similarity: {similarity:.3f})\n{doc}\n"
+                )
+            
+            context = "\n".join(context_parts)
+            return f"""Based on the following retrieved context, answer the question.
+
+    Retrieved Context:
+    {context}
+
+    Question: {query}
+
+    Answer (cite sources when possible):"""
+
+    def main():
+        """Vector database RAG example."""
+        import os
+        import shutil
+        
+        # Initialize with cleanup
+        persist_dir = "./chroma_db_demo"
+        if os.path.exists(persist_dir):
+            shutil.rmtree(persist_dir)
+        
+        rag = VectorDatabaseRAG(persist_directory=persist_dir)
+        
+        # Add documents
+        documents = [
+            "Our remote work policy allows employees to work from home 3 days per week.",
+            "The Q1 budget for Project Alpha was finalized at €65,000.",
+        ]
+        metadatas = [
+            {"source": "hr_policy_2025", "type": "policy"},
+            {"source": "finance_report_q1", "type": "financial"},
+        ]
+        rag.add_documents(texts=documents, embeddings=None, metadatas=metadatas)
+        
+        # Query with filter
+        query = "What is the remote work policy?"
+        results = rag.retrieve_by_text(query, top_k=2, where={"type": "policy"})
+        if results['documents'] and results['documents'][0]:
+            print(f"Query: {query}")
+            for doc, metadata in zip(results['documents'][0], results['metadatas'][0]):
+                print(f"  Source: {metadata.get('source')} - {doc[:60]}...")
+        
+        # Cleanup
+        if os.path.exists(persist_dir):
+            shutil.rmtree(persist_dir)
+
+    if __name__ == "__main__":
+        main()
     ```
 
 ### **Hybrid Search: Combining BM25 and Semantic Search**
@@ -289,11 +607,177 @@ Hybrid search combines the precision of keyword matching (BM25) with the context
 ??? "**Hybrid Search: Combining BM25 and Semantic Search**"
 
     ```python
+    from typing import List, Dict, Tuple
+    import numpy as np
+    from collections import Counter
+    import math
+
     class HybridSearchRAG:
         """
         Hybrid RAG system combining BM25 (keyword-based) and semantic search
         for robust retrieval that captures both literal matches and conceptual relevance.
         """
+        
+        def __init__(self, embedding_model=None):
+            """
+            Initialize hybrid search system.
+            
+            Args:
+                embedding_model: Function that generates embeddings (for semantic search)
+            """
+            self.documents: List[str] = []
+            self.embeddings: List[np.ndarray] = []
+            self.embedding_model = embedding_model or self._simple_embedding
+            self.vocabulary: Dict[str, int] = {}  # Word to index mapping
+            self.vocab_built = False
+            
+            # BM25 parameters
+            self.k1 = 1.5  # Term frequency saturation parameter
+            self.b = 0.75  # Length normalization parameter
+            
+            # BM25 precomputed values
+            self.doc_freqs: Dict[str, int] = {}  # Document frequency for each term
+            self.idf: Dict[str, float] = {}  # Inverse document frequency
+            self.avg_doc_length = 0.0
+            self.doc_lengths: List[int] = []
+            self.term_doc_freqs: List[Dict[str, int]] = []  # Term frequencies per document
+        
+        def _build_vocabulary(self, texts: List[str]):
+            """Build vocabulary from all documents."""
+            all_words = set()
+            for text in texts:
+                words = text.lower().split()
+                all_words.update(words)
+            
+            # Create word to index mapping
+            self.vocabulary = {word: idx for idx, word in enumerate(sorted(all_words))}
+            self.vocab_built = True
+        
+        def _simple_embedding(self, text: str) -> np.ndarray:
+            """Simple embedding for demonstration."""
+            if not self.vocab_built:
+                words = text.lower().split()
+                unique_words = list(set(words))
+                embedding = np.zeros(len(unique_words))
+                for word in words:
+                    if word in unique_words:
+                        embedding[unique_words.index(word)] += 1
+                norm = np.linalg.norm(embedding)
+                return embedding / norm if norm > 0 else embedding
+            
+            # Use consistent vocabulary
+            embedding = np.zeros(len(self.vocabulary))
+            words = text.lower().split()
+            for word in words:
+                if word in self.vocabulary:
+                    embedding[self.vocabulary[word]] += 1
+            norm = np.linalg.norm(embedding)
+            return embedding / norm if norm > 0 else embedding
+        
+        def add_documents(self, texts: List[str]):
+            """
+            Add documents and precompute BM25 statistics.
+            
+            Args:
+                texts: List of document texts
+            """
+            self.documents = texts
+            
+            # Build vocabulary first
+            if not self.vocab_built:
+                self._build_vocabulary(texts)
+            
+            # Generate embeddings using consistent vocabulary
+            self.embeddings = [self.embedding_model(text) for text in texts]
+            
+            # Precompute BM25 statistics
+            self._precompute_bm25(texts)
+        
+        def _precompute_bm25(self, texts: List[str]):
+            """Precompute BM25 statistics for all documents."""
+            # Tokenize and compute term frequencies
+            self.term_doc_freqs = []
+            all_terms = set()
+            
+            for text in texts:
+                terms = text.lower().split()
+                term_freq = Counter(terms)
+                self.term_doc_freqs.append(term_freq)
+                self.doc_lengths.append(len(terms))
+                all_terms.update(terms)
+            
+            # Compute document frequencies
+            self.doc_freqs = {}
+            for term in all_terms:
+                self.doc_freqs[term] = sum(
+                    1 for term_freq in self.term_doc_freqs if term in term_freq
+                )
+            
+            # Compute IDF
+            N = len(texts)
+            self.idf = {}
+            for term, df in self.doc_freqs.items():
+                self.idf[term] = math.log((N - df + 0.5) / (df + 0.5) + 1.0)
+            
+            # Average document length
+            self.avg_doc_length = sum(self.doc_lengths) / len(self.doc_lengths) if self.doc_lengths else 0
+        
+        def bm25_search(self, query: str, top_k: int = 5) -> List[Tuple[int, float]]:
+            """
+            BM25 keyword-based search.
+            
+            Args:
+                query: Search query
+                top_k: Number of results to return
+                
+            Returns:
+                List of (document_index, bm25_score) tuples
+            """
+            query_terms = query.lower().split()
+            scores = []
+            
+            for i, doc_term_freq in enumerate(self.term_doc_freqs):
+                score = 0.0
+                doc_length = self.doc_lengths[i]
+                
+                for term in query_terms:
+                    if term in doc_term_freq:
+                        tf = doc_term_freq[term]
+                        idf = self.idf.get(term, 0.0)
+                        
+                        # BM25 formula
+                        numerator = idf * tf * (self.k1 + 1)
+                        denominator = tf + self.k1 * (1 - self.b + self.b * (doc_length / self.avg_doc_length))
+                        score += numerator / denominator
+                
+                scores.append((i, score))
+            
+            # Sort by score (descending) and return top_k
+            scores.sort(key=lambda x: x[1], reverse=True)
+            return scores[:top_k]
+        
+        def semantic_search(self, query: str, top_k: int = 5) -> List[Tuple[int, float]]:
+            """
+            Semantic vector search using embeddings.
+            
+            Args:
+                query: Search query
+                top_k: Number of results to return
+                
+            Returns:
+                List of (document_index, similarity_score) tuples
+            """
+            query_embedding = self.embedding_model(query)
+            scores = []
+            
+            for i, doc_embedding in enumerate(self.embeddings):
+                # Cosine similarity
+                similarity = np.dot(query_embedding, doc_embedding)
+                scores.append((i, similarity))
+            
+            # Sort by similarity (descending) and return top_k
+            scores.sort(key=lambda x: x[1], reverse=True)
+            return scores[:top_k]
         
         def hybrid_search(
             self,
@@ -310,15 +794,71 @@ Hybrid search combines the precision of keyword matching (BM25) with the context
                 top_k: Number of results to return
                 bm25_weight: Weight for BM25 scores (default 0.4)
                 semantic_weight: Weight for semantic scores (default 0.6)
+                
+            Returns:
+                List of (document_index, combined_score, metadata) tuples
             """
             # Get results from both methods
             bm25_results = self.bm25_search(query, top_k * 2)
             semantic_results = self.semantic_search(query, top_k * 2)
             
-            # Normalize and combine scores
-            # ... (implementation combines normalized BM25 and semantic scores)
+            # Normalize scores to [0, 1] range
+            bm25_scores = {idx: score for idx, score in bm25_results}
+            semantic_scores = {idx: score for idx, score in semantic_results}
             
-            return combined_results
+            # Find max scores for normalization
+            max_bm25 = max(bm25_scores.values()) if bm25_scores else 1.0
+            max_semantic = max(semantic_scores.values()) if semantic_scores else 1.0
+            
+            # Combine scores
+            combined_scores = {}
+            all_indices = set(bm25_scores.keys()) | set(semantic_scores.keys())
+            
+            for idx in all_indices:
+                # Normalize and combine
+                norm_bm25 = (bm25_scores.get(idx, 0.0) / max_bm25) if max_bm25 > 0 else 0.0
+                norm_semantic = (semantic_scores.get(idx, 0.0) / max_semantic) if max_semantic > 0 else 0.0
+                
+                combined = (bm25_weight * norm_bm25) + (semantic_weight * norm_semantic)
+                
+                combined_scores[idx] = {
+                    'combined': combined,
+                    'bm25': norm_bm25,
+                    'semantic': norm_semantic
+                }
+            
+            # Sort by combined score and return top_k
+            sorted_results = sorted(
+                combined_scores.items(),
+                key=lambda x: x[1]['combined'],
+                reverse=True
+            )[:top_k]
+            
+            return [(idx, scores['combined'], scores) for idx, scores in sorted_results]
+
+    def main():
+        """Hybrid search RAG example."""
+        # Initialize and add documents
+        rag = HybridSearchRAG()
+        documents = [
+            "RAG systems use embeddings to find semantically similar documents.",
+            "BM25 is a keyword-based ranking algorithm used in information retrieval.",
+            "Hybrid search combines keyword matching with semantic understanding.",
+        ]
+        rag.add_documents(documents)
+        
+        # Test hybrid search
+        query = "semantic search for documents"
+        hybrid_results = rag.hybrid_search(query, top_k=2, bm25_weight=0.4, semantic_weight=0.6)
+        
+        print(f"Query: {query}")
+        for idx, combined_score, breakdown in hybrid_results:
+            print(f"  Combined: {combined_score:.3f} "
+                  f"(BM25: {breakdown['bm25']:.3f}, Semantic: {breakdown['semantic']:.3f})")
+            print(f"  {rag.documents[idx][:60]}...")
+
+    if __name__ == "__main__":
+        main()
     ```
 
 ---
@@ -373,6 +913,7 @@ The following example demonstrates an Agentic RAG system that actively evaluates
     from typing import List, Dict, Tuple, Optional
     from dataclasses import dataclass
     from datetime import datetime
+    import numpy as np
 
     @dataclass
     class RetrievedDocument:
@@ -389,25 +930,42 @@ The following example demonstrates an Agentic RAG system that actively evaluates
         retrieved information before passing to LLM.
         """
         
+        def __init__(self, retrieval_system, llm_agent=None):
+            """
+            Initialize Agentic RAG system.
+            
+            Args:
+                retrieval_system: Base RAG system for initial retrieval
+                llm_agent: Optional LLM agent for reasoning (simulated here)
+            """
+            self.retrieval_system = retrieval_system
+            self.llm_agent = llm_agent
+        
         def retrieve_and_validate(
             self,
             query: str,
             top_k: int = 5
         ) -> List[RetrievedDocument]:
-            """Retrieve documents and validate their quality and relevance."""
+            """
+            Retrieve documents and validate their quality and relevance.
+            """
+            # Initial retrieval
             raw_results = self.retrieval_system.retrieve(query, top_k * 2)
             
             # Agentic validation: filter and rank
             validated = []
             for doc, score in raw_results:
+                retrieved_doc = RetrievedDocument(
+                    content=doc.content,
+                    source=doc.metadata.get('source', 'unknown'),
+                    timestamp=doc.metadata.get('timestamp'),
+                    confidence=score,
+                    metadata=doc.metadata
+                )
+                
+                # Validate relevance threshold
                 if score > 0.3:  # Minimum relevance threshold
-                    validated.append(RetrievedDocument(
-                        content=doc.content,
-                        source=doc.metadata.get('source', 'unknown'),
-                        timestamp=doc.metadata.get('timestamp'),
-                        confidence=score,
-                        metadata=doc.metadata
-                    ))
+                    validated.append(retrieved_doc)
             
             return validated[:top_k]
         
@@ -420,6 +978,14 @@ The following example demonstrates an Agentic RAG system that actively evaluates
             Identify and resolve conflicts between retrieved documents.
             Prioritizes more authoritative or recent sources.
             """
+            if len(documents) <= 1:
+                return documents
+            
+            # Group by topic/key concept (simplified - in production use NLP)
+            # For demo, we'll prioritize by timestamp and source authority
+            prioritized = []
+            seen_content = set()
+            
             # Sort by timestamp (newest first) and source authority
             sorted_docs = sorted(
                 documents,
@@ -430,8 +996,87 @@ The following example demonstrates an Agentic RAG system that actively evaluates
                 reverse=True
             )
             
-            # Deduplicate and return prioritized documents
-            return self._deduplicate(sorted_docs)
+            for doc in sorted_docs:
+                # Simple deduplication: skip near-duplicates
+                content_hash = hash(doc.content[:100])
+                if content_hash not in seen_content:
+                    prioritized.append(doc)
+                    seen_content.add(content_hash)
+            
+            return prioritized
+        
+        def _source_authority(self, source: str) -> int:
+            """Rank source authority (higher = more authoritative)."""
+            authority_map = {
+                'official_policy': 10,
+                'financial_report': 9,
+                'handbook': 8,
+                'blog_post': 3,
+                'wiki': 5,
+            }
+            for key, value in authority_map.items():
+                if key in source.lower():
+                    return value
+            return 5  # Default
+        
+        def _parse_timestamp(self, timestamp: str) -> datetime:
+            """Parse timestamp string to datetime."""
+            try:
+                return datetime.fromisoformat(timestamp)
+            except:
+                return datetime.min
+        
+        def identify_knowledge_gaps(
+            self,
+            documents: List[RetrievedDocument],
+            query: str
+        ) -> Tuple[List[RetrievedDocument], bool]:
+            """
+            Check if retrieved documents fully answer the query.
+            Returns (documents, has_gap).
+            """
+            # Simple heuristic: if no documents or all low confidence
+            if not documents:
+                return documents, True
+            
+            avg_confidence = sum(d.confidence for d in documents) / len(documents)
+            has_gap = avg_confidence < 0.5
+            
+            return documents, has_gap
+        
+        def multi_step_retrieval(
+            self,
+            query: str
+        ) -> List[RetrievedDocument]:
+            """
+            Decompose complex queries into sub-queries and retrieve for each.
+            """
+            # Simple decomposition (in production, use LLM to decompose)
+            all_documents = []
+            
+            # In production, decompose query into sub-queries
+            sub_queries = self._decompose_query(query)
+            
+            for sub_query in sub_queries:
+                results = self.retrieve_and_validate(sub_query, top_k=3)
+                all_documents.extend(results)
+            
+            # Deduplicate and prioritize
+            return self.reconcile_conflicts(all_documents, query)
+        
+        def _decompose_query(self, query: str) -> List[str]:
+            """Decompose complex query into sub-queries."""
+            # Simplified: in production, use LLM to intelligently decompose
+            query_lower = query.lower()
+            
+            if "compare" in query_lower:
+                return [query]  # Placeholder
+            elif "and" in query_lower:
+                # Split on "and" for multi-part queries
+                parts = query_lower.split(" and ")
+                return [q.strip() for q in parts if q.strip()]
+            else:
+                return [query]
         
         def query_with_agentic_reasoning(
             self,
@@ -439,30 +1084,160 @@ The following example demonstrates an Agentic RAG system that actively evaluates
             use_external_tools: bool = False
         ) -> str:
             """
-            Complete Agentic RAG pipeline with reasoning layer:
-            1. Multi-step retrieval if needed
-            2. Reconcile conflicts
-            3. Check for knowledge gaps
-            4. Use external tools if gap detected
-            5. Format context with source validation
+            Complete Agentic RAG pipeline with reasoning layer.
             """
-            # Retrieve and validate
-            documents = self.retrieve_and_validate(query, top_k=5)
+            # Step 1: Multi-step retrieval if needed
+            if self._is_complex_query(query):
+                documents = self.multi_step_retrieval(query)
+            else:
+                documents = self.retrieve_and_validate(query, top_k=5)
             
-            # Reconcile conflicts
+            # Step 2: Reconcile conflicts
             documents = self.reconcile_conflicts(documents, query)
             
-            # Check for knowledge gaps
+            # Step 3: Check for knowledge gaps
             documents, has_gap = self.identify_knowledge_gaps(documents, query)
             
-            # Use external tools if gap detected
+            # Step 4: Use external tools if gap detected
             if has_gap and use_external_tools:
+                # In production: call web search API, database, etc.
                 external_docs = self._fetch_external_info(query)
                 documents.extend(external_docs)
                 documents = self.reconcile_conflicts(documents, query)
             
-            # Format context with source validation
-            return self._format_agentic_context(documents, query)
+            # Step 5: Format context with source validation
+            context = self._format_agentic_context(documents, query)
+            
+            return context
+        
+        def _is_complex_query(self, query: str) -> bool:
+            """Heuristic to detect complex queries requiring decomposition."""
+            complex_indicators = ["compare", "versus", "difference between", "and", "or"]
+            return any(indicator in query.lower() for indicator in complex_indicators)
+        
+        def _fetch_external_info(self, query: str) -> List[RetrievedDocument]:
+            """Fetch information from external sources (web, APIs, etc.)."""
+            # Placeholder: in production, call web search API, database, etc.
+            return []
+        
+        def _format_agentic_context(
+            self,
+            documents: List[RetrievedDocument],
+            query: str
+        ) -> str:
+            """Format context with source citations and validation notes."""
+            if not documents:
+                return f"No relevant information found for: {query}"
+            
+            context_parts = []
+            for i, doc in enumerate(documents, 1):
+                source_note = f"[Source {i}: {doc.source}]"
+                if doc.timestamp:
+                    source_note += f" (Updated: {doc.timestamp})"
+                source_note += f" (Confidence: {doc.confidence:.3f})"
+                
+                context_parts.append(f"{source_note}\n{doc.content}\n")
+            
+            context = "\n".join(context_parts)
+            
+            return f"""Based on the following validated and reconciled context, answer the question.
+
+    Validated Context (sources prioritized by authority and recency):
+    {context}
+
+    Question: {query}
+
+    Answer (cite specific sources):"""
+
+    # Simple retrieval system for Agentic RAG demo
+    class SimpleRetrievalSystem:
+        """Simple retrieval system for Agentic RAG demo."""
+        def __init__(self):
+            self.documents = []
+            self.embeddings = []
+            self.vocabulary = {}
+            self.vocab_built = False
+        
+        def _build_vocabulary(self, texts):
+            all_words = set()
+            for text in texts:
+                words = text.lower().split()
+                all_words.update(words)
+            self.vocabulary = {word: idx for idx, word in enumerate(sorted(all_words))}
+            self.vocab_built = True
+        
+        def _simple_embedding(self, text):
+            if not self.vocab_built:
+                words = text.lower().split()
+                unique_words = list(set(words))
+                embedding = np.zeros(len(unique_words))
+                for word in words:
+                    if word in unique_words:
+                        embedding[unique_words.index(word)] += 1
+                norm = np.linalg.norm(embedding)
+                return embedding / norm if norm > 0 else embedding
+            
+            embedding = np.zeros(len(self.vocabulary))
+            words = text.lower().split()
+            for word in words:
+                if word in self.vocabulary:
+                    embedding[self.vocabulary[word]] += 1
+            norm = np.linalg.norm(embedding)
+            return embedding / norm if norm > 0 else embedding
+        
+        def add_documents(self, texts, metadatas=None):
+            if metadatas is None:
+                metadatas = [{}] * len(texts)
+            
+            if not self.vocab_built:
+                self._build_vocabulary(texts)
+            
+            for text, meta in zip(texts, metadatas):
+                embedding = self._simple_embedding(text)
+                self.documents.append({
+                    'content': text,
+                    'metadata': meta,
+                    'embedding': embedding
+                })
+        
+        def retrieve(self, query, top_k):
+            query_embedding = self._simple_embedding(query)
+            similarities = []
+            for doc in self.documents:
+                similarity = np.dot(query_embedding, doc['embedding'])
+                similarities.append((
+                    type('Doc', (), {'content': doc['content'], 'metadata': doc['metadata']})(),
+                    similarity
+                ))
+            similarities.sort(key=lambda x: x[1], reverse=True)
+            return similarities[:top_k]
+
+    def main():
+        """Agentic RAG example."""
+        # Initialize base retrieval system
+        base_retrieval = SimpleRetrievalSystem()
+        documents = [
+            "Our remote work policy from 2020 allows employees to work from home 2 days per week.",
+            "The official remote work policy updated in 2025 allows employees to work from home 3 days per week.",
+        ]
+        metadatas = [
+            {"source": "blog_2020", "timestamp": "2020-01-01", "type": "blog"},
+            {"source": "official_policy_2025", "timestamp": "2025-01-15", "type": "policy"},
+        ]
+        base_retrieval.add_documents(documents, metadatas)
+        
+        # Initialize Agentic RAG
+        agentic_rag = AgenticRAGSystem(base_retrieval)
+        
+        # Query with agentic reasoning
+        query = "What is our company's remote work policy?"
+        context = agentic_rag.query_with_agentic_reasoning(query)
+        
+        print(f"Query: {query}")
+        print(f"Context: {context[:200]}...")
+
+    if __name__ == "__main__":
+        main()
     ```
 
 ---

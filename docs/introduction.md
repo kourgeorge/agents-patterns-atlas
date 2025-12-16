@@ -16,13 +16,10 @@ By grounding these patterns in cognitive neuroscience and extracting them from r
 The journey from simple language models to sophisticated agentic systems has been rapid and transformative. 
 In just a few years, we've witnessed a dramatic evolution:
 
-**Phase 1: Basic LLMs** - Simple prompt-response interactions with no external capabilities.
-
-**Phase 2: RAG (Retrieval-Augmented Generation)** - Enhanced reliability by grounding models on factual information from knowledge bases.
-
-**Phase 3: Individual AI Agents** - Agents capable of using various tools, planning, and executing multi-step tasks.
-
-**Phase 4: Agentic AI** - Teams of specialized agents working in concert to achieve complex goals, marking a significant leap in AI's collaborative power.
+- **Phase 1: Basic LLMs** - Simple prompt-response interactions with no external capabilities.
+- **Phase 2: RAG (Retrieval-Augmented Generation)** - Enhanced reliability by grounding models on factual information from knowledge bases.
+- **Phase 3: Individual AI Agents** - Agents capable of using various tools, planning, and executing multi-step tasks.
+- **Phase 4: Agentic AI** - Teams of specialized agents working in concert to achieve complex goals, marking a significant leap in AI's collaborative power.
 
 This evolution reflects a fundamental shift from static automation to dynamic, intelligent systems that can adapt, learn, and collaborate. The market reflects this transformation: AI agent startups raised over $2 billion by the end of 2024, with the market valued at $5.2 billion and projected to reach nearly $200 billion by 2034. 
 According to recent studies, a majority of large IT companies are actively using agents, with a fifth of them starting within just the past year.
