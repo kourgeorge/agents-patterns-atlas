@@ -8,7 +8,7 @@ Multi-agent architectures address these limitations by enabling specialized LLM 
 This chapter provides an overview of modern LLM-based multi-agent architectures, exploring when and why to use multiple agents, the benefits they provide, and the organizational patterns that enable effective collaboration. 
 For detailed implementation patterns, see the specific pattern modules referenced throughout this chapter.
 
-> "Agentic systems represent a new paradigm that breaks traditional barriers. More than tools, agents act as collaborators, assisting humans in dynamic environments and automating decision-making." - Aatrbin
+> **"Agentic systems represent a new paradigm that breaks traditional barriers. More than tools, agents act as collaborators, assisting humans in dynamic environments and automating decision-making."** - Aatrbin
 
 ## The Case for Multi-Agent Systems
 
