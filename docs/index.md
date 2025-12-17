@@ -58,6 +58,10 @@ The book is organized into **7 parts** containing **32 modules**, building conce
 
 The book parts and patterns are organized to build concepts progressively, but you can also use this book as a reference, jumping to patterns that address specific challenges you face in your agent development projects.
 
+Throughout this book, you will encounter insights and sayings from pioneers who built agents early in this new era—researchers and engineers from organizations like Anthropic, LangChain/LangGraph, Manus, and others who shaped the field. 
+These perspectives are included not as decoration, but because they inspire deeper understanding and allow us to see aspects of agentic design from illuminating angles. 
+These voices help us understand both the technical challenges and the deeper questions about intelligence that we are collectively exploring.
+
 ---
 
 ## Contact and Feedback
