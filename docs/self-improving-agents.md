@@ -10,7 +10,7 @@ Just as biological systems evolve through natural selection, self-improving agen
 Agents create goals, simulate tasks, evaluate themselves and others, learn from failure, and evolve into more capable versions. 
 Through recursive self-improvement, they develop deeper alignment with their objectives—continuously refining the tools, strategies, and collaborators needed to achieve them.
 
-> **"The next evolution in agentic systems: agents that can improve themselves."** — The Author
+> **"The next evolution in agentic systems: agents that can improve themselves."**
 
 ## Pattern Overview
 

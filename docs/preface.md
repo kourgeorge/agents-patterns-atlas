@@ -1,6 +1,6 @@
 # Preface
 
-> **Building intelligent agents requires more than technical skills; it requires a deeper understanding of how intelligence works**. --The Author
+> **Building intelligent agents requires more than technical skills; it requires a deeper understanding of how intelligence works**.
 
 We stand at an inflection point that demands a fundamental shift in how we think about software.
 The last few years have witnessed an unprecedented transformation—from simple, reactive programs to sophisticated, autonomous entities capable of understanding context, making decisions, and interacting dynamically with their environment and other systems. 
@@ -28,6 +28,9 @@ It presents essential design patterns organized into comprehensive parts, coveri
 Each pattern is battle-tested, clearly explained, and accompanied by practical code examples you can run, modify, and learn from.
 
 The journey ahead explores how to build systems that can reason, plan, act, and collaborate. These are the building blocks of the next generation of AI applications. Let's begin.
+
+> **Building intelligent agents requires more than technical skills; it requires a deeper understanding of how intelligence works**.
+
 
 **George Kour, Ph.D.**
 

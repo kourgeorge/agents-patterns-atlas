@@ -7,8 +7,6 @@ However, complex, unpredictable tasks often require specialized agents that don'
 The Dynamic Agent Spawning pattern addresses this by enabling orchestrator agents to create specialized worker agents on-demand, tailored to specific subtasks as they emerge during problem-solving.
 Just as a project manager might hire specialized contractors for specific project phases rather than maintaining a permanent team, dynamic agent spawning allows orchestrators to create exactly the agents needed for each task, optimizing resource usage and enabling adaptive problem-solving.
 
-> "The natural next chapter in the evolution of real-world agentic systems is the emergence of agents that can design and spawn other agents in practice." — Emergence.ai
-
 ## Pattern Overview
 
 ### Problem
@@ -18,6 +16,8 @@ Traditional multi-agent systems rely on a fixed set of predefined agents, each w
 ### Solution
 
 Dynamic Agent Spawning enables an orchestrator agent to dynamically create specialized worker agents at runtime to handle specific subtasks, rather than selecting from a predefined set of agents. The orchestrator analyzes the task, determines what specialized capabilities are needed, and generates new agents (often as code or prompt configurations) tailored to each subtask. This approach enables runtime adaptation (creating agents as needed rather than maintaining a fixed team), task-specific optimization (agents tailored precisely to each subtask), resource efficiency (agents created and released dynamically), and emergent problem-solving (system structure evolves with the problem). The pattern is particularly valuable for complex tasks where the required agent roles and capabilities cannot be predetermined, when task decomposition reveals unexpected specialization needs, or when you want maximum flexibility to adapt agent composition to evolving requirements.
+
+> "Agents should build agents and dynamically self-assemble to make multi-agent systems, so humans no longer have to." — Emergence.ai
 
 ### Key Concepts
 
