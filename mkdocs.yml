@@ -83,6 +83,7 @@ nav:
     - Reasoning Techniques: reasoning-techniques.md
     - Planning Strategies: planning-strategies.md
     - "Pattern: Task Decomposition": task-decomposition.md
+    - "Pattern: Extreme Decomposition": extreme-decomposition.md
     - "Pattern: Recitation": recitation.md
     - "Pattern: Prioritization": prioritization.md
 - Context and memory:
@@ -100,8 +101,10 @@ nav:
     - "Pattern: Planner-Checker": planner-checker.md
     - "Pattern: Multi-Agent Debate": multi-agent-debate.md
     - "Pattern: Swarm/Consensus Architecture": swarm-consensus.md
+    - "Pattern: Voting-Based Error Correction": voting-error-correction.md
 - Exception Handling and Human Interaction:
     - "Pattern: Exception Handling and Recovery": exception-handling.md
+    - "Pattern: Red-Flagging": red-flagging.md
     - "Pattern: Human-in-the-Loop": human-in-the-loop.md
 - Learning and Adaptation:
     - Learning and Adaptation: learning-adaptation.md

@@ -73,242 +73,195 @@ pip install langchain langchain-openai
 pip install google-adk
 ```
 
-### Basic Example: Planning Tool (Conceptual)
-
 The deepagents package incorporates a built-in Write to-dos tool, which is a key component of its deep agent architecture. 
 Although conceptually acting as a planning tool, it is often a no-op function, meaning its primary purpose is manipulating context and attention rather than performing an external action. 
 Its detailed description provided to the LLM guides the agent on how to manage tasks, prioritize them, and update their status in real time (e.g., pending, in progress, completed).
 
-```python
-# Conceptual Tool Implementation (based on deepagents)
+??? "Basic Example: Planning Tool (Conceptual)"
 
-def write_to_dos_tool(new_todos: str) -> str:
+    ```python
+    # Conceptual Tool Implementation (based on deepagents)
+
+    def write_to_dos_tool(new_todos: str) -> str:
+        """
+        Updates the agent's internal state with a new to-do list, which is 
+        then included in the context for the next iteration (Recitation).
+        
+        Args:
+            new_todos: The full text of the updated to-do list.
+        """
+        # In a real system, this updates the agent's internal state dictionary 
+        # (e.g., state['to_dos'] = new_todos) and returns an Observation.
+        
+        # The agent reads the description and knows to output an updated list 
+        # via this tool call when its plan changes.
+        
+        print(f"DEBUG: Reciting updated task list to context:\n{new_todos}")
+        return "Task list updated in memory/state."
+
+    # The Recitation pattern is realized when the agent framework 
+    # ensures the content of 'new_todos' is included in the prompt
+    # for every subsequent LLM call.
+    ```
+
+??? "Advanced Example: Filesystem-Based Recitation"
+
+    ```python
+    from typing import Dict, List
+    from pathlib import Path
+    import json
+
+    class RecitationAgent:
+        def __init__(self, todo_file: str = "todo.md"):
+            self.todo_file = Path(todo_file)
+            self.todo_file.touch(exist_ok=True)
+            self.context_history = []
+        
+        def read_todo(self) -> str:
+            """Read the persistent task list from filesystem."""
+            try:
+                return self.todo_file.read_text()
+            except FileNotFoundError:
+                return "# Task List\n\nNo active tasks."
+        
+        def update_todo(self, updated_todos: str) -> str:
+            """Update the task list and return confirmation."""
+            self.todo_file.write_text(updated_todos)
+            return f"Task list updated. Current plan:\n\n{updated_todos}"
+        
+        def build_context(self, user_message: str) -> List[Dict[str, str]]:
+            """Build context with recitation pattern."""
+            # Read the current plan
+            current_plan = self.read_todo()
+            
+            # Build context: history + new message + recited plan
+            messages = self.context_history.copy()
+            messages.append({"role": "user", "content": user_message})
+            
+            # Recitation: Append plan to end of context
+            messages.append({
+                "role": "system",
+                "content": f"## Current Plan (Recited)\n\n{current_plan}\n\nRemember: This plan represents your high-level objectives. Update it as you make progress."
+            })
+            
+            return messages
+        
+        def process_step(self, user_message: str, llm_response: str):
+            """Process a step and update context history."""
+            # Add to history (append-only for KV-Cache optimization)
+            self.context_history.append({"role": "user", "content": user_message})
+            self.context_history.append({"role": "assistant", "content": llm_response})
+            
+            # Check if response contains updated todos
+            if "write_to_dos" in llm_response or "update_todo" in llm_response.lower():
+                # Extract and update todos (simplified - in production, use structured extraction)
+                # This would typically be handled by a tool call parser
+                pass
+
+    # Usage
+    agent = RecitationAgent("agent_todo.md")
+
+    # Initial planning
+    initial_plan = """# Research Project Plan
+
+    - [ ] Gather sources on topic X
+    - [ ] Analyze key findings
+    - [ ] Draft report sections
+    - [ ] Review and refine
     """
-    Updates the agent's internal state with a new to-do list, which is 
-    then included in the context for the next iteration (Recitation).
-    
-    Args:
-        new_todos: The full text of the updated to-do list.
-    """
-    # In a real system, this updates the agent's internal state dictionary 
-    # (e.g., state['to_dos'] = new_todos) and returns an Observation.
-    
-    # The agent reads the description and knows to output an updated list 
-    # via this tool call when its plan changes.
-    
-    print(f"DEBUG: Reciting updated task list to context:\n{new_todos}")
-    return "Task list updated in memory/state."
+    agent.update_todo(initial_plan)
 
-# The Recitation pattern is realized when the agent framework 
-# ensures the content of 'new_todos' is included in the prompt
-# for every subsequent LLM call.
-```
-
-### Advanced Example: Filesystem-Based Recitation
-
-```python
-from typing import Dict, List
-from pathlib import Path
-import json
-
-class RecitationAgent:
-    def __init__(self, todo_file: str = "todo.md"):
-        self.todo_file = Path(todo_file)
-        self.todo_file.touch(exist_ok=True)
-        self.context_history = []
-    
-    def read_todo(self) -> str:
-        """Read the persistent task list from filesystem."""
-        try:
-            return self.todo_file.read_text()
-        except FileNotFoundError:
-            return "# Task List\n\nNo active tasks."
-    
-    def update_todo(self, updated_todos: str) -> str:
-        """Update the task list and return confirmation."""
-        self.todo_file.write_text(updated_todos)
-        return f"Task list updated. Current plan:\n\n{updated_todos}"
-    
-    def build_context(self, user_message: str) -> List[Dict[str, str]]:
-        """Build context with recitation pattern."""
-        # Read the current plan
-        current_plan = self.read_todo()
-        
-        # Build context: history + new message + recited plan
-        messages = self.context_history.copy()
-        messages.append({"role": "user", "content": user_message})
-        
-        # Recitation: Append plan to end of context
-        messages.append({
-            "role": "system",
-            "content": f"## Current Plan (Recited)\n\n{current_plan}\n\nRemember: This plan represents your high-level objectives. Update it as you make progress."
-        })
-        
-        return messages
-    
-    def process_step(self, user_message: str, llm_response: str):
-        """Process a step and update context history."""
-        # Add to history (append-only for KV-Cache optimization)
-        self.context_history.append({"role": "user", "content": user_message})
-        self.context_history.append({"role": "assistant", "content": llm_response})
-        
-        # Check if response contains updated todos
-        if "write_to_dos" in llm_response or "update_todo" in llm_response.lower():
-            # Extract and update todos (simplified - in production, use structured extraction)
-            # This would typically be handled by a tool call parser
-            pass
-
-# Usage
-agent = RecitationAgent("agent_todo.md")
-
-# Initial planning
-initial_plan = """# Research Project Plan
-
-- [ ] Gather sources on topic X
-- [ ] Analyze key findings
-- [ ] Draft report sections
-- [ ] Review and refine
-"""
-agent.update_todo(initial_plan)
-
-# Each step recites the plan
-context = agent.build_context("I've gathered 5 sources. What's next?")
-# The plan is automatically appended to context, keeping goals in focus
-```
+    # Each step recites the plan
+    context = agent.build_context("I've gathered 5 sources. What's next?")
+    # The plan is automatically appended to context, keeping goals in focus
+    ```
 
 **Explanation:**
 This example demonstrates the Recitation pattern with filesystem persistence. The agent maintains a todo.md file that is read at each step and appended to the context. This ensures the plan remains in the model's recent attention span, preventing goal drift during long-horizon tasks.
 
 ### Framework-Specific Examples
 
-#### LangGraph: Recitation Node
-```python
-from langgraph.graph import StateGraph, END
-from typing import TypedDict, Annotated
-import operator
+??? "LangGraph: Recitation Node"
 
-class AgentState(TypedDict):
-    messages: Annotated[list, operator.add]
-    todo_list: str
-    scratchpad: str
+    ```python
+    from langgraph.graph import StateGraph, END
+    from typing import TypedDict, Annotated
+    import operator
 
-def recite_plan_node(state: AgentState) -> AgentState:
-    """Node that recites the plan into context."""
-    # Read current plan from state
-    plan = state.get("todo_list", "# No active plan")
-    
-    # Append plan to messages (recitation)
-    state["messages"].append({
-        "role": "system",
-        "content": f"## Current Plan\n\n{plan}\n\nKeep this plan in mind as you work."
-    })
-    
-    return state
+    class AgentState(TypedDict):
+        messages: Annotated[list, operator.add]
+        todo_list: str
+        scratchpad: str
 
-def reasoning_node(state: AgentState) -> AgentState:
-    """Main reasoning node that processes tasks."""
-    # LLM processes with plan in recent context
-    # ... LLM call with state["messages"] ...
-    return state
+    def recite_plan_node(state: AgentState) -> AgentState:
+        """Node that recites the plan into context."""
+        # Read current plan from state
+        plan = state.get("todo_list", "# No active plan")
+        
+        # Append plan to messages (recitation)
+        state["messages"].append({
+            "role": "system",
+            "content": f"## Current Plan\n\n{plan}\n\nKeep this plan in mind as you work."
+        })
+        
+        return state
 
-# Build graph with recitation
-workflow = StateGraph(AgentState)
-workflow.add_node("recite_plan", recite_plan_node)
-workflow.add_node("reasoning", reasoning_node)
-workflow.add_edge("recite_plan", "reasoning")
-workflow.add_edge("reasoning", "recite_plan")  # Loop back to re-recite
-workflow.set_entry_point("recite_plan")
-```
+    def reasoning_node(state: AgentState) -> AgentState:
+        """Main reasoning node that processes tasks."""
+        # LLM processes with plan in recent context
+        # ... LLM call with state["messages"] ...
+        return state
 
-#### Google ADK: State-Based Recitation
-```python
-from google.adk.agents import LlmAgent
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
+    # Build graph with recitation
+    workflow = StateGraph(AgentState)
+    workflow.add_node("recite_plan", recite_plan_node)
+    workflow.add_node("reasoning", reasoning_node)
+    workflow.add_edge("recite_plan", "reasoning")
+    workflow.add_edge("reasoning", "recite_plan")  # Loop back to re-recite
+    workflow.set_entry_point("recite_plan")
+    ```
 
-def get_plan_from_state(state: dict) -> str:
-    """Retrieve plan from agent state."""
-    return state.get("todo_list", "# No active plan")
+??? "Google ADK: State-Based Recitation"
 
-# Agent with recitation in instruction
-agent = LlmAgent(
-    name="RecitationAgent",
-    model="gemini-2.0-flash",
-    instruction="""You are a task-oriented agent. 
-    
-    At the start of each turn, you will see your current plan (todo list) 
-    recited in the context. This plan represents your high-level objectives.
-    
-    As you complete tasks:
-    1. Update the plan by marking tasks as complete
-    2. Add new subtasks as needed
-    3. The updated plan will be recited in the next turn
-    
-    Always keep the plan updated and use it to guide your actions.""",
-    output_key="last_response"
-)
+    ```python
+    from google.adk.agents import LlmAgent
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
 
-# Runner manages state and can inject plan into context
-runner = Runner(
-    agent=agent,
-    app_name="recitation_app",
-    session_service=InMemorySessionService()
-)
+    def get_plan_from_state(state: dict) -> str:
+        """Retrieve plan from agent state."""
+        return state.get("todo_list", "# No active plan")
 
-# Custom context builder that recites plan
-def build_context_with_recitation(session_state: dict, user_input: str):
-    plan = session_state.get("todo_list", "# No active plan")
-    return f"{user_input}\n\n## Current Plan (Recited)\n\n{plan}"
-```
+    # Agent with recitation in instruction
+    agent = LlmAgent(
+        name="RecitationAgent",
+        model="gemini-2.0-flash",
+        instruction="""You are a task-oriented agent. 
+        
+        At the start of each turn, you will see your current plan (todo list) 
+        recited in the context. This plan represents your high-level objectives.
+        
+        As you complete tasks:
+        1. Update the plan by marking tasks as complete
+        2. Add new subtasks as needed
+        3. The updated plan will be recited in the next turn
+        
+        Always keep the plan updated and use it to guide your actions.""",
+        output_key="last_response"
+    )
 
-#### Manus AI Pattern: Filesystem Todo.md
-```python
-from pathlib import Path
-import re
+    # Runner manages state and can inject plan into context
+    runner = Runner(
+        agent=agent,
+        app_name="recitation_app",
+        session_service=InMemorySessionService()
+    )
 
-class ManusStyleRecitation:
-    def __init__(self, workspace_dir: str = "./workspace"):
-        self.workspace = Path(workspace_dir)
-        self.todo_file = self.workspace / "todo.md"
-        self.workspace.mkdir(exist_ok=True)
-    
-    def ensure_todo_exists(self):
-        """Ensure todo.md exists, create if not."""
-        if not self.todo_file.exists():
-            self.todo_file.write_text("# Task List\n\n## Active Tasks\n\n- [ ] Initial task\n")
-    
-    def read_and_recite(self) -> str:
-        """Read todo.md and format for recitation."""
-        self.ensure_todo_exists()
-        content = self.todo_file.read_text()
-        return f"## Current Task Plan (from todo.md)\n\n{content}\n\n---\n\nThis plan is maintained in todo.md. Update it as you progress."
-    
-    def update_todo(self, new_content: str):
-        """Update todo.md with new plan."""
-        self.todo_file.write_text(new_content)
-        return f"Updated todo.md. Plan now contains {len(new_content.split(chr(10)))} lines."
-    
-    def extract_todo_update(self, agent_response: str) -> str:
-        """Extract todo update from agent response (simplified)."""
-        # In production, use structured tool calls
-        # This is a simplified regex-based extraction
-        pattern = r"```markdown\s*(#.*?)\s*```"
-        match = re.search(pattern, agent_response, re.DOTALL)
-        if match:
-            return match.group(1)
-        return None
-
-# Usage
-recitation = ManusStyleRecitation()
-
-# At each agent step:
-current_plan = recitation.read_and_recite()
-# Append current_plan to end of context before LLM call
-
-# After LLM responds:
-# Check if response contains todo update, then:
-# recitation.update_todo(updated_plan)
-```
+    # Custom context builder that recites plan
+    def build_context_with_recitation(session_state: dict, user_input: str):
+        plan = session_state.get("todo_list", "# No active plan")
+        return f"{user_input}\n\n## Current Plan (Recited)\n\n{plan}"
+    ```
 
 ## Alternative Approach: Planner Sub-Agent with Structured Output
 
@@ -360,46 +313,46 @@ This follows the **Agent-as-Tool** pattern, where planning becomes a determinist
 - Planning logic should be modular and swappable
 - You're following the Agent-as-Tool pattern for consistency
 
-**Implementation Example:**
+??? "Implementation Example:"
 
-```python
-from typing import List, Dict, Any
-from pydantic import BaseModel
+    ```python
+    from typing import List, Dict, Any
+    from pydantic import BaseModel
 
-class Task(BaseModel):
-    id: str
-    description: str
-    status: str  # "pending", "in_progress", "completed"
-    dependencies: List[str] = []
+    class Task(BaseModel):
+        id: str
+        description: str
+        status: str  # "pending", "in_progress", "completed"
+        dependencies: List[str] = []
 
-class Plan(BaseModel):
-    goal: str
-    tasks: List[Task]
-    current_task_id: str
-    progress: float  # 0.0 to 1.0
+    class Plan(BaseModel):
+        goal: str
+        tasks: List[Task]
+        current_task_id: str
+        progress: float  # 0.0 to 1.0
 
-def call_planner(goal: str, current_state: Dict[str, Any] = None) -> Plan:
-    """
-    Planner sub-agent that creates a structured plan.
-    Returns a Plan object that can be injected into context when needed.
-    """
-    # Planner agent analyzes goal and current state
-    # Returns structured Plan object
-    return Plan(
-        goal=goal,
-        tasks=[
-            Task(id="1", description="Research topic X", status="pending"),
-            Task(id="2", description="Draft outline", status="pending", dependencies=["1"]),
-            Task(id="3", description="Write sections", status="pending", dependencies=["2"]),
-        ],
-        current_task_id="1",
-        progress=0.0
-    )
+    def call_planner(goal: str, current_state: Dict[str, Any] = None) -> Plan:
+        """
+        Planner sub-agent that creates a structured plan.
+        Returns a Plan object that can be injected into context when needed.
+        """
+        # Planner agent analyzes goal and current state
+        # Returns structured Plan object
+        return Plan(
+            goal=goal,
+            tasks=[
+                Task(id="1", description="Research topic X", status="pending"),
+                Task(id="2", description="Draft outline", status="pending", dependencies=["1"]),
+                Task(id="3", description="Write sections", status="pending", dependencies=["2"]),
+            ],
+            current_task_id="1",
+            progress=0.0
+        )
 
-# Main agent uses planner on-demand
-plan = call_planner("Write research paper on AI agents")
-# Plan is injected into context only when needed, not every turn
-```
+    # Main agent uses planner on-demand
+    plan = call_planner("Write research paper on AI agents")
+    # Plan is injected into context only when needed, not every turn
+    ```
 
 **Key Insight:**
 

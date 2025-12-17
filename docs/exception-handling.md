@@ -131,6 +131,139 @@ Error Detected → Classify Error → Select Strategy → Execute Recovery
 - **Structured Output Retry:** Automatic retry for validation failures
 - **Error Routing:** Route errors to appropriate nodes (plan controller, human-in-the-loop, error handler)
 
+## Step-Level Error Correction
+
+For very long task sequences (thousands or millions of steps), traditional reactive error handling is insufficient. Errors compound exponentially: a single error in step 100 can derail a million-step task. **Step-Level Error Correction** applies error correction at every step, preventing errors from propagating.
+
+### The Problem with Reactive Error Handling
+
+Traditional exception handling is reactive—it detects errors after they occur and attempts to recover. For long task sequences:
+- **Error Compounding:** Errors in early steps propagate and compound
+- **Late Detection:** Errors detected after many steps may be too late to recover
+- **Exponential Failure:** With a 1% per-step error rate, a million-step task has essentially zero probability of success
+
+### Step-Level Correction Approach
+
+Step-Level Error Correction prevents errors from occurring or catches them immediately:
+
+**1. Atomic Subtasks**
+
+Break tasks into minimal, atomic subtasks that can be independently verified:
+- Each subtask is small enough to be independently solved
+- Each subtask produces a verifiable output
+- Errors can be caught at the atomic level before they propagate
+
+**2. Error Correction at Each Step**
+
+Apply error correction mechanisms at every atomic step:
+- **Voting-Based Correction:** Multiple agents independently solve the same subtask, then vote to select the correct solution (see **Voting-Based Error Correction** pattern)
+- **Red-Flagging:** Detect signs of unreliability before using outputs (see **Red-Flagging** pattern)
+- **Immediate Verification:** Verify each step's output before proceeding to the next
+
+**3. Prevention Over Recovery**
+
+Focus on preventing errors rather than recovering from them:
+- **Proactive Detection:** Red-flag unreliable outputs before they're used
+- **Voting:** Select correct solutions through voting, preventing incorrect outputs from being used
+- **Early Correction:** Catch and correct errors at each step, not after they compound
+
+### Implementation
+
+Step-Level Error Correction integrates with extreme decomposition and voting:
+
+```python
+from extreme_decomposition import ExtremeDecompositionAgent, AtomicSubtask
+from voting_error_correction import VotingErrorCorrection, IndependentAgentSolver
+from red_flagging import RedFlaggingAgent
+
+class StepLevelErrorCorrection:
+    """Applies error correction at every step of task execution."""
+    
+    def __init__(self, llm):
+        self.llm = llm
+        self.decomposer = ExtremeDecompositionAgent(llm)
+        self.voter = VotingErrorCorrection(llm)
+        self.red_flag_agent = RedFlaggingAgent(llm)
+        self.solver = IndependentAgentSolver(llm, num_agents=5)
+    
+    async def execute_with_step_level_correction(
+        self,
+        task: str,
+        context: dict
+    ):
+        """Execute task with error correction at every step."""
+        
+        # Step 1: Decompose into atomic subtasks
+        decomposition = await self.decomposer.decompose(task, context)
+        
+        results = []
+        
+        # Step 2: Execute each atomic subtask with error correction
+        for atomic_subtask in decomposition.atomic_subtasks:
+            # 2a. Multiple agents independently solve
+            candidates = await self.solver.solve_independently(
+                atomic_subtask.description,
+                atomic_subtask.input
+            )
+            
+            # 2b. Red-flag unreliable candidates
+            reliable_candidates = []
+            for candidate in candidates:
+                assessment = await self.red_flag_agent.check_reliability(
+                    candidate.solution,
+                    atomic_subtask.description
+                )
+                if assessment.is_reliable:
+                    reliable_candidates.append(candidate)
+            
+            # Fallback: use all if all are filtered
+            if not reliable_candidates:
+                reliable_candidates = candidates
+            
+            # 2c. Vote to select correct solution
+            vote_result = await self.voter.vote_on_solutions(
+                reliable_candidates,
+                atomic_subtask.description
+            )
+            
+            # 2d. Use winning solution for this step
+            results.append({
+                "subtask_id": atomic_subtask.id,
+                "solution": vote_result.winner.solution,
+                "reliability": "verified"
+            })
+        
+        # Step 3: Compose results
+        return results
+```
+
+### When to Use Step-Level Correction
+
+**✅ Use when:**
+- **Very long task sequences:** Tasks requiring thousands or millions of steps
+- **High accuracy requirements:** Tasks where even small error rates are unacceptable
+- **Error compounding risk:** Tasks where errors in early steps derail the entire task
+- **Atomic decomposition possible:** Tasks can be broken into atomic, independently verifiable subtasks
+
+**❌ Avoid when:**
+- **Short task sequences:** Tasks with few steps where traditional error handling is sufficient
+- **Cost constraints:** Step-level correction adds significant computational cost
+- **Simple tasks:** Tasks that don't require the complexity of step-level correction
+- **Tight dependencies:** Tasks where subtasks have complex dependencies preventing atomic decomposition
+
+### Relationship to Other Patterns
+
+Step-Level Error Correction integrates multiple patterns:
+- **Extreme Decomposition:** Provides atomic subtasks for step-level correction
+- **Voting-Based Error Correction:** Mechanism for correcting errors at each step
+- **Red-Flagging:** Proactive detection of unreliable outputs before they're used
+- **Exception Handling:** Step-level correction is proactive; traditional exception handling is reactive
+
+For detailed implementation, see:
+- **Pattern: Extreme Decomposition** - Breaking tasks into atomic subtasks
+- **Pattern: Voting-Based Error Correction** - Voting mechanism for error correction
+- **Pattern: Red-Flagging** - Proactive error detection
+
 ## Error Handling Patterns
 
 ### Pattern 1: Try-Except with Retry

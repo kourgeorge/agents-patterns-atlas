@@ -561,6 +561,140 @@ Task decomposition planning is essential for autonomous systems that need to coo
         asyncio.run(main())
     ```
 
+## Scaling Laws for Task Decomposition
+
+Understanding how decomposition depth affects success probability and cost is critical for designing scalable agentic systems. **Scaling Laws** provide mathematical relationships that guide decomposition decisions.
+
+### The Fundamental Scaling Challenge
+
+Without decomposition, error rates compound exponentially over long task sequences:
+
+**Success Probability Without Decomposition:**
+```
+P(success) = (1 - p)^s
+```
+Where:
+- `p` = per-step error rate (e.g., 0.01 for 1% error rate)
+- `s` = number of steps
+
+**Example:** For a task requiring 1,000,000 steps with a 1% per-step error rate:
+```
+P(success) = (1 - 0.01)^1,000,000 ≈ 0
+```
+
+The task has essentially zero probability of success without error correction.
+
+### Scaling with Extreme Decomposition + Voting
+
+With extreme decomposition and voting-based error correction, success probability can be maintained:
+
+**Success Probability With Decomposition + Voting:**
+```
+P(success) ≈ 1 - (1 - p_vote)^(s/d)
+```
+Where:
+- `p_vote` = error rate after voting (much lower than `p`, e.g., 0.001 for 0.1% error rate)
+- `s` = number of steps
+- `d` = decomposition depth (number of levels)
+
+**Example:** For the same 1,000,000-step task with decomposition depth of 10 and voting reducing error rate to 0.1%:
+```
+P(success) ≈ 1 - (1 - 0.001)^(1,000,000/10) ≈ 1 - (0.999)^100,000
+```
+
+With proper voting, `p_vote << p`, enabling success even for million-step tasks.
+
+### Cost Scaling
+
+Decomposition depth affects computational cost:
+
+**Cost Relationship:**
+```
+Cost ≈ s × (agents_per_step × cost_per_agent) × d
+```
+Where:
+- `s` = number of steps
+- `agents_per_step` = number of agents solving each atomic subtask (for voting)
+- `cost_per_agent` = cost per agent call
+- `d` = decomposition depth
+
+**Trade-offs:**
+- **Deeper decomposition:** More atomic subtasks, higher cost, but better error correction
+- **Shallower decomposition:** Fewer atomic subtasks, lower cost, but errors compound more
+- **Optimal depth:** Balances error correction benefits against computational cost
+
+### Decomposition Depth Guidelines
+
+**Shallow Decomposition (d = 1-3):**
+- **Use when:** Short tasks (< 100 steps), high per-step accuracy (> 99%), cost-sensitive
+- **Trade-off:** Lower cost, but errors compound more quickly
+- **Success probability:** Good for short tasks, poor for long tasks
+
+**Moderate Decomposition (d = 4-7):**
+- **Use when:** Medium tasks (100-10,000 steps), moderate per-step accuracy (95-99%)
+- **Trade-off:** Balanced cost and error correction
+- **Success probability:** Good for medium tasks, may struggle with very long tasks
+
+**Deep Decomposition (d = 8-15):**
+- **Use when:** Long tasks (10,000+ steps), lower per-step accuracy (< 95%), high accuracy requirements
+- **Trade-off:** Higher cost, but enables tasks that would be impossible otherwise
+- **Success probability:** Enables million-step tasks with proper error correction
+
+### Voting Impact on Scaling
+
+Voting reduces effective error rate, enabling scaling:
+
+**Error Rate Reduction:**
+```
+p_vote ≈ p^n / (n choose k)
+```
+Where:
+- `p` = per-step error rate
+- `n` = number of voting agents
+- `k` = voting threshold
+
+**Example:** With 5 agents and first-to-ahead-by-2 voting:
+- If `p = 0.01` (1% error rate)
+- `p_vote ≈ 0.01^5 / (5 choose 2) ≈ 0.0001` (0.01% error rate after voting)
+
+Voting dramatically reduces effective error rate, enabling scaling to very long tasks.
+
+### Practical Scaling Decisions
+
+**When to Use Extreme Decomposition:**
+
+1. **Task Length:** 
+   - < 100 steps: Traditional decomposition sufficient
+   - 100-1,000 steps: Consider moderate decomposition
+   - 1,000+ steps: Extreme decomposition recommended
+
+2. **Error Tolerance:**
+   - High tolerance (5%+ errors acceptable): Traditional decomposition
+   - Medium tolerance (1-5% errors): Moderate decomposition
+   - Low tolerance (< 1% errors): Extreme decomposition required
+
+3. **Cost Constraints:**
+   - Tight constraints: Use shallow decomposition
+   - Moderate constraints: Use moderate decomposition
+   - Cost acceptable: Use deep decomposition for maximum reliability
+
+4. **Error Correction Available:**
+   - No voting: Shallow decomposition, errors compound
+   - Voting available: Deeper decomposition, errors corrected at each step
+
+### Integration with Error Correction Patterns
+
+Scaling laws show why error correction is essential for long tasks:
+
+- **Without error correction:** Success probability decays exponentially
+- **With voting-based correction:** Success probability can be maintained
+- **With extreme decomposition + voting:** Million-step tasks become feasible
+
+For detailed implementation, see:
+- **Pattern: Extreme Decomposition** - Achieving atomic granularity for step-level correction
+- **Pattern: Voting-Based Error Correction** - Mechanism for correcting errors at each step
+- **Pattern: Red-Flagging** - Proactive error detection improves voting quality
+
 ## Key Takeaways
 
 - **Core Concept:** Task decomposition planning enables agents to analyze complex goals, break them down into high-level subtasks, assign each to appropriate applications, and orchestrate their execution through a three-phase process: Task Analysis → Task Decomposition → Plan Control.

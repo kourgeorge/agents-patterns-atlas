@@ -46,6 +46,8 @@ The pattern reduces context window usage by filtering to relevant tools, improve
     - Shortlisting becomes essential to filter through tools from multiple MCP servers and identify which ones are relevant for a specific task.
     - Without shortlisting, agents would need to include tool definitions from all MCP servers in every prompt, consuming significant context and potentially confusing the model.
 
+> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
+
 
 ### Key Concepts
 

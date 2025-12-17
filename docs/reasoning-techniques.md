@@ -91,6 +91,7 @@ ToT is valuable for strategic problems where exploring multiple approaches signi
 The cost is justified when the value of finding the optimal solution outweighs the computational expense.
 
 **Example scenario:** An agent designing a system architecture might:
+
 1. Generate three different architectural approaches
 2. Evaluate each for scalability, cost, and complexity
 3. Prune the lowest-scoring approach

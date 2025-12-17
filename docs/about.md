@@ -1,6 +1,6 @@
-![Book Banner](banner.png)
+# Intelligence Patterns: Reusable Elements of Agentic Design
 
-> **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
+![Book Banner](banner.png)
 
 Agentic AI systems face a fundamental challenge when dealing with **long horizon tasks**-those complex objectives that require agents to plan and execute extended sequences of actions to achieve desired results. 
 Unlike simple, single-step interactions, these tasks demand sophisticated coordination across multiple reasoning steps, planning phases, and action executions.
@@ -27,7 +27,7 @@ The intelligence design patterns presented in this book provide structured solut
 The patterns in this book directly address the fundamental limitations of reasoning in LLMs and, more broadly, in artificial intelligence systems. 
 By providing systematic approaches to organizing agent behavior, these patterns enable more reliable, coherent, and effective long horizon task execution. They transform agents from reactive systems that make isolated decisions into structured systems capable of sustained, goal-directed behavior across extended operational sequences.
 
-> **"Building smart systems requires minds trained to understand thinking itself—how minds process information, how teams coordinate work, and how organizations scale intelligence."** - The Author
+> **"Building smart systems requires minds trained to understand thinking itself—how minds process information, how teams coordinate work, and how organizations scale intelligence."**
 
 ---
 

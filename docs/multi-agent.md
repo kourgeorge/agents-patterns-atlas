@@ -402,6 +402,110 @@ Prefer conversational multi-agent patterns when:
 - Tasks require iterative refinement through dialogue
 - Complex coordination requires natural language communication
 
+### Microagent Architecture
+
+**Microagent Architecture** extends the Agent-as-Tool pattern to its logical extreme: agents are designed as tiny, focused functions that handle minimal, atomic operations rather than complex workflows. This architecture is essential for **Extreme Decomposition** and enables **Voting-Based Error Correction** at scale.
+
+**Core Principles:**
+
+1. **Tiny Roles, Not Human Roles:** Instead of assigning agents human-level roles (e.g., "Manager", "Designer", "Researcher"), assign them micro-roles that handle single atomic operations. Each microagent is responsible for one focused task.
+
+2. **Deterministic Functions:** Microagents behave like deterministic, tool-like functions rather than persistent organizational entities. They have:
+   - Clear input/output contracts
+   - No persistent state or memory between calls
+   - Focused, single-purpose behavior
+
+3. **Composability:** Microagents are designed to be composed. Multiple microagents can work together to accomplish complex tasks, but each microagent remains focused on its atomic operation.
+
+4. **Independence:** Microagents can operate independently, enabling parallel execution and voting-based error correction.
+
+**Microagent vs. Traditional Agent:**
+
+| Aspect | Traditional Agent | Microagent |
+|--------|------------------|------------|
+| **Role Scope** | Complex, multi-step workflows | Single atomic operation |
+| **State** | Persistent, maintains context | Stateless, no memory |
+| **Interface** | Conversational, natural language | Function-like, structured I/O |
+| **Reusability** | Domain-specific, less reusable | Highly reusable across tasks |
+| **Error Correction** | Difficult, errors compound | Easy, errors caught at atomic level |
+
+**Example: Microagent for Atomic Subtask**
+
+```python
+class Microagent:
+    """A microagent that handles a single atomic operation."""
+    
+    def __init__(self, llm, operation_description: str):
+        self.llm = llm
+        self.operation_description = operation_description
+        self.prompt = self._build_focused_prompt()
+    
+    def _build_focused_prompt(self) -> str:
+        """Build a focused prompt for the atomic operation."""
+        return f"""You are a microagent handling a single atomic operation.
+
+Operation: {self.operation_description}
+
+Solve this atomic operation. Provide only the solution, no additional reasoning.
+
+Output:"""
+    
+    async def execute(self, input_data: dict) -> dict:
+        """Execute the atomic operation."""
+        response = await self.llm.ainvoke(self.prompt + f"\nInput: {input_data}")
+        return {
+            "operation": self.operation_description,
+            "input": input_data,
+            "output": response.content,
+            "status": "completed"
+        }
+
+# Usage: Multiple microagents for voting
+async def solve_with_voting(operation: str, input_data: dict, llm):
+    """Solve an atomic operation using multiple microagents and voting."""
+    # Create multiple independent microagents
+    microagents = [
+        Microagent(llm, operation) for _ in range(5)
+    ]
+    
+    # Each microagent solves independently
+    solutions = await asyncio.gather(*[
+        agent.execute(input_data) for agent in microagents
+    ])
+    
+    # Vote on the best solution (see Voting-Based Error Correction pattern)
+    from voting_error_correction import VotingErrorCorrection
+    voter = VotingErrorCorrection(llm)
+    vote_result = await voter.vote_on_solutions(solutions, operation)
+    
+    return vote_result.winner
+```
+
+**Benefits of Microagent Architecture:**
+
+- **Error Correction:** Atomic operations enable voting-based error correction at each step
+- **Scalability:** Microagents can be composed to handle tasks of any complexity
+- **Modularity:** Each microagent is independently testable and replaceable
+- **Parallelization:** Independent microagents can execute in parallel
+- **Reusability:** Microagents can be reused across different tasks
+
+**When to Use Microagent Architecture:**
+
+- **Extreme Decomposition:** When tasks are broken into atomic subtasks (see **Extreme Decomposition** pattern)
+- **Voting-Based Error Correction:** When multiple agents need to solve the same atomic operation independently
+- **High Reliability Requirements:** When errors must be caught at the atomic level
+- **Long Task Sequences:** When tasks require thousands or millions of steps
+
+**Relationship to Other Patterns:**
+
+- **Extreme Decomposition:** Microagents handle the atomic subtasks created through extreme decomposition
+- **Voting-Based Error Correction:** Multiple microagents independently solve the same atomic operation, then vote
+- **Agent-as-Tool:** Microagents are the extreme form of agent-as-tool, with minimal, focused operations
+
+For detailed implementation, see:
+- **Pattern: Extreme Decomposition** - Creating atomic subtasks for microagents
+- **Pattern: Voting-Based Error Correction** - Using multiple microagents for error correction
+
 ## Communication Patterns: A Key Design Decision
 
 One of the key design decisions you'll need to make when building multi-agent systems is: **what is the communication pattern between your different agents?** 
