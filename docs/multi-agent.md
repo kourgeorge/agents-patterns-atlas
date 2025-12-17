@@ -8,7 +8,7 @@ Multi-agent architectures address these limitations by enabling specialized LLM 
 This chapter provides an overview of modern LLM-based multi-agent architectures, exploring when and why to use multiple agents, the benefits they provide, and the organizational patterns that enable effective collaboration. 
 For detailed implementation patterns, see the specific pattern modules referenced throughout this chapter.
 
-> **"Agentic systems represent a new paradigm that breaks traditional barriers. More than tools, agents act as collaborators, assisting humans in dynamic environments and automating decision-making."** - Aatrbin
+> **"Multi-agent is about role specialization, not redundancy."** — Manus Team
 
 ## The Case for Multi-Agent Systems
 
@@ -16,9 +16,8 @@ Multi-agent architectures represent a paradigm shift from pursuing a single, all
 
 The collective strength lies in division of labor, natural language negotiation, and synergy created through coordinated effort.
 
-> **"Multi-agent is about role specialization, not redundancy."** — Manus Team
+### Why Multiple Agents? An Intuitive Perspective?** 
 
-**Why Multiple Agents? An Intuitive Perspective?** 
 When first encountering multi-agent systems, a natural question arises: "Why do I need multiple agents? It's just the same LLM that I'm prompting over and over, or just one computer. Why do I need multiple agents?"
 This question reflects a common misconception. Even though you may be using a single LLM or a single computer, the way you structure and coordinate work can dramatically impact both the quality of outputs and the ease of development.
 
