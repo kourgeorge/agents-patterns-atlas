@@ -1,7 +1,7 @@
 site_name: "Intelligence Patterns: Reusable Elements of Agentic Design"
-site_description: An interactive, evolving book on Agentic Design Patterns.
+site_description: An evolving book on Agentic Design Patterns.
 site_author: George Kour
-site_url: https://kourgeorge.github.io/agents-patterns-atlas/
+site_url: https://agents.kour.me
 
 repo_name: kourgeorge/agents-patterns-atlas
 repo_url: https://github.com/kourgeorge/agents-patterns-atlas
