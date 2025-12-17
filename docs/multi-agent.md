@@ -296,6 +296,7 @@ An advanced evolution of the Orchestrator-Worker pattern where the orchestrator 
 **Key Distinction:** Unlike static agent selection where agents are predefined with fixed roles, dynamic spawning creates agents on-demand with task-specific specializations. This enables maximum flexibility and adaptation to unpredictable task requirements.
 
 **How It Works:**
+
 1. Orchestrator receives a high-level goal and decomposes it into subtasks
 2. For each subtask, orchestrator analyzes what specialized agent is needed
 3. Orchestrator checks if existing agents can handle the subtask
@@ -308,6 +309,7 @@ An advanced evolution of the Orchestrator-Worker pattern where the orchestrator 
 7. Orchestrator synthesizes results
 
 **Examples:**
+
 - **Anthropic's Multi-Agent Research System:** LeadResearcher agent spawns specialized Web Search subagents, each configured for specific research aspects (academic papers, industry news, technical docs), working in parallel
 - **Emergence.ai Orchestrator:** Starting from a single task, automatically decomposes it, checks existing agents, generates new specialized agents (as code) for each step, and continuously creates new agents to tackle an expanding set of problems
 - **EvoMAC:** Parent agent dynamically creates child agents to handle specific subtasks during runtime, with iterative refinement capabilities
@@ -319,6 +321,7 @@ An advanced evolution of the Orchestrator-Worker pattern where the orchestrator 
 - When task-specific optimization justifies the overhead of agent generation
 
 **Trade-offs:**
+
 - ✅ Maximum flexibility and task-specific optimization
 - ✅ Adaptive problem-solving that evolves with requirements
 - ✅ Resource efficiency (agents created only when needed)
@@ -429,57 +432,57 @@ Prefer conversational multi-agent patterns when:
 | **Reusability** | Domain-specific, less reusable | Highly reusable across tasks |
 | **Error Correction** | Difficult, errors compound | Easy, errors caught at atomic level |
 
-**Example: Microagent for Atomic Subtask**
+??? "Example: Microagent for Atomic Subtask"
 
-```python
-class Microagent:
-    """A microagent that handles a single atomic operation."""
-    
-    def __init__(self, llm, operation_description: str):
-        self.llm = llm
-        self.operation_description = operation_description
-        self.prompt = self._build_focused_prompt()
-    
-    def _build_focused_prompt(self) -> str:
-        """Build a focused prompt for the atomic operation."""
-        return f"""You are a microagent handling a single atomic operation.
+    ```python
+    class Microagent:
+        """A microagent that handles a single atomic operation."""
+        
+        def __init__(self, llm, operation_description: str):
+            self.llm = llm
+            self.operation_description = operation_description
+            self.prompt = self._build_focused_prompt()
+        
+        def _build_focused_prompt(self) -> str:
+            """Build a focused prompt for the atomic operation."""
+            return f"""You are a microagent handling a single atomic operation.
 
-Operation: {self.operation_description}
+    Operation: {self.operation_description}
 
-Solve this atomic operation. Provide only the solution, no additional reasoning.
+    Solve this atomic operation. Provide only the solution, no additional reasoning.
 
-Output:"""
-    
-    async def execute(self, input_data: dict) -> dict:
-        """Execute the atomic operation."""
-        response = await self.llm.ainvoke(self.prompt + f"\nInput: {input_data}")
-        return {
-            "operation": self.operation_description,
-            "input": input_data,
-            "output": response.content,
-            "status": "completed"
-        }
+    Output:"""
+        
+        async def execute(self, input_data: dict) -> dict:
+            """Execute the atomic operation."""
+            response = await self.llm.ainvoke(self.prompt + f"\nInput: {input_data}")
+            return {
+                "operation": self.operation_description,
+                "input": input_data,
+                "output": response.content,
+                "status": "completed"
+            }
 
-# Usage: Multiple microagents for voting
-async def solve_with_voting(operation: str, input_data: dict, llm):
-    """Solve an atomic operation using multiple microagents and voting."""
-    # Create multiple independent microagents
-    microagents = [
-        Microagent(llm, operation) for _ in range(5)
-    ]
-    
-    # Each microagent solves independently
-    solutions = await asyncio.gather(*[
-        agent.execute(input_data) for agent in microagents
-    ])
-    
-    # Vote on the best solution (see Voting-Based Error Correction pattern)
-    from voting_error_correction import VotingErrorCorrection
-    voter = VotingErrorCorrection(llm)
-    vote_result = await voter.vote_on_solutions(solutions, operation)
-    
-    return vote_result.winner
-```
+    # Usage: Multiple microagents for voting
+    async def solve_with_voting(operation: str, input_data: dict, llm):
+        """Solve an atomic operation using multiple microagents and voting."""
+        # Create multiple independent microagents
+        microagents = [
+            Microagent(llm, operation) for _ in range(5)
+        ]
+        
+        # Each microagent solves independently
+        solutions = await asyncio.gather(*[
+            agent.execute(input_data) for agent in microagents
+        ])
+        
+        # Vote on the best solution (see Voting-Based Error Correction pattern)
+        from voting_error_correction import VotingErrorCorrection
+        voter = VotingErrorCorrection(llm)
+        vote_result = await voter.vote_on_solutions(solutions, operation)
+        
+        return vote_result.winner
+    ```
 
 **Benefits of Microagent Architecture:**
 

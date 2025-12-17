@@ -204,9 +204,6 @@ This challenge makes effective chunking strategies and precise retrieval mechani
     
     This hybrid approach leverages the strengths of both methods: BM25's precision for exact matches and semantic search's ability to find conceptually relevant content even without keyword overlap.
 
-![RAG Core Concepts: Chunking, Embeddings, and Vector Database](fig1.png)
-
-**Fig.1: RAG Core Concepts: Chunking, Embeddings, and Vector Database**
 
 ### **Vector Databases**
 
@@ -891,10 +888,6 @@ Use cases include complex financial analysis, connecting companies to market eve
 ## **Agentic RAG**
 
 An evolution of this pattern, known as **Agentic RAG** (see Fig.2), introduces a reasoning and decision-making layer to significantly enhance the reliability of information extraction. Instead of just retrieving and augmenting, an "agent"—a specialized AI component—acts as a critical gatekeeper and refiner of knowledge. Rather than passively accepting the initially retrieved data, this agent actively interrogates its quality, relevance, and completeness, as illustrated by the following scenarios.
-
-![Agentic RAG introduces a reasoning agent that actively evaluates, reconciles, and refines retrieved information to ensure a more accurate and trustworthy final response.](fig2.png)
-
-**Fig.2: Agentic RAG introduces a reasoning agent that actively evaluates, reconciles, and refines retrieved information to ensure a more accurate and trustworthy final response.**
 
 ### **Reflection and Source Validation**
 
