@@ -85,7 +85,7 @@ Common applications include information processing, complex query answering, and
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-community langchain-openai langgraph
 ```

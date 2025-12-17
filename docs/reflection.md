@@ -73,7 +73,7 @@ Reflection is valuable in scenarios where output quality, accuracy, or adherence
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-openai langgraph
 # or

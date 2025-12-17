@@ -2,11 +2,15 @@
 
 ## Motivation
 
-Traditional agentic systems are static: once designed and deployed, their capabilities remain fixed. However, the most powerful agentic systems are those that can improve themselves over time—learning from experience, refining their strategies, and evolving their capabilities through recursive self-improvement. The Self-Improving Agents pattern enables agents to build agents, evaluate their own performance, learn from failures, and continuously evolve into more capable versions.
+Traditional agentic systems are static: once designed and deployed, their capabilities remain fixed. 
+However, the most powerful agentic systems are those that can improve themselves over time—learning from experience, refining their strategies, and evolving their capabilities through recursive self-improvement. 
+The Self-Improving Agents pattern enables agents to build agents, evaluate their own performance, learn from failures, and continuously evolve into more capable versions.
 
-Just as biological systems evolve through natural selection, self-improving agent systems evolve through iterative cycles of generation, evaluation, and refinement. Agents create goals, simulate tasks, evaluate themselves and others, learn from failure, and evolve into more capable versions. Through recursive self-improvement, they develop deeper alignment with their objectives—continuously refining the tools, strategies, and collaborators needed to achieve them.
+Just as biological systems evolve through natural selection, self-improving agent systems evolve through iterative cycles of generation, evaluation, and refinement. 
+Agents create goals, simulate tasks, evaluate themselves and others, learn from failure, and evolve into more capable versions. 
+Through recursive self-improvement, they develop deeper alignment with their objectives—continuously refining the tools, strategies, and collaborators needed to achieve them.
 
-> "Agents should build agents and dynamically self-assemble to make multi-agent systems, so humans no longer have to. In this model, agents create goals, simulate tasks, evaluate themselves and others, learn from failure and evolve into more capable versions." — Emergence.ai
+> *"The next evolution in agentic systems: agents that can improve themselves."* — The Author
 
 ## Pattern Overview
 
@@ -203,6 +207,7 @@ An orchestrator system for analyzing semiconductor manufacturing data demonstrat
 Systems that improve their own code generation capabilities:
 
 **How it works:**
+
 1. Agent generates code to solve a problem
 2. Agent evaluates the generated code (correctness, efficiency, quality)
 3. Agent generates improved version based on evaluation
@@ -233,7 +238,7 @@ Orchestrators that improve the multi-agent systems they create:
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 
 ```bash
 pip install langchain langchain-openai langgraph
@@ -528,6 +533,7 @@ This example demonstrates self-improvement through evaluation, learning, and ref
 **Challenge:** Agents that create agents can quickly overwhelm infrastructure if not properly controlled.
 
 **Mitigation:**
+
 - Set limits on agent creation (max count, max depth)
 - Implement resource budgets and quotas
 - Monitor system growth and complexity
@@ -539,6 +545,7 @@ This example demonstrates self-improvement through evaluation, learning, and ref
 **Challenge:** Self-exploration, simulation, and evaluation require significant computational resources.
 
 **Mitigation:**
+
 - Optimize evaluation and testing processes
 - Use efficient simulation environments
 - Batch evaluations when possible
@@ -548,24 +555,16 @@ This example demonstrates self-improvement through evaluation, learning, and ref
 ## Best Practices
 
 1. **Start with Clear Goals:** Define explicit objectives and constraints to prevent goal drift.
-
 2. **Implement Guardrails:** Set strict limits on agent creation, resource usage, and behavior.
-
 3. **Maintain Human Oversight:** Keep humans in the loop at key decision points, especially for critical systems.
-
 4. **Log Everything:** Comprehensive logging enables debugging, auditing, and understanding system evolution.
-
 5. **Validate in Real Environments:** Don't rely solely on simulation; validate improvements in real-world scenarios.
-
 6. **Monitor System Growth:** Track agent count, complexity, and resource usage to prevent sprawl.
-
 7. **Version Control:** Maintain versions of agents and configurations to enable rollback if needed.
-
 8. **Gradual Deployment:** Test improvements in controlled environments before full deployment.
-
 9. **Regular Evaluation:** Periodically assess whether self-improvement is actually improving outcomes.
-
 10. **Set Boundaries:** Define what agents can and cannot do, preventing unwanted evolution.
+
 
 ## Relationship to Other Patterns
 

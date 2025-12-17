@@ -158,7 +158,7 @@ Solutions include tuning agent personas to maintain healthy dissent, designing p
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 
 ```bash
 pip install langchain langchain-openai langgraph

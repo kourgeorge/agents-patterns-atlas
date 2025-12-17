@@ -331,7 +331,7 @@ Frameworks that support dynamic agent creation through configuration objects. Th
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 
 ```bash
 pip install langchain langchain-openai langgraph

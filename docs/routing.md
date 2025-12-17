@@ -65,7 +65,7 @@ Routing is essential for building adaptive agentic systems that can handle diver
 
 ## Implementation
 
-??? "Prerequisites"
+**Prerequisites:**
 
     ```bash
     pip install langchain langchain-google-genai langgraph

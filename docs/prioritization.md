@@ -77,7 +77,7 @@ Prioritization is essential for building efficient, goal-aligned agentic systems
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-openai python-dotenv pydantic
 ```

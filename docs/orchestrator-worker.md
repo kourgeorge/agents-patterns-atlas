@@ -122,7 +122,7 @@ A central LLM controller orchestrates multiple specialized models or agents, pla
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-openai langgraph
 # or

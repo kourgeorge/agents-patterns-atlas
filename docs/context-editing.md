@@ -131,7 +131,7 @@ Context editing is fundamental to building scalable, cost-effective agent system
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-openai langgraph
 # or

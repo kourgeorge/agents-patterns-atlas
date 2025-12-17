@@ -74,7 +74,7 @@ Parallelization is essential for optimizing agent performance across various app
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-openai langgraph
 # or

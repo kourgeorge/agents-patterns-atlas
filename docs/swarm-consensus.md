@@ -110,7 +110,7 @@ Agents engage in multi-turn bargaining, alliance formation, and consensus-buildi
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 
 ```bash
 pip install langchain langchain-openai langgraph

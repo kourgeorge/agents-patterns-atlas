@@ -157,7 +157,7 @@ Uses a ChatGPT-based controller that analyzes user requests, plans sequences of 
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 
 ```bash
 pip install langchain langchain-openai langgraph

@@ -131,7 +131,7 @@ Attention Engineering is fundamental to building reliable, focused agent systems
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-openai
 # or

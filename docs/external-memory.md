@@ -124,7 +124,7 @@ The Filesystem as Context pattern is essential for agents that work with large d
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install langchain langchain-openai
 # or

@@ -64,7 +64,7 @@ The Persistent Task List (Recitation) pattern is essential for maintaining goal 
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 pip install deepagents
 # or

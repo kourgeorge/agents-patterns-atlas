@@ -95,7 +95,7 @@ The Constrained Tool Use pattern is essential for managing complex action spaces
 
 ## Implementation
 
-### Prerequisites
+**Prerequisites:**
 ```bash
 # Most inference frameworks support logit masking or response prefilling
 # Check your framework's documentation for specific implementation details
