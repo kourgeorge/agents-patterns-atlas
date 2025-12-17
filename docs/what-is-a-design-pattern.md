@@ -20,7 +20,6 @@ The same pattern can be implemented using different frameworks (LangChain, LangG
 
 When building intelligent systems, whether biological or artificial, we find that effective problem-solving consistently reflects four universal principles. 
 These principles are not domain-specific—they represent fundamental aspects of how intelligence itself operates, transcending whether we're designing human cognition, biological systems, or AI agents. 
-Building truly smart systems requires minds trained to understand thinking itself—how minds process information, how teams coordinate work, and how organizations scale intelligence.
 The agentic design patterns in this book work precisely because they are grounded in these general principles of intelligence, which is why similar patterns emerge repeatedly across natural and artificial systems.
 
 1. **Devide-and-conquer** — Decomposition enables manageable, focused solutions. 

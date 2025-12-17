@@ -28,9 +28,10 @@ Effective reasoning enables agents to:
 
 ## Core Reasoning Approaches
 
-Agentic systems employ several reasoning techniques, each suited to different problem types and complexity levels:
-
 ![The Agentic Loop.](reasoning-techniques_cot_react.png)
+
+
+Agentic systems employ several reasoning techniques, each suited to different problem types and complexity levels:
 
 ### Chain-of-Thought (CoT)
 

@@ -106,7 +106,8 @@ Attention Engineering operates through several complementary techniques:
 
 Use Attention Engineering whenever context length exceeds 10K tokens or when critical instructions must be reliably followed. The pattern is especially valuable for long-horizon tasks, complex multi-step workflows, and production systems requiring high reliability. Consider the trade-off: attention engineering adds some structural overhead but prevents costly goal drift and missed constraints. For contexts over 20K tokens or tasks with critical requirements, the benefits typically outweigh the costs.
 
-> **"You don't prompt a model; you stage a cognitive environment for it."** — Anthropic
+> **"The most powerful design lever in agents today is *context curation*, not more compute."** — Manus Creators
+
 
 ## Practical Applications & Use Cases
 

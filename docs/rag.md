@@ -87,7 +87,8 @@ This challenge makes effective chunking strategies and precise retrieval mechani
 
 ??? "**TF-IDF and BM25: Keyword-Based Search Approaches**"
     
-    Before the advent of semantic search and embeddings, information retrieval systems relied on keyword-based approaches. Two fundamental algorithms in this domain are **TF-IDF** (Term Frequency-Inverse Document Frequency) and **BM25** (Best Matching 25). These methods excel at finding documents that contain specific keywords from a query, making them particularly effective for exact term matching and keyword-focused searches.
+    Before the advent of semantic search and embeddings, information retrieval systems relied on keyword-based approaches. 
+    Two fundamental algorithms in this domain are **TF-IDF** (Term Frequency-Inverse Document Frequency) and **BM25** (Best Matching 25). These methods excel at finding documents that contain specific keywords from a query, making them particularly effective for exact term matching and keyword-focused searches.
     
     ### **TF-IDF (Term Frequency-Inverse Document Frequency)**
     

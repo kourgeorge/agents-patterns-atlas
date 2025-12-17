@@ -11,17 +11,11 @@ Just as a project manager might hire specialized contractors for specific projec
 
 ## Pattern Overview
 
-**What it is:** An orchestrator agent dynamically creates specialized worker agents at runtime to handle specific subtasks, rather than selecting from a predefined set of agents. 
-The orchestrator analyzes the task, determines what specialized capabilities are needed, and generates new agents (often as code or prompt configurations) tailored to each subtask.
+**What it is:** An orchestrator agent dynamically creates specialized worker agents at runtime to handle specific subtasks, rather than selecting from a predefined set of agents. The orchestrator analyzes the task, determines what specialized capabilities are needed, and generates new agents (often as code or prompt configurations) tailored to each subtask.
 
 **When to use:** For complex tasks where the required agent roles and capabilities cannot be predetermined, when task decomposition reveals unexpected specialization needs, or when you want maximum flexibility to adapt agent composition to evolving requirements.
 
 **Why it matters:** It enables **runtime adaptation** (creating agents as needed rather than maintaining a fixed team), **task-specific optimization** (agents tailored precisely to each subtask), **resource efficiency** (agents created and released dynamically), and **emergent problem-solving** (system structure evolves with the problem).
-
-The Dynamic Agent Spawning pattern represents a significant evolution from static multi-agent architectures. 
-Unlike systems with predefined agent roles (e.g., a fixed "researcher" agent and "writer" agent), dynamic spawning allows the orchestrator to generate new agents with specialized prompts, tools, and behaviors optimized for each specific subtask.
-This pattern is particularly powerful for enterprise tasks where requirements are complex and unpredictable. 
-The orchestrator can decompose a high-level goal, identify the capabilities needed for each step, check if existing agents can handle it, and generate new specialized agents when needed—all at runtime.
 
 ### Key Concepts
 
@@ -32,55 +26,75 @@ The orchestrator can decompose a high-level goal, identify the capabilities need
 - **Dynamic Team Composition:** The team structure evolves during problem-solving, with agents spawned and assembled based on emerging requirements.
 - **Self-Assembly:** The system automatically assembles multi-agent configurations tailored to each task without manual intervention.
 
-### How It Works: Step-by-step Explanation
+### How It Works
 
-1. **Receive and Analyze:** The Orchestrator receives a high-level user request and analyzes it to understand the problem domain and required capabilities.
-2. **Decompose and Plan:** The Orchestrator breaks down the goal into specific subtasks, identifying what specialized capabilities each subtask requires.
-3. **Check Existing Agents:** The Orchestrator checks if any existing agents can handle the subtasks. If suitable agents exist, they may be reused.
-4. **Generate Specialized Agents:** For subtasks requiring new capabilities, the Orchestrator generates specialized worker agents. This typically involves:
-
-   - Creating agent prompts tailored to the specific subtask
-   - Configuring tools and capabilities needed for the task
-   - Defining the agent's role, objectives, and expected outputs
-   - Instantiating the agent (as code, configuration, or runtime object)
-5. **Assemble Multi-Agent System:** The Orchestrator assembles the spawned agents (and any reused existing agents) into a multi-agent system configured for the specific task.
-6. **Execute and Coordinate:** Worker agents execute their specialized tasks, often in parallel, with the Orchestrator coordinating their work and managing communication.
-7. **Synthesize Results:** The Orchestrator collects outputs from all worker agents and synthesizes them into a final, coherent result.
-8. **Agent Lifecycle:** After task completion, spawned agents may be:
-
-    - Released (destroyed) if they were task-specific
-    - Cached for potential reuse in similar future tasks
-    - Evolved/refined based on performance feedback
+1. **Decompose:** Orchestrator breaks down the goal into subtasks and identifies required capabilities.
+2. **Check Cache:** Orchestrator checks if existing agents can handle the subtasks.
+3. **Generate Agents:** For new capabilities, orchestrator creates specialized agents with tailored prompts, tools, and configurations.
+4. **Assemble Team:** Orchestrator assembles spawned and cached agents into a multi-agent system.
+5. **Execute:** Worker agents execute tasks (often in parallel) with orchestrator coordination.
+6. **Synthesize:** Orchestrator collects and synthesizes all agent outputs.
+7. **Lifecycle:** Agents are released, cached for reuse, or refined based on performance.
 
 ## When to Use This Pattern
 
-### ✅ Use when:
-- **Unpredictable task requirements:** Tasks where the required agent roles and capabilities cannot be determined ahead of time.
-- **Complex, evolving problems:** Problems that require different specializations as understanding deepens.
-- **Task-specific optimization:** When each subtask benefits from highly specialized agents tailored to its specific needs.
-- **Resource efficiency:** When maintaining a large fixed team of agents is wasteful, and dynamic creation is more efficient.
-- **Emergent problem-solving:** When the problem structure emerges during decomposition, requiring adaptive agent composition.
-- **Enterprise automation:** Complex enterprise tasks where requirements vary significantly across use cases.
-- **Exploratory tasks:** Research, analysis, or creative tasks where the solution path is unknown.
+**How do I know if my task needs this?** Consider three key factors: task predictability, specialization needs, and cost tolerance.
 
-### ❌ Avoid when:
-- **Simple, well-defined tasks:** Tasks with predictable requirements that can be handled by a fixed set of agents.
-- **Low-latency requirements:** When the overhead of agent generation and initialization is prohibitive.
-- **Highly repetitive tasks:** When the same agent configurations are needed repeatedly (prefer predefined agents).
-- **Resource constraints:** When computational or cost constraints make dynamic generation impractical.
-- **Stability requirements:** When reproducibility and predictability are critical (dynamic spawning introduces variability).
-- **Simple workflows:** When a single agent or simple workflow can handle the task effectively.
+### Decision Framework
 
-### Decision Guidelines
+**Use dynamic spawning when:**
+- **Task requirements are unpredictable** — Required agent roles and capabilities cannot be determined ahead of time
+- **High specialization value** — Each subtask benefits significantly from task-specific agents (e.g., semiconductor data analysis vs. generic data analysis)
+- **Cost tolerance exists** — You can accept higher latency and token costs (multi-agent systems can use 15× more tokens than single-agent systems)
+- **Flexibility > Reproducibility** — Adaptability is more valuable than consistent, reproducible results
 
-Use Dynamic Agent Spawning when task requirements are unpredictable and benefit from runtime specialization. 
-This pattern is ideal for complex, evolving problems where the orchestrator must adapt the agent team structure to match emerging needs.
-Consider: task predictability (unpredictable = dynamic spawning), specialization needs (highly specialized = task-specific agents), and resource efficiency (dynamic = efficient resource usage).
-However, be aware of trade-offs: dynamic spawning increases system complexity, introduces variability that can reduce reproducibility, and adds overhead for agent generation and lifecycle management. For predictable tasks with well-known requirements, predefined agents in an Orchestrator-Worker pattern may be more efficient and stable.
+**Use predefined agents when:**
+- **Task requirements are well-known and stable** — You have a fixed set of agent roles that cover most use cases
+- **Reproducibility is critical** — You need consistent, predictable results (dynamic spawning introduces variability)
+- **Low-latency requirements** — Agent generation overhead is prohibitive
+- **Highly repetitive tasks** — Same agent configurations are needed repeatedly
+- **Resource constraints** — Computational or cost constraints make dynamic generation impractical
+
+### Specific Use Cases
+
+**✅ Good fit:**
+- Complex, evolving problems requiring different specializations as understanding deepens
+- Enterprise automation where requirements vary significantly across use cases
+- Exploratory tasks (research, analysis, creative work) where the solution path is unknown
+- Tasks where maintaining a large fixed team of agents is wasteful
+
+**❌ Poor fit:**
+- Simple, well-defined tasks handled by a fixed set of agents
+- Simple workflows that a single agent can handle effectively
+- Production systems requiring strict reproducibility and predictability
 
 ## Dynamic vs. Static Agent Selection
 
-Understanding the distinction between dynamic spawning and static selection is crucial:
+**Should I use dynamic spawning or predefined agents?** This is the core decision question. The tradeoff centers on **accuracy of real-time agent definition** versus **tested, proven predefined agents**.
+
+### The Core Tradeoff
+
+**Dynamic Spawning offers:**
+- Maximum specialization — agents tailored precisely to each subtask
+- Real-time adaptation — system structure evolves with the problem
+- Task-specific optimization — agents optimized for exact requirements
+
+**But sacrifices:**
+- Predictability — each spawned agent introduces variability
+- Testing — agents can't be tested before runtime
+- Reproducibility — results harder to reproduce due to generation variability
+- Lower overhead — generation and initialization add latency and cost
+
+**Predefined Agents offer:**
+- Stability — tested, proven agents with known behavior
+- Reproducibility — consistent results across runs
+- Lower overhead — no generation cost, faster startup
+- Predictability — well-understood capabilities and limitations
+
+**But sacrifice:**
+- Specialization — may not perfectly match task requirements
+- Flexibility — fixed roles limit adaptation
+- Resource efficiency — maintaining unused agents for rare tasks
 
 ### Static Agent Selection (Traditional Approach)
 
@@ -97,12 +111,11 @@ orchestrator.delegate(task, available_agents=[researcher_agent, writer_agent, de
 ```
 
 **Characteristics:**
-
-- Agents are created and configured before runtime
+- Agents created and configured before runtime
 - Fixed roles and capabilities
-- Orchestrator selects from existing agents
 - Predictable and stable
 - Lower overhead per task
+- Tested and proven
 
 ### Dynamic Agent Spawning (This Pattern)
 
@@ -114,7 +127,6 @@ def handle_task(task):
     subtasks = orchestrator.decompose(task)
     
     for subtask in subtasks:
-        # Check if existing agent can handle it
         if not existing_agent_suitable(subtask):
             # Generate new specialized agent
             new_agent = orchestrator.spawn_agent(
@@ -125,87 +137,195 @@ def handle_task(task):
             )
             agents.append(new_agent)
     
-    # Execute with dynamically created team
     results = execute_multi_agent_system(agents)
     return orchestrator.synthesize(results)
 ```
 
 **Characteristics:**
-
-- Agents are created during runtime
-- Roles and capabilities emerge from task analysis
-- Orchestrator generates new agents as needed
+- Agents created during runtime
+- Roles emerge from task analysis
 - Adaptive and flexible
 - Higher overhead but better task-specific optimization
+- Untested until execution
 
-### When to Choose Each Approach
+### When Does Specialization Justify Generation Overhead?
 
-**Choose Static Selection when:**
-
-- Task requirements are well-known and stable
-- You have a fixed set of agent roles that cover most use cases
-- Predictability and reproducibility are critical
-- You want to minimize runtime overhead
-- Agent roles are reusable across many tasks
+**The cost question:** Multi-agent systems can use 15× more tokens than single-agent systems. Dynamic spawning adds generation overhead (analyzing subtasks, creating prompts, configuring tools). Is the specialization worth it?
 
 **Choose Dynamic Spawning when:**
+- **Task-specific optimization is critical** — Generic agents would perform poorly (e.g., semiconductor data analysis requires domain-specific knowledge)
+- **Requirements are unpredictable** — You can't define agents ahead of time
+- **Flexibility > Reproducibility** — Adaptability matters more than consistent results
+- **Cost tolerance exists** — You can accept higher latency and token costs
 
-- Task requirements are unpredictable or vary significantly
-- Each task needs highly specialized agents
-- You want maximum flexibility and adaptation
-- Task-specific optimization justifies generation overhead
-- Agent roles are unique to specific tasks
+**Choose Static Selection when:**
+- **Predictability is critical** — Production systems requiring consistent behavior
+- **Reproducibility matters** — You need the same results across runs
+- **Low-latency requirements** — Generation overhead is prohibitive
+- **Well-known requirements** — Fixed agent roles cover most use cases
+- **Cost sensitivity** — Token and latency costs must be minimized
 
 ## Practical Applications & Use Cases
 
-The Dynamic Agent Spawning pattern is particularly valuable for complex, enterprise-level tasks where requirements are unpredictable and benefit from runtime specialization.
-
 ### Enterprise Data Analysis
 
-**Scenario:** An enterprise needs to analyze semiconductor manufacturing data to identify chips with the lowest yield.
+**Scenario:** Analyze semiconductor manufacturing data to identify chips with the lowest yield.
 
-**Dynamic Spawning Process:**
+**Process:**
+1. Orchestrator decomposes task into: data ingestion, cleaning, statistical analysis, pattern identification, report generation
+2. Generates specialized agents (e.g., Semiconductor Data Analyst with domain-specific metrics, Manufacturing Data Quality Specialist)
+3. Agents execute with task-specific optimization
+4. Orchestrator synthesizes results
 
-1. Orchestrator receives: "Identify chips with the lowest yield in the lot"
-2. Orchestrator decomposes into subtasks:
-
-    - Data ingestion from multiple sources
-    - Data cleaning and standardization
-    - Statistical analysis
-    - Pattern identification
-    - Report generation
-3. Orchestrator checks existing agents, finds none suitable
-4. Orchestrator generates specialized agents:
-
-    - **Data Ingestion Agent:** Configured for semiconductor data formats, with specific connectors
-    - **Data Cleaning Agent:** Specialized for manufacturing data quality issues
-    - **Statistical Analysis Agent:** Optimized for yield analysis with domain-specific metrics
-    - **Pattern Identification Agent:** Trained on manufacturing defect patterns
-    - **Report Generator Agent:** Tailored for technical manufacturing reports
-5. Agents execute in sequence/parallel as needed
-6. Orchestrator synthesizes findings into final report
-
-**Key Advantage:** Each agent is optimized for its specific subtask, rather than using generic agents that might not handle semiconductor data effectively.
+**Why dynamic spawning:** Generic data analysis agents lack semiconductor domain knowledge. Task-specific agents handle manufacturing data formats and yield metrics effectively.
 
 ### Research and Information Gathering
 
-**Scenario:** A research system needs to explore a complex topic from multiple angles.
-
 **Example: Anthropic's Multi-Agent Research System**
 
-The LeadResearcher agent:
+LeadResearcher analyzes the query, identifies research directions, and spawns specialized Web Search subagents (academic papers, industry news, technical documentation). Subagents work in parallel with specialized search strategies, reducing research time by up to 90% compared to sequential single-agent research.
 
-1. Analyzes the user query
-2. Identifies multiple research directions
-3. Spawns specialized Web Search subagents, each configured for a specific aspect:
+**Why dynamic spawning:** Each research direction requires different search strategies and source types. Generic search agents can't optimize for academic vs. industry vs. technical documentation simultaneously.
 
-    - One subagent searches for academic papers
-    - Another searches for industry news
-    - Another searches for technical documentation
-4. Subagents work in parallel, each with specialized search strategies
-5. LeadResearcher aggregates findings from all subagents
+## Modern Framework Patterns
 
-**Key Advantage:** Parallel exploration with specialized agents reduces research time by up to 90% compared to sequential research with a single agent.
+Dynamic agent spawning is supported by several modern frameworks, each with different approaches to runtime agent creation:
+
+### Prompt-Based Agent Generation
+
+The most common approach uses LLM-generated prompts to create specialized agents at runtime. The orchestrator generates tailored system prompts, tool configurations, and objectives for each subtask. This is lightweight and flexible but relies on prompt quality.
+
+**Characteristics:**
+- Fast generation (no code execution)
+- Flexible and adaptable
+- Quality depends on prompt engineering
+- Lower security risk (no code execution)
+
+### Code Generation for Agents
+
+Advanced systems generate actual agent code (Python classes, functions) at runtime. This enables more sophisticated agent behaviors but requires code validation and sandboxing.
+
+**Characteristics:**
+- Maximum flexibility and capability
+- Requires code validation and security measures
+- Higher overhead (code generation, compilation, execution)
+- Enables complex agent behaviors
+
+### Configuration-Based Instantiation
+
+Frameworks that support dynamic agent creation through configuration objects. The orchestrator generates agent configurations (roles, tools, behaviors) that are instantiated by the framework.
+
+**Characteristics:**
+- Framework-managed lifecycle
+- Structured and validated configurations
+- Good balance of flexibility and safety
+- Framework-specific implementations
+
+### Framework-Specific Examples
+
+??? "LangGraph: Dynamic Node Creation"
+
+    LangGraph allows dynamic graph construction where nodes (agents) can be created at runtime:
+
+    ```python
+    from langgraph.graph import StateGraph, END
+    from typing import TypedDict, List, Dict
+    
+    class DynamicOrchestratorState(TypedDict):
+        goal: str
+        subtasks: List[Dict]
+        spawned_agents: Dict[str, Dict]  # Agent configs
+        agent_results: Dict[str, str]
+        final_output: str
+    
+    def spawn_agent_node(state: DynamicOrchestratorState) -> DynamicOrchestratorState:
+        """Dynamically create agent nodes based on subtasks."""
+        if not state["subtasks"]:
+            return state
+        
+        current_subtask = state["subtasks"][0]
+        
+        # Generate agent configuration
+        agent_config = generate_agent_config(current_subtask, state["goal"])
+        agent_id = f"agent_{len(state['spawned_agents'])}"
+        
+        # Add agent to graph dynamically
+        spawned_agents = state.get("spawned_agents", {})
+        spawned_agents[agent_id] = agent_config
+        
+        # Remove completed subtask
+        remaining_subtasks = state["subtasks"][1:]
+        
+        return {
+            **state,
+            "spawned_agents": spawned_agents,
+            "subtasks": remaining_subtasks
+        }
+    
+    def execute_agent_node(state: DynamicOrchestratorState, agent_id: str) -> DynamicOrchestratorState:
+        """Execute a spawned agent."""
+        agent_config = state["spawned_agents"][agent_id]
+        subtask = find_subtask_for_agent(agent_id, state)
+        
+        # Execute agent with its specialized configuration
+        result = execute_agent(agent_config, subtask)
+        
+        agent_results = state.get("agent_results", {})
+        agent_results[agent_id] = result
+        
+        return {
+            **state,
+            "agent_results": agent_results
+        }
+    
+    # Build dynamic graph
+    graph = StateGraph(DynamicOrchestratorState)
+    graph.add_node("spawn_agents", spawn_agent_node)
+    # Agent execution nodes added dynamically as agents are spawned
+    ```
+
+??? "AutoGen: Dynamic Agent Creation"
+
+    AutoGen supports dynamic agent creation through its conversational framework:
+
+    ```python
+    from autogen import ConversableAgent, GroupChat, GroupChatManager
+    
+    class DynamicAutoGenOrchestrator:
+        def spawn_agent(self, role: str, system_message: str, tools: List) -> ConversableAgent:
+            """Create an AutoGen agent dynamically."""
+            agent = ConversableAgent(
+                name=role,
+                system_message=system_message,
+                llm_config={"model": "gpt-4o"},
+                tools=tools,
+                human_input_mode="NEVER"
+            )
+            return agent
+        
+        def orchestrate_with_spawned_agents(self, goal: str):
+            """Orchestrate task with dynamically spawned agents."""
+            # Decompose goal
+            subtasks = self.decompose_goal(goal)
+            
+            # Spawn agents for each subtask
+            agents = []
+            for subtask in subtasks:
+                role = determine_role(subtask)
+                system_message = generate_specialized_prompt(subtask)
+                tools = select_tools(subtask)
+                
+                agent = self.spawn_agent(role, system_message, tools)
+                agents.append(agent)
+            
+            # Create group chat with spawned agents
+            groupchat = GroupChat(agents=agents, messages=[], max_round=10)
+            manager = GroupChatManager(groupchat=groupchat, llm_config={"model": "gpt-4o"})
+            
+            # Execute
+            result = manager.initiate_chat(message=goal)
+            return result
+    ```
 
 ## Implementation
 
@@ -457,247 +577,130 @@ print(result)
 **Explanation:**
 This example demonstrates the core dynamic spawning pattern: the orchestrator analyzes each subtask, determines what specialized agent is needed, generates a tailored agent configuration (prompt, tools, objectives), and executes the task with the spawned agent. Agents are cached for potential reuse, and the orchestrator synthesizes all results.
 
-### Advanced Example: Code Generation for Agents
-
 This advanced example shows how orchestrators can generate actual agent code at runtime:
 
-```python
-class CodeGeneratingOrchestrator:
-    """Orchestrator that generates agent code dynamically."""
-    
-    def spawn_agent_as_code(self, subtask: Dict, task_context: Dict) -> str:
-        """Generate Python code for a specialized agent."""
-        code_generation_prompt = f"""Generate Python code for a specialized agent to handle this subtask.
 
-Subtask: {subtask['description']}
-Task Context: {task_context.get('goal', '')}
-Required Capabilities: {subtask.get('capabilities', [])}
-
-Generate a complete Python class that:
-1. Inherits from a base Agent class
-2. Has specialized methods for the subtask
-3. Includes appropriate tools and capabilities
-4. Has clear input/output interfaces
-5. Follows best practices for agent design
-
-Return only the Python code, no explanations."""
-        
-        response = self.llm.invoke(code_generation_prompt)
-        agent_code = response.content
-        
-        # In production, you would:
-        # 1. Validate the generated code
-        # 2. Execute it in a sandboxed environment
-        # 3. Instantiate the agent class
-        # 4. Register it for execution
-        
-        return agent_code
-    
-    def execute_generated_agent(self, agent_code: str, subtask: Dict) -> str:
-        """Execute a dynamically generated agent."""
-        # In production, use proper code execution with sandboxing
-        # This is a simplified example
-        exec_globals = {
-            "Agent": BaseAgent,  # Base class
-            "llm": self.llm,
-            "tools": self.tool_registry
-        }
-        
-        # Execute code to create agent class
-        exec(agent_code, exec_globals)
-        
-        # Extract agent class (simplified - would need proper parsing)
-        # Instantiate and execute
-        # ...
-        
-        return "Agent executed"
-```
-
-### Framework-Specific Examples
-
-??? "LangGraph: Dynamic Node Creation"
-
-    LangGraph allows dynamic graph construction where nodes (agents) can be created at runtime:
+??? Advanced Example: Code Generation for Agents
 
     ```python
-    from langgraph.graph import StateGraph, END
-    from typing import TypedDict, List, Dict
-    
-    class DynamicOrchestratorState(TypedDict):
-        goal: str
-        subtasks: List[Dict]
-        spawned_agents: Dict[str, Dict]  # Agent configs
-        agent_results: Dict[str, str]
-        final_output: str
-    
-    def spawn_agent_node(state: DynamicOrchestratorState) -> DynamicOrchestratorState:
-        """Dynamically create agent nodes based on subtasks."""
-        if not state["subtasks"]:
-            return state
+    class CodeGeneratingOrchestrator:
+        """Orchestrator that generates agent code dynamically."""
         
-        current_subtask = state["subtasks"][0]
-        
-        # Generate agent configuration
-        agent_config = generate_agent_config(current_subtask, state["goal"])
-        agent_id = f"agent_{len(state['spawned_agents'])}"
-        
-        # Add agent to graph dynamically
-        spawned_agents = state.get("spawned_agents", {})
-        spawned_agents[agent_id] = agent_config
-        
-        # Remove completed subtask
-        remaining_subtasks = state["subtasks"][1:]
-        
-        return {
-            **state,
-            "spawned_agents": spawned_agents,
-            "subtasks": remaining_subtasks
-        }
-    
-    def execute_agent_node(state: DynamicOrchestratorState, agent_id: str) -> DynamicOrchestratorState:
-        """Execute a spawned agent."""
-        agent_config = state["spawned_agents"][agent_id]
-        subtask = find_subtask_for_agent(agent_id, state)
-        
-        # Execute agent with its specialized configuration
-        result = execute_agent(agent_config, subtask)
-        
-        agent_results = state.get("agent_results", {})
-        agent_results[agent_id] = result
-        
-        return {
-            **state,
-            "agent_results": agent_results
-        }
-    
-    # Build dynamic graph
-    graph = StateGraph(DynamicOrchestratorState)
-    graph.add_node("spawn_agents", spawn_agent_node)
-    # Agent execution nodes added dynamically as agents are spawned
-    ```
+        def spawn_agent_as_code(self, subtask: Dict, task_context: Dict) -> str:
+            """Generate Python code for a specialized agent."""
+            code_generation_prompt = f"""Generate Python code for a specialized agent to handle this subtask.
 
-??? "AutoGen: Dynamic Agent Creation"
+    Subtask: {subtask['description']}
+    Task Context: {task_context.get('goal', '')}
+    Required Capabilities: {subtask.get('capabilities', [])}
 
-    AutoGen supports dynamic agent creation through its conversational framework:
+    Generate a complete Python class that:
+    1. Inherits from a base Agent class
+    2. Has specialized methods for the subtask
+    3. Includes appropriate tools and capabilities
+    4. Has clear input/output interfaces
+    5. Follows best practices for agent design
 
-    ```python
-    from autogen import ConversableAgent, GroupChat, GroupChatManager
-    
-    class DynamicAutoGenOrchestrator:
-        def spawn_agent(self, role: str, system_message: str, tools: List) -> ConversableAgent:
-            """Create an AutoGen agent dynamically."""
-            agent = ConversableAgent(
-                name=role,
-                system_message=system_message,
-                llm_config={"model": "gpt-4o"},
-                tools=tools,
-                human_input_mode="NEVER"
-            )
-            return agent
+    Return only the Python code, no explanations."""
+            
+            response = self.llm.invoke(code_generation_prompt)
+            agent_code = response.content
+            
+            # In production, you would:
+            # 1. Validate the generated code
+            # 2. Execute it in a sandboxed environment
+            # 3. Instantiate the agent class
+            # 4. Register it for execution
+            
+            return agent_code
         
-        def orchestrate_with_spawned_agents(self, goal: str):
-            """Orchestrate task with dynamically spawned agents."""
-            # Decompose goal
-            subtasks = self.decompose_goal(goal)
+        def execute_generated_agent(self, agent_code: str, subtask: Dict) -> str:
+            """Execute a dynamically generated agent."""
+            # In production, use proper code execution with sandboxing
+            # This is a simplified example
+            exec_globals = {
+                "Agent": BaseAgent,  # Base class
+                "llm": self.llm,
+                "tools": self.tool_registry
+            }
             
-            # Spawn agents for each subtask
-            agents = []
-            for subtask in subtasks:
-                role = determine_role(subtask)
-                system_message = generate_specialized_prompt(subtask)
-                tools = select_tools(subtask)
-                
-                agent = self.spawn_agent(role, system_message, tools)
-                agents.append(agent)
+            # Execute code to create agent class
+            exec(agent_code, exec_globals)
             
-            # Create group chat with spawned agents
-            groupchat = GroupChat(agents=agents, messages=[], max_round=10)
-            manager = GroupChatManager(groupchat=groupchat, llm_config={"model": "gpt-4o"})
+            # Extract agent class (simplified - would need proper parsing)
+            # Instantiate and execute
+            # ...
             
-            # Execute
-            result = manager.initiate_chat(message=goal)
-            return result
+            return "Agent executed"
     ```
 
 ## Challenges and Trade-offs
 
-While dynamic agent spawning is powerful, it comes with significant challenges:
+While dynamic agent spawning is powerful, it introduces technical challenges beyond the decision tradeoffs already discussed:
 
-### Complexity and Unpredictability
+### Debugging and Observability
 
-**Challenge:** Each spawned agent introduces uncertainty. The system becomes harder to debug, reproduce, and predict.
+**Challenge:** Each spawned agent introduces uncertainty. The system becomes harder to debug, reproduce, and predict. When an agent fails, you must trace through dynamic generation logic to understand what went wrong.
 
 **Mitigation Strategies:**
-- Implement strong logging and observability for all spawned agents
-- Use structured agent templates to reduce variability
-- Validate generated agents before execution
+
+- Implement comprehensive logging for all spawned agents (generation prompts, configurations, execution traces)
+- Use structured agent templates to reduce variability and improve debuggability
 - Implement agent versioning and rollback capabilities
-- Set limits on spawning depth and agent count
-
-### Latency and Cost
-
-**Challenge:** Agent generation and initialization add overhead. Multi-agent systems can use 15× more tokens than single-agent systems.
-
-**Mitigation Strategies:**
-- Cache and reuse similar agents across tasks
-- Implement agent pooling for common roles
-- Use lightweight agent generation (prompts over code generation)
-- Set cost budgets and agent count limits
-- Optimize agent prompts to reduce token usage
+- Create observability dashboards showing agent spawning decisions and execution flows
+- Set limits on spawning depth and agent count to prevent runaway complexity
 
 ### Security and Trust
 
-**Challenge:** Dynamically generated agents may execute arbitrary code or use tools in unexpected ways.
+**Challenge:** Dynamically generated agents may execute arbitrary code or use tools in unexpected ways. The orchestrator's agent generation logic becomes a security surface.
 
 **Mitigation Strategies:**
-- Execute agents in sandboxed environments
-- Implement strict access controls and permission systems
-- Validate agent code and configurations before execution
-- Use agent attestation and verification
-- Implement audit trails for all agent actions
+
+- Execute agents in sandboxed environments with restricted permissions
+- Implement strict access controls and permission systems for spawned agents
+- Validate agent code and configurations before execution (static analysis, prompt injection checks)
+- Use agent attestation and verification mechanisms
+- Implement audit trails for all agent actions and generation decisions
+- Limit tool access based on agent role and task requirements
 
 ### Coordination Overhead
 
-**Challenge:** Managing communication and synchronization between dynamically created agents is complex.
+**Challenge:** Managing communication and synchronization between dynamically created agents is complex. Agents may have incompatible interfaces or communication patterns.
 
 **Mitigation Strategies:**
-- Use structured communication protocols (A2A, MCP)
-- Implement clear agent interfaces and contracts
+- Use structured communication protocols (A2A, MCP) to standardize agent interactions
+- Implement clear agent interfaces and contracts that all spawned agents must follow
 - Use centralized coordination (orchestrator manages all communication)
 - Set timeouts and failure handling for agent coordination
-- Implement deadlock detection and prevention
+- Implement deadlock detection and prevention mechanisms
+- Design agent interfaces before spawning to ensure compatibility
 
-### Reproducibility
+### Agent Generation Quality
 
-**Challenge:** Dynamic spawning introduces variability that makes results harder to reproduce.
+**Challenge:** LLM-generated agents may have incorrect prompts, missing capabilities, or poor tool configurations. Quality varies with each generation.
 
 **Mitigation Strategies:**
-- Seed random number generators
-- Use deterministic agent generation when possible
-- Save agent configurations for replay
-- Implement version control for agent templates
-- Document all spawning decisions
+- Validate generated agent configurations against schemas before instantiation
+- Use agent templates and prompt engineering to improve generation consistency
+- Implement quality checks (capability verification, prompt validation)
+- Test generated agents on sample tasks before full execution
+- Implement fallback mechanisms when generation quality is poor
 
 ## Best Practices
 
 1. **Start Simple:** Begin with static agents, add dynamic spawning only when truly needed.
-
 2. **Use Agent Templates:** Create reusable templates for common agent types to reduce generation overhead and improve consistency.
-
 3. **Implement Caching:** Cache spawned agents for reuse across similar tasks to improve efficiency.
-
 4. **Set Guardrails:** Implement limits on:
-   - Maximum number of spawned agents
-   - Maximum spawning depth (prevent infinite recursion)
-   - Agent lifetime
-   - Resource usage per agent
+
+    - Maximum number of spawned agents
+    - Maximum spawning depth (prevent infinite recursion)
+    - Agent lifetime
+    - Resource usage per agent
 
 5. **Validate Before Execution:** Always validate generated agents (code, prompts, configurations) before allowing them to execute.
-
 6. **Monitor and Log:** Implement comprehensive logging for all agent spawning and execution to enable debugging and optimization.
-
 7. **Graceful Degradation:** If agent generation fails, fall back to predefined agents or simpler approaches.
-
 8. **Test Thoroughly:** Test dynamic spawning with various task types to ensure robustness.
 
 ## Relationship to Other Patterns
@@ -710,13 +713,7 @@ While dynamic agent spawning is powerful, it comes with significant challenges:
 
 ## Key Takeaways
 
-- **Core Concept:** Dynamic Agent Spawning enables orchestrators to create specialized worker agents at runtime, tailored to specific subtasks as they emerge.
-- **Key Benefit:** Maximum flexibility and task-specific optimization, allowing the system to adapt its structure to match problem requirements.
-- **Primary Use Case:** Complex, unpredictable tasks where required agent roles cannot be predetermined.
-- **Trade-offs:** Increased complexity, reduced reproducibility, higher latency and cost compared to static agent selection.
-- **Best Practice:** Use agent templates, implement caching, set guardrails, and validate generated agents before execution.
-- **State of the Art:** This is an emerging pattern, with active research and development. Many frameworks support it, but production deployments require careful engineering.
-- **When to Avoid:** For simple, predictable tasks where static agent selection is sufficient and more efficient.
+Dynamic Agent Spawning enables orchestrators to create specialized worker agents at runtime, offering maximum flexibility and task-specific optimization at the cost of increased complexity, reduced reproducibility, and higher latency. Use this pattern for complex, unpredictable tasks where specialization justifies generation overhead. This is an emerging pattern requiring careful engineering for production deployments.
 
 ??? "References"
 
@@ -746,4 +743,3 @@ While dynamic agent spawning is powerful, it comes with significant challenges:
     - **Pattern: Self-Improving Agents** - Self-improving systems use dynamic spawning to create improved agent versions
     - **Pattern: Task Decomposition** - Essential for determining what agents to spawn
     - **Pattern: Planning** - Used by orchestrators to plan agent requirements
-

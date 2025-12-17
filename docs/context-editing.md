@@ -23,7 +23,6 @@ Context editing enables agents to operate indefinitely while maintaining focus o
 
 Context editing is a core component of context engineering—the discipline of strategically managing what information appears in the context window to optimize performance, cost, and reasoning quality.
 
-> **"Prompt engineering is dead; it has become context engineering."** — Andrej Karpathy 
 Unlike explicit compression techniques that require explicit function calls, context editing operates automatically based on configurable thresholds, removing or summarizing content when limits are exceeded. 
 The technique can be applied at different points in the pipeline—before prompts reach the model (API-level) or through SDK-based processing—but the core mechanism is the same: monitor context size, apply editing strategies when thresholds are exceeded, and preserve essential information while removing or compressing less critical content.
 Context editing is a key technique for preventing **Context Rot**—the performance degradation that occurs as context windows fill up, even within technical token limits.

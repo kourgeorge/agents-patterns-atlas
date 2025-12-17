@@ -6,7 +6,6 @@ Context engineering is the discipline of strategically managing what information
 Just as software engineers optimize memory usage and database queries, context engineers optimize the finite context window—the maximum number of tokens an LLM can process in a single interaction.
 The context window represents a fundamental constraint of LLM-based agents.
 
-
 Unlike human memory, which can recall vast amounts of information, LLMs operate within hard token limits (typically 32K to 1M+ tokens depending on the model). As agents tackle complex, multi-step tasks, they accumulate conversation history, tool results, and intermediate reasoning that can quickly exhaust available context. Without effective context engineering, agents hit hard limits, suffer performance degradation, incur excessive costs, and lose critical information.
 
 This chapter provides a high-level overview of context engineering as a domain. We'll explore the fundamental challenges, key concepts, and the patterns available for managing context effectively. For specific implementation patterns, see the pattern modules referenced throughout this chapter.
@@ -55,8 +54,6 @@ Modern LLM inference uses Key-Value (KV) caches to optimize repeated processing 
 A critical but often overlooked challenge is **Context Rot**—the phenomenon where an LLM's performance degrades as the context window fills up, even if the total token count is well within the technical limit. For example, a model may advertise a 1 million token context window, but its **effective context window**—where the model performs at high quality—is often much smaller.
 
 > **"Anything beyond ~200k tokens leads to *context rot* — the model forgets what matters."** — Manus Creators
-
-> **"The most powerful design lever in agents today is *context curation*, not more compute."** — Manus Creators
 
 **Current Reality:** As of 2025, most models have effective context windows of less than 256k tokens, even when they technically support much larger limits. The "effective context window" is the real constraint, not the advertised technical limit.
 

@@ -1,4 +1,4 @@
-![Book Banner](banner.jpg)
+![Book Banner](banner.png)
 
 > **"We are entering a world where computers behave like people: browsing, clicking, copying, pasting, planning."** — Andrej Karpathy 
 
@@ -104,13 +104,13 @@ Each pattern module follows a consistent structure:
 
 ## How to Cite This Book
 
-Kour, G. (2025). *Intelligence Patterns: An Evolving Handbook on Agentic Design*. 
+Kour, G. (2025). *Intelligence Patterns: Reusable Elements of Agentic Design*. 
 
 ### BibTeX
 
 ```bibtex
 @book{kour2025intelligence,
-  title={Intelligence Patterns: An Evolving Handbook on Agentic Design},
+  title={Intelligence Patterns: Reusable Elements of Agentic Design},
   author={Kour, George},
   year={2025},
   note={Living resource, continuously updated}
