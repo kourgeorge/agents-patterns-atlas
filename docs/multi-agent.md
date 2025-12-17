@@ -289,6 +289,45 @@ This becomes a collection of four agents: a marketing manager agent coordinating
 - **MetaGPT (2024):** Encodes Standard Operating Procedures (SOPs) into prompts for distinct job roles (architect, programmer, reviewer), ensuring each agent has expert-level domain knowledge and can verify each other's results.
 - **AutoGen (2024):** Provides flexible communication patterns among LLM agents, with one agent assigned as a "project manager" that breaks queries into pieces, delegates to specialist agents, then integrates outputs.
 
+### Dynamic Agent Spawning Pattern
+
+An advanced evolution of the Orchestrator-Worker pattern where the orchestrator agent dynamically creates specialized worker agents at runtime, rather than selecting from a predefined set. The orchestrator analyzes each subtask, determines what specialized capabilities are needed, and generates new agents (as code, prompts, or configurations) tailored to each specific task.
+
+**Key Distinction:** Unlike static agent selection where agents are predefined with fixed roles, dynamic spawning creates agents on-demand with task-specific specializations. This enables maximum flexibility and adaptation to unpredictable task requirements.
+
+**How It Works:**
+1. Orchestrator receives a high-level goal and decomposes it into subtasks
+2. For each subtask, orchestrator analyzes what specialized agent is needed
+3. Orchestrator checks if existing agents can handle the subtask
+4. If not, orchestrator generates a new specialized agent with:
+   - Tailored prompts optimized for the specific subtask
+   - Appropriate tools and capabilities
+   - Clear objectives and expected outputs
+5. Orchestrator assembles spawned agents into a multi-agent system
+6. Agents execute their specialized tasks
+7. Orchestrator synthesizes results
+
+**Examples:**
+- **Anthropic's Multi-Agent Research System:** LeadResearcher agent spawns specialized Web Search subagents, each configured for specific research aspects (academic papers, industry news, technical docs), working in parallel
+- **Emergence.ai Orchestrator:** Starting from a single task, automatically decomposes it, checks existing agents, generates new specialized agents (as code) for each step, and continuously creates new agents to tackle an expanding set of problems
+- **EvoMAC:** Parent agent dynamically creates child agents to handle specific subtasks during runtime, with iterative refinement capabilities
+
+**When to Use:**
+- Tasks with unpredictable requirements where agent roles cannot be predetermined
+- Complex, evolving problems requiring different specializations as understanding deepens
+- Enterprise automation where requirements vary significantly across use cases
+- When task-specific optimization justifies the overhead of agent generation
+
+**Trade-offs:**
+- ✅ Maximum flexibility and task-specific optimization
+- ✅ Adaptive problem-solving that evolves with requirements
+- ✅ Resource efficiency (agents created only when needed)
+- ❌ Increased complexity and system unpredictability
+- ❌ Higher latency and cost (agent generation overhead)
+- ❌ Reduced reproducibility compared to static agents
+
+This pattern is detailed in the **Pattern: Dynamic Agent Spawning** module.
+
 ### Evaluator-Optimizer Pattern
 
 An iterative loop where one agent generates solutions and another critiques them, enabling quality improvement through specialized feedback. 
@@ -604,6 +643,8 @@ Multi-agent systems integrate with other agent capabilities:
 This chapter provided an overview of modern LLM-based multi-agent architectures, key patterns, real-world frameworks, and design considerations. For detailed implementation guidance, see:
 
 - **Pattern: Orchestrator-Worker** - Detailed implementation of the orchestrator-worker pattern with modern examples
+- **Pattern: Dynamic Agent Spawning** - Runtime creation of specialized worker agents tailored to specific tasks
+- **Pattern: Self-Improving Agents** - Recursive self-improvement through self-exploration, evaluation, and iterative refinement
 - **Pattern: Planner-Checker** - Separation of planning, execution, and verification across specialized agents
 - **Pattern: Multi-Agent Debate** - Structured debate and discussion frameworks for improved reasoning
 - **Pattern: Swarm/Consensus Architecture** - Decentralized coordination through discussion and consensus

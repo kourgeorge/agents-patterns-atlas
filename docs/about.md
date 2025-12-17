@@ -80,6 +80,7 @@ The code examples are designed to clearly illustrate each pattern's core logic a
 ### For Beginners
 
 If you're new to agentic systems, we recommend reading the modules sequentially. The book is structured to build concepts progressively:
+
 - Start with understanding what agents are and how they differ from workflows
 - Learn foundational workflow patterns before moving to advanced capabilities
 - Understand single-agent patterns before exploring multi-agent systems
@@ -92,6 +93,7 @@ If you're already familiar with agentic systems, you can use this book as a refe
 - Explore advanced patterns like multi-agent coordination or context engineering when needed
 
 Each pattern module follows a consistent structure:
+
 - **Pattern Overview:** What the pattern is and why it matters
 - **When to Use:** Guidance on recognizing when this pattern applies
 - **Practical Applications:** Real-world use cases

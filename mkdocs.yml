@@ -96,10 +96,13 @@ nav:
 - Multi-Agent Systems:
     - Multi-Agent Architectures: multi-agent.md
     - "Pattern: Orchestrator-Worker": orchestrator-worker.md
+    - "Pattern: Dynamic Agent Spawning": dynamic-agent-spawning.md
     - "Pattern: Planner-Checker": planner-checker.md
     - "Pattern: Multi-Agent Debate": multi-agent-debate.md
     - "Pattern: Swarm/Consensus Architecture": swarm-consensus.md
-- Human input and Recovery:
-    - Learning and Adaptation: learning-adaptation.md
+- Exception Handling and Human Interaction:
     - "Pattern: Exception Handling and Recovery": exception-handling.md
     - "Pattern: Human-in-the-Loop": human-in-the-loop.md
+- Learning and Adaptation:
+    - Learning and Adaptation: learning-adaptation.md
+    - "Pattern: Self-Improving Agents": self-improving-agents.md
