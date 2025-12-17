@@ -10,17 +10,15 @@ The Planner-Checker pattern captures this principle: one agent (or module) creat
 
 ## Pattern Overview
 
-**What it is:** A multi-agent or multi-module architecture where planning, execution, and verification are separated into distinct phases handled by specialized components. 
-A Planner agent creates structured plans (often as directed acyclic graphs of sub-tasks), an Executor agent carries out plans using external tools, and optionally a Reflect/Checker agent evaluates outcomes and correctness.
+### Problem
 
-**When to use:** For complex, long-horizon tasks requiring multi-step tool use, when global optimization of action sequences is needed, when plans must be verified before execution, or when execution results need systematic checking. 
-Particularly valuable for tasks requiring intricate multi-tool workflows where reactive strategies get stuck in local decision loops.
+Complex, long-horizon tasks requiring multi-step tool use often involve intricate multi-tool workflows where reactive strategies get stuck in local decision loops. Reactive approaches like ReAct that interleave reasoning and tool use make local decisions reactively, which can lead to suboptimal action sequences and poor tool orchestration. Without global optimization of action sequences, systematic verification, and feedback loops for dynamic correction, agents struggle with complex tool-using tasks that require careful planning and coordination.
 
-**Why it matters:** Separating planning from execution enables global optimization of action sequences, better tool orchestration, systematic verification, and feedback loops for dynamic correction. Research shows that planner-centric approaches outperform reactive strategies on complex tool-using tasks by creating optimized plans before execution rather than making local decisions reactively.
+### Solution
 
-Unlike reactive approaches like ReAct that interleave reasoning and tool use, the Planner-Checker pattern decouples these concerns. 
-The planner thinks globally about the entire task sequence, the executor focuses on tool invocation, and the checker verifies correctness. 
-This separation enables better performance on complex, multi-step tasks.
+The Planner-Checker pattern addresses this by separating planning, execution, and verification into distinct phases handled by specialized components. A Planner agent creates structured plans (often as directed acyclic graphs of sub-tasks), an Executor agent carries out plans using external tools, and optionally a Reflect/Checker agent evaluates outcomes and correctness. Unlike reactive approaches that interleave reasoning and tool use, this pattern decouples these concerns: the planner thinks globally about the entire task sequence, the executor focuses on tool invocation, and the checker verifies correctness.
+
+This separation enables global optimization of action sequences, better tool orchestration, systematic verification, and feedback loops for dynamic correction. Research shows that planner-centric approaches outperform reactive strategies on complex tool-using tasks by creating optimized plans before execution rather than making local decisions reactively. The pattern is particularly valuable for tasks requiring intricate multi-tool workflows where reactive strategies get stuck in local decision loops, enabling better performance on complex, multi-step tasks.
 
 ### Key Concepts
 

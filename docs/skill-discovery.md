@@ -22,22 +22,15 @@ This pattern transforms general-purpose agents into specialized agents that fit 
 
 ## Pattern Overview
 
-**What it is:** The Agent Skills pattern (exemplified by the `SKILL.md` file structure) is an engineering approach for building specialized agents using files and folders. 
-A skill is a directory containing a `SKILL.md` file that contains organized folders of instructions, scripts, and resources that give agents additional capabilities. 
-This pattern serves a dual purpose: (1) **Capability Discovery**—enabling agents to discover what capabilities are available through lightweight metadata, and (2) **Procedural Knowledge Codification**—providing detailed step-by-step procedures, workflows, and best practices that agents can load on demand. 
-This pattern provides procedural knowledge and organizational context to general-purpose agents, allowing them to accomplish complex, domain-specific tasks through progressive disclosure of information. 
-Skills extend an agent's capabilities by packaging your expertise into composable resources, transforming general-purpose agents into specialized agents.
+### Problem
 
-**When to use:** Use this pattern when building agents that need access to multiple specialized capabilities, when you want to organize procedural knowledge in a scalable way, or when you need to optimize token usage by loading information only as needed. 
-This pattern is particularly valuable for multi-agent systems where different agents may need different skill sets.
+Traditional approaches load all tool definitions and instructions into the agent's context upfront, leading to context bloat and wasted tokens. When building agents that need access to multiple specialized capabilities, organizing procedural knowledge in a scalable way, or optimizing token usage, loading all information at startup becomes impractical. Unlike simple tool registries that only list available tools, agents need complete workflows and procedures—the "how to" knowledge that enables them to execute complex tasks consistently. Without a mechanism for progressive disclosure, agents cannot efficiently access the knowledge they need without overwhelming their context window.
 
-**Why it matters:** Traditional approaches load all tool definitions and instructions into the agent's context upfront, leading to context bloat and wasted tokens.
+### Solution
 
-The SKILL pattern enables agents to discover capabilities through metadata, activate skills on demand, and access detailed procedural instructions only when needed. 
-Unlike simple tool registries that only list available tools, skills encode complete workflows and procedures—the "how to" knowledge that enables agents to execute complex tasks consistently. 
-This creates a scalable, composable system where the amount of knowledge an agent can access is effectively unbounded, limited only by storage, not by context window size.
-This pattern practically transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials. 
-Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup.
+The Agent Skills pattern (exemplified by the `SKILL.md` file structure) is an engineering approach for building specialized agents using files and folders. A skill is a directory containing a `SKILL.md` file that contains organized folders of instructions, scripts, and resources that give agents additional capabilities. This pattern serves a dual purpose: (1) **Capability Discovery**—enabling agents to discover what capabilities are available through lightweight metadata, and (2) **Procedural Knowledge Codification**—providing detailed step-by-step procedures, workflows, and best practices that agents can load on demand.
+
+The SKILL pattern enables agents to discover capabilities through metadata, activate skills on demand, and access detailed procedural instructions only when needed. This creates a scalable, composable system where the amount of knowledge an agent can access is effectively unbounded, limited only by storage, not by context window size. This pattern practically transforms the filesystem into an external knowledge base that agents can navigate and explore, similar to how humans use reference materials. Just as a developer doesn't need the entire API documentation in their working memory, an agent doesn't need every skill's full instructions loaded at startup. Skills extend an agent's capabilities by packaging expertise into composable resources, transforming general-purpose agents into specialized agents.
 
 
 > **"Agents need a clean skill surface. Every tool should feel like a verb."** — Manus

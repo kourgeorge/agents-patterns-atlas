@@ -15,11 +15,15 @@ At each step, the agent needs to know what variables exist and their characteris
 
 ## Pattern Overview
 
-**What it is:** The Variables Manager Pattern maintains a centralized registry of execution variables with rich metadata while providing context-efficient summaries. Instead of passing full values through context, agents work with variable references and retrieve full values only when needed.
+### Problem
 
-**When to use:** Use this pattern when agents create intermediate values that need to be tracked across multiple execution steps, especially when those values are large and would consume significant context tokens if included directly.
+In multi-step agent workflows, intermediate results often need to be referenced across different execution stages. When an agent performs data analysis, API calls, or code execution, it generates values that subsequent steps depend on. LLMs have finite context windows, and including large intermediate values in every prompt is expensive and wasteful. At each step, the agent needs to know what variables exist and their characteristics, but including full data dumps (like 10,000-record datasets) in every prompt would be wasteful and expensive. Agents need metadata about variables without the full values consuming context tokens.
 
-**Why it matters:** LLMs have finite context windows, and including large intermediate values in every prompt is expensive and wasteful. The Variable Manager Pattern enables agents to maintain awareness of execution state through lightweight metadata summaries, retrieving full values only when explicitly needed. This separation of metadata from values dramatically improves context efficiency while maintaining full observability.
+### Solution
+
+The Variables Manager Pattern maintains a centralized registry of execution variables with rich metadata while providing context-efficient summaries. Instead of passing full values through context, agents work with variable references and retrieve full values only when needed. This pattern enables agents to maintain awareness of execution state through lightweight metadata summaries, retrieving full values only when explicitly needed.
+
+This separation of metadata from values dramatically improves context efficiency while maintaining full observability. The pattern is particularly valuable when agents create intermediate values that need to be tracked across multiple execution steps, especially when those values are large and would consume significant context tokens if included directly. By providing summaries that show what exists without exposing full values, using minimal tokens, the pattern enables efficient state management across complex multi-step workflows.
 
 ### Key Concepts
 

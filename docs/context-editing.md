@@ -8,35 +8,16 @@ Just as editors trim manuscripts to focus on essential content, Context Editing 
 This pattern enables agents to operate indefinitely within context limits through intelligent, automatic pruning.
 
 ## Pattern Overview
-**What it is:** Context editing automatically manages conversation context as it grows, removing or compressing less critical content (tool results, thinking blocks, old messages) to stay within token limits and optimize costs.
 
-**When to use:** When building long-running agents that accumulate extensive conversation history, tool results, or thinking blocks that would exceed context window limits or degrade performance over time. 
-Essential for preventing **Context Rot** by proactively managing context before performance degradation occurs.
+### Problem
 
-**Why it matters:** Without automatic context management, agents hit hard token limits, incur excessive costs from processing large contexts, and suffer performance degradation.
+As conversations grow, context accumulates: tool results pile up, thinking blocks expand, and message history lengthens. Without automatic context management, agents hit hard token limits, incur excessive costs from processing large contexts, and suffer performance degradation. This leads to **Context Rot**—the performance degradation that occurs as context windows fill up, even within technical token limits. Long-running agents that accumulate extensive conversation history, tool results, or thinking blocks cannot operate effectively without intervention.
 
-> **"The context window is the agent's working memory — its RAM."** — Andrej Karpathy
+### Solution
 
-> **"Context engineering is the art of filling the window with exactly what the model needs for the next action."** — Andrej Karpathy
+Context editing automatically manages conversation context as it grows, removing or compressing less critical content (tool results, thinking blocks, old messages) to stay within token limits and optimize costs. Unlike explicit compression techniques that require explicit function calls, context editing operates automatically based on configurable thresholds, removing or summarizing content when limits are exceeded. The technique can be applied at different points in the pipeline—before prompts reach the model (API-level) or through SDK-based processing—but the core mechanism is the same: monitor context size, apply editing strategies when thresholds are exceeded, and preserve essential information while removing or compressing less critical content.
 
-Context editing enables agents to operate indefinitely while maintaining focus on relevant information.
-
-Context editing is a core component of context engineering—the discipline of strategically managing what information appears in the context window to optimize performance, cost, and reasoning quality.
-
-Unlike explicit compression techniques that require explicit function calls, context editing operates automatically based on configurable thresholds, removing or summarizing content when limits are exceeded. 
-The technique can be applied at different points in the pipeline—before prompts reach the model (API-level) or through SDK-based processing—but the core mechanism is the same: monitor context size, apply editing strategies when thresholds are exceeded, and preserve essential information while removing or compressing less critical content.
-Context editing is a key technique for preventing **Context Rot**—the performance degradation that occurs as context windows fill up, even within technical token limits.
-
-> **"Anything beyond ~200k tokens leads to *context rot* — the model forgets what matters."** — Manus Creators
-
-> **"The most powerful design lever in agents today is *context curation*, not more compute."** — Manus Creators
-
-The technique can be configured for different editing strategies:
-
-1. **Content-specific clearing:** Remove specific content types (tool results, thinking blocks) based on configurable thresholds and retention policies, replacing them with placeholders.
-2. **Full history compaction:** Replace entire conversation history with a structured summary when token thresholds are exceeded, enabling agents to continue from a compressed state.
-
-Both strategies maintain conversation continuity while managing context size, ensuring agents can operate effectively over extended interactions without manual intervention.
+The technique can be configured for different editing strategies: content-specific clearing (removing specific content types like tool results or thinking blocks based on configurable thresholds and retention policies, replacing them with placeholders) or full history compaction (replacing entire conversation history with a structured summary when token thresholds are exceeded, enabling agents to continue from a compressed state). Both strategies maintain conversation continuity while managing context size, ensuring agents can operate effectively over extended interactions without manual intervention. Context editing is a core component of context engineering—the discipline of strategically managing what information appears in the context window to optimize performance, cost, and reasoning quality.
 
 ### Key Concepts
 

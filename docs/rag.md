@@ -21,28 +21,36 @@ By integrating external knowledge, RAG transforms agents from simple conversatio
 
     In addition, it's important to note that basic RAG is more like a **workflow** than a true agentic solution—it follows a predetermined sequence: query → retrieve → augment → generate. The LLM doesn't autonomously decide when or how to retrieve information; the retrieval step is hardcoded into the pipeline. However, RAG can be viewed as a **reusable skill** for accessing information from corpora that can be integrated into agent architectures. This is especially valuable for agents that primarily work with large document corpora or are required to abide by certain corporate rules and policies of an organization. In such contexts, RAG serves as a specialized capability that agents can invoke when they need to ground their responses in specific documentation or knowledge bases, making it a composable building block for more sophisticated agentic systems.
 
-## **RAG Pattern Overview**
+## Pattern Overview
 
-The RAG pattern significantly enhances the capabilities of LLMs by granting them access to external knowledge bases before generating a response. 
-Instead of relying solely on their internal, pre-trained knowledge, RAG allows LLMs to "look up" information, much like a human might consult a book or search the internet. This process empowers LLMs to provide more accurate, up-to-date, and verifiable answers.
+### Problem
 
-RAG is composed of two main steps. First, the system retrieves relevant information from a large knowledge base—not just identifying relevant documents or links, but extracting the most pertinent text segments from those documents. This retrieval step goes beyond simple document matching; it must identify and extract the specific passages, sentences, or chunks that directly address the user's query. Second, the extracted information is augmented into the LLM's context, enabling the model to generate a direct answer to the query rather than simply returning a list of sources like a traditional search engine. The LLM synthesizes the retrieved context with its reasoning capabilities to produce a coherent, contextually grounded response.
+LLMs exhibit substantial capabilities in generating human-like text. However, their knowledge base is typically confined to the data on which they were trained, limiting their access to real-time information, specific company data, or highly specialized details. Without access to external knowledge bases, LLMs cannot provide up-to-date information, access proprietary or domain-specific data, or ground their responses in verifiable sources. This limitation leads to hallucinations, outdated information, and inability to answer questions about recent events or specialized knowledge not in training data.
 
-When a user poses a question or gives a prompt to an AI system using RAG, the query isn't sent directly to the LLM. 
-Instead, the system first scours a vast external knowledge base—a highly organized library of documents, databases, or web pages—for relevant information. 
-This search is not a simple keyword match; it's a **"semantic search"** that understands the user's intent and the meaning behind their words. 
-This initial search pulls out the most pertinent snippets or "chunks" of information. 
-These extracted pieces are then "augmented," or added, to the original prompt, creating a richer, more informed query. 
-Finally, this enhanced prompt is sent to the LLM. With this additional context, the LLM can generate a response that is not only fluent and natural but also factually grounded in the retrieved data.
+### Solution
 
-The RAG framework provides several significant benefits. 
-It allows LLMs to access up-to-date information, thereby overcoming the constraints of their static training data. 
-This approach also reduces the risk of **"hallucination"**—the generation of false information—by grounding responses in verifiable data. 
-Moreover, LLMs can utilize specialized knowledge found in internal company documents or wikis. 
-A vital advantage of this process is the capability to offer **"citations,"** which pinpoint the exact source of information, thereby enhancing the trustworthiness and verifiability of the AI's responses.
+The RAG pattern significantly enhances the capabilities of LLMs by granting them access to external knowledge bases before generating a response. Instead of relying solely on their internal, pre-trained knowledge, RAG allows LLMs to "look up" information, much like a human might consult a book or search the internet. This process empowers LLMs to provide more accurate, up-to-date, and verifiable answers.
+
+RAG is composed of two main steps. First, the system retrieves relevant information from a large knowledge base—not just identifying relevant documents or links, but extracting the most pertinent text segments from those documents. This retrieval step goes beyond simple document matching; it must identify and extract the specific passages, sentences, or chunks that directly address the user's query. This search is a **"semantic search"** that understands the user's intent and the meaning behind their words. Second, the extracted information is augmented into the LLM's context, enabling the model to generate a direct answer to the query rather than simply returning a list of sources like a traditional search engine. The LLM synthesizes the retrieved context with its reasoning capabilities to produce a coherent, contextually grounded response.
+
+The RAG framework provides several significant benefits. It allows LLMs to access up-to-date information, thereby overcoming the constraints of their static training data. This approach also reduces the risk of **"hallucination"**—the generation of false information—by grounding responses in verifiable data. Moreover, LLMs can utilize specialized knowledge found in internal company documents or wikis. A vital advantage of this process is the capability to offer **"citations,"** which pinpoint the exact source of information, thereby enhancing the trustworthiness and verifiability of the AI's responses.
+
+### Key Concepts
+
+- **Embeddings:** Numerical representations of text (words, phrases, documents) as vectors that capture semantic meaning and relationships in a mathematical space.
+- **Semantic Search:** A search method that understands user intent and meaning, finding conceptually similar content even when wording differs.
+- **Chunking:** Breaking down large documents into smaller, manageable pieces (chunks) to enable efficient retrieval and focused context.
+- **Vector Databases:** Specialized databases designed to store and query embeddings efficiently, enabling rapid semantic search through millions of vectors.
+- **Retrieval-Augmentation:** The process of retrieving relevant information from external knowledge bases and augmenting it into the LLM's context before generation.
+- **Hybrid Search:** Combining keyword-based methods (BM25) with semantic search to leverage both exact matches and conceptual relevance.
+
+## How It Works
+
+RAG operates through a two-phase process: retrieval and augmentation. When a user poses a question, the system first performs semantic search across a knowledge base. The query is converted into an embedding vector, which is then compared against pre-computed embeddings of document chunks stored in a vector database. The system identifies and extracts the most relevant text segments—not just entire documents, but specific passages that directly address the query.
+
+The retrieved chunks are then augmented into the LLM's context, creating an enriched prompt that combines the user's question with relevant external information. The LLM synthesizes this retrieved context with its reasoning capabilities to generate a response that is factually grounded in the retrieved data. This process enables the LLM to provide accurate, up-to-date answers with citations, overcoming the limitations of static training data while reducing hallucinations by grounding responses in verifiable sources.
 
 To fully appreciate how RAG functions, it's essential to understand a few core concepts:
-
 
 ### **Embeddings**
 

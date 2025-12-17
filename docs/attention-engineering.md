@@ -10,13 +10,15 @@ Attention Engineering addresses this by strategically structuring and ordering p
 
 ## Pattern Overview
 
-**What it is:** Attention Engineering is a specialized prompt design pattern focused on manipulating where and how information appears in an AI model's context to deliberately steer the model's focus. It exploits the model's inherent attention biases (primacy and recency) by strategically positioning critical information at optimal locations in the prompt.
+### Problem
 
-**When to use:** When building agents that process long contexts, need to ensure critical instructions are followed, or must maintain focus on important information across extended conversations or multi-step tasks.
+Research has empirically confirmed that LLMs exhibit a U-shaped attention pattern: models perform best when relevant information is at the start or end of context, and degrade significantly when needed information lies in the middle of lengthy inputs. Without attention engineering, vital requirements buried mid-prompt risk being diluted or ignored, leading to goal drift, missed constraints, and reduced effectiveness. This "lost in the middle" problem becomes particularly acute when building agents that process long contexts, need to ensure critical instructions are followed, or must maintain focus on important information across extended conversations or multi-step tasks.
 
-**Why it matters:** Research has empirically confirmed that LLMs exhibit a U-shaped attention pattern: models perform best when relevant information is at the start or end of context, and degrade significantly when needed information lies in the middle of lengthy inputs. Without attention engineering, vital requirements buried mid-prompt risk being diluted or ignored, leading to goal drift, missed constraints, and reduced effectiveness.
+### Solution
 
-Attention Engineering directly combats the "lost in the middle" problem by restructuring the prompt landscape. By strategically positioning information, exploiting recency bias, and using multi-layer reinforcement, we ensure that crucial information isn't relegated to attention dead zones. This pattern has become essential for advanced prompt engineering and context management in 2025, complementing other aspects of context engineering to yield more reliable and focused model responses.
+Attention Engineering directly combats this problem by restructuring the prompt landscape. It is a specialized prompt design pattern focused on manipulating where and how information appears in an AI model's context to deliberately steer the model's focus. The pattern exploits the model's inherent attention biases (primacy and recency) by strategically positioning critical information at optimal locations in the prompt.
+
+By strategically positioning information, exploiting recency bias, and using multi-layer reinforcement, we ensure that crucial information isn't relegated to attention dead zones. This pattern has become essential for advanced prompt engineering and context management in 2025, complementing other aspects of context engineering to yield more reliable and focused model responses. The technique involves front-loading essential instructions at the beginning to leverage primacy bias, back-loading critical information at the end to leverage recency bias, and avoiding placing important constraints in the middle of lengthy text.
 
 ### Key Concepts
 

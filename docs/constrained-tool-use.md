@@ -23,21 +23,14 @@ Constrained Tool Use applies this principle: limiting tool availability through 
 
 
 ## Pattern Overview
-**What it is:** A mechanism to manage tool availability by using programmatic constraints (like logit masking) to prevent selection, rather than dynamically modifying the tool definitions in the context.
 
-**When to use:** When the set of available tools must remain stable but the agent's permission or capability to use a tool must change based on the current state.
+### Problem
 
-**Why it matters:** Dynamically altering tool definitions mid-run breaks the **KV-Cache** (Key-Value Cache) and confuses the model. 
-Keeping tool definitions stable is critical for maintaining performance, reducing cost, and preventing the model from hallucinating tool actions.
+As agents take on more capabilities, their action space naturally grows more complex—the number of tools explodes. With the popularity of MCP (Model Context Protocol) and user-configurable tools, agents can have hundreds of tools available. This complexity increases the likelihood of selecting the wrong action or taking an inefficient path. A natural reaction might be to design a dynamic action space—perhaps loading tools on demand using something RAG-like. However, dynamically altering tool definitions mid-run breaks the **KV-Cache** (Key-Value Cache) and confuses the model, leading to performance degradation, increased costs, and potential hallucination of tool actions.
 
+### Solution
 
-As agents take on more capabilities, their action space naturally grows more complex—the number of tools explodes. With the popularity of MCP (Model Context Protocol) and user-configurable tools, agents can have hundreds of tools available. 
-This complexity increases the likelihood of selecting the wrong action or taking an inefficient path. 
-A natural reaction might be to design a dynamic action space—perhaps loading tools on demand using something RAG-like. 
-However, experiments show a clear rule: unless absolutely necessary, avoid dynamically adding or removing tools mid-iteration.
-
-The Constrained Tool Use pattern addresses this challenge by maintaining stable tool definitions while programmatically constraining which tools can be selected at any given moment. 
-This approach preserves KV-Cache efficiency, prevents model confusion, and ensures reliable tool invocation.
+The Constrained Tool Use pattern addresses this challenge by maintaining stable tool definitions while programmatically constraining which tools can be selected at any given moment. Instead of dynamically modifying tool definitions in the context, the pattern uses programmatic constraints (like logit masking) to prevent selection of unavailable tools. This approach preserves KV-Cache efficiency, prevents model confusion, and ensures reliable tool invocation. Keeping tool definitions stable is critical for maintaining performance, reducing cost, and preventing the model from hallucinating tool actions. The pattern is particularly valuable when the set of available tools must remain stable but the agent's permission or capability to use a tool must change based on the current state.
 
 
 ![Solution: Focused workbench.](focused_workbench.png)

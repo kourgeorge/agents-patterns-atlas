@@ -8,13 +8,16 @@ Facing a long to-do list, you assess what's urgent, what's important, and what d
 ![The prioritization need.](prioritization_problem.png)
 
 ## Pattern Overview
-**What it is:** Prioritization is a pattern that enables agents to assess and rank tasks, objectives, or actions based on their significance, urgency, dependencies, and established criteria. This ensures agents concentrate efforts on the most critical tasks, resulting in enhanced effectiveness and goal alignment.
 
-**When to use:** Use the Prioritization pattern when an agentic system must autonomously manage multiple, often conflicting, tasks or goals under resource constraints to operate effectively in a dynamic environment.
+### Problem
 
-**Why it matters:** In complex, dynamic environments, agents frequently encounter numerous potential actions, conflicting goals, and limited resources. Without a defined process for determining the subsequent action, agents may experience reduced efficiency, operational delays, or failures to achieve key objectives. Prioritization addresses this by enabling informed decision-making when addressing multiple demands, prioritizing vital or urgent activities over less critical ones.
+In complex, dynamic environments, agents frequently encounter numerous potential actions, conflicting goals, and limited resources. Without a defined process for determining the subsequent action, agents may experience reduced efficiency, operational delays, or failures to achieve key objectives. Agentic systems must autonomously manage multiple, often conflicting, tasks or goals under resource constraints to operate effectively, but lack a mechanism to assess and rank tasks based on their significance, urgency, dependencies, and established criteria.
 
-The fundamental aspects of agent prioritization typically involve several elements. First, criteria definition establishes the rules or metrics for task evaluation, including urgency, importance, dependencies, resource availability, cost/benefit analysis, and user preferences. Second, task evaluation involves assessing each potential task against these defined criteria, utilizing methods ranging from simple rules to complex scoring or reasoning by LLMs. Third, scheduling or selection logic refers to the algorithm that, based on the evaluations, selects the optimal next action or task sequence. Finally, dynamic re-prioritization allows the agent to modify priorities as circumstances change.
+### Solution
+
+Prioritization is a pattern that enables agents to assess and rank tasks, objectives, or actions based on their significance, urgency, dependencies, and established criteria. This ensures agents concentrate efforts on the most critical tasks, resulting in enhanced effectiveness and goal alignment. The fundamental aspects involve several elements: criteria definition (establishing rules or metrics for task evaluation, including urgency, importance, dependencies, resource availability, cost/benefit analysis, and user preferences), task evaluation (assessing each potential task against these defined criteria, utilizing methods ranging from simple rules to complex scoring or reasoning by LLMs), scheduling or selection logic (the algorithm that, based on the evaluations, selects the optimal next action or task sequence), and dynamic re-prioritization (allowing the agent to modify priorities as circumstances change).
+
+This pattern addresses the challenge by enabling informed decision-making when addressing multiple demands, prioritizing vital or urgent activities over less critical ones. The approach ensures that agents can operate effectively in dynamic environments where tasks, goals, and resource availability change over time.
 
 ### Key Concepts
 - **Criteria Definition:** Establish rules or metrics for task evaluation (urgency, importance, dependencies, resource availability, cost/benefit, user preferences).

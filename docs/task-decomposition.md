@@ -9,38 +9,18 @@ Task decomposition planning in agents works the same way: taking a high-level go
 ![Single thought problem.](task-decomposition_problem.png)
 
 ## Pattern Overview
-**What it is:** Task decomposition is the ability for an agent to analyze a complex goal, break it down into high-level subtasks, assign each subtask to the appropriate application or service, and orchestrate their execution in a logical sequence.
 
-**When to use:** Use task decomposition when you need to delegate a complex goal that spans multiple applications or services, where the "how" needs to be discovered dynamically, rather than following a predetermined workflow.
+### Problem
 
-**Why it matters:** Task decomposition enables agents to move beyond reactive behavior to goal-oriented, strategic problem-solving. It transforms high-level objectives into structured, executable sequences of subtasks while maintaining adaptability to changing conditions and obstacles. 
-By breaking down complex tasks and assigning them to specialized applications, agents can handle multi-step workflows that would be impossible to execute atomically.
+Complex goals often require coordinating multiple applications or services in a specific sequence, but the exact "how" to achieve the goal may not be known in advance. Agents need to move beyond reactive behavior to goal-oriented, strategic problem-solving, transforming high-level objectives into structured, executable sequences of subtasks. Without task decomposition, agents cannot handle multi-step workflows that span multiple systems, and they lack the ability to adapt when conditions change or obstacles arise.
 
-Intelligent behavior often involves more than just reacting to immediate input. 
-It requires foresight, breaking down complex tasks into smaller steps, and strategizing how to achieve a desired outcome.
-At its core, task decomposition allows an agent to analyze a goal, understand what applications and services are available, and create a structured plan that coordinates their use.
-In the context of AI agents, a task decomposition agent is like a project manager to whom you delegate a complex goal. 
-When you ask it to "find an article about AI, summarize it, and share it on social media," you're defining the what—the objective—but not the how. 
-The agent's core task is to:
+### Solution
 
-1. **Analyze** the task to understand its requirements and classify its characteristics
-2. **Match** the task to available applications or services
-3. **Decompose** the goal into high-level subtasks, each assigned to an appropriate application
-4. **Orchestrate** the execution of subtasks, managing dependencies and data flow between them
+Task decomposition enables agents to analyze complex goals, break them down into high-level subtasks, assign each subtask to the appropriate application or service, and orchestrate their execution in a logical sequence. The agent acts like a project manager, receiving a high-level goal (the "what") and dynamically discovering the "how" by analyzing the goal and available resources.
 
-The plan is not known in advance; it is created in response to the request by analyzing the goal and available resources.
-A hallmark of this process is adaptability. 
-An initial decomposition is merely a starting point, not a rigid script. 
-The agent's real power is its ability to incorporate new information and steer around obstacles. 
-For instance, if a preferred application becomes unavailable or a subtask fails, a capable agent doesn't simply fail. 
-It adapts. 
-It registers the new constraint, re-evaluates its options, and may reformulate the decomposition or adjust the execution plan.
+The process involves three core phases: task analysis (classifying task characteristics and matching to applications), task decomposition (breaking down the goal into high-level subtasks assigned to appropriate applications), and plan control (orchestrating execution, tracking progress, and managing data flow between subtasks). A hallmark of this process is adaptability—the initial decomposition is a starting point, not a rigid script. When obstacles arise or conditions change, the agent can re-evaluate options and reformulate the decomposition or adjust the execution plan.
 
-However, it is crucial to recognize the trade-off between flexibility and predictability.
-Dynamic task decomposition is a specific tool, not a universal solution. 
-When a problem's solution is already well-understood and repeatable, constraining the agent to a predetermined, fixed workflow is more effective. 
-This approach limits the agent's autonomy to reduce uncertainty and the risk of unpredictable behavior, guaranteeing a reliable and consistent outcome. 
-Therefore, the decision to use task decomposition versus a simple task-execution agent hinges on a single question: does the "how" need to be discovered, or is it already known?
+However, task decomposition is not always the right choice. When a problem's solution is well-understood and repeatable, constraining the agent to a predetermined, fixed workflow is more effective. The decision to use task decomposition versus a simple task-execution agent hinges on a single question: does the "how" need to be discovered, or is it already known?
 
 
 ![From thought to strategy.](task-decomposition_solution.png)

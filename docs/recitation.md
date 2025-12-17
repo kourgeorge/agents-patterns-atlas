@@ -9,22 +9,16 @@ The Persistent Task List pattern does the same for agents: maintaining a running
 
 
 ## Pattern Overview
-**What it is:** A mechanism where the agent maintains a running plan (like a todo.md file) and continuously appends the updated plan to the end of the context.
 
-**When to use:** When designing long-horizon AI agents that need to sustain goals and avoid forgetting high-level objectives over multiple steps.
+### Problem
 
-**Why it matters:** This deliberate "recitation" manipulates the model's attention, pushing the global plan into the most recent context and mitigating the "lost in the middle" problem that occurs in long contexts.
+The Persistent Task List (Recitation) pattern addresses a fundamental challenge in long-horizon agent design: maintaining focus on high-level objectives as the agent executes many intermediate steps. As agents process complex, multi-step tasks, the context window fills with detailed execution history, tool results, and intermediate reasoning. This accumulation can cause the agent's original goals and plan to become "lost in the middle" of the context, leading to goal drift and reduced effectiveness. Long-horizon AI agents that need to sustain goals and avoid forgetting high-level objectives over multiple steps face the "lost in the middle" problem that occurs in long contexts.
 
-The Persistent Task List (Recitation) pattern addresses a fundamental challenge in long-horizon agent design: maintaining focus on high-level objectives as the agent executes many intermediate steps. 
-As agents process complex, multi-step tasks, the context window fills with detailed execution history, tool results, and intermediate reasoning. 
-This accumulation can cause the agent's original goals and plan to become "lost in the middle" of the context, leading to goal drift and reduced effectiveness.
+### Solution
 
-Recitation is a context engineering strategy that actively manages the LLM's finite attention window. 
-By continuously appending the updated plan to the end of the context, the pattern ensures that high-level objectives remain within the model's recent attention span. 
-This manipulation of attention is deliberate and strategic—the plan is not just stored but actively recited into the context at each iteration, biasing the model's focus toward global objectives.
+Recitation is a context engineering strategy that actively manages the LLM's finite attention window. A mechanism where the agent maintains a running plan (like a todo.md file) and continuously appends the updated plan to the end of the context. This deliberate "recitation" manipulates the model's attention, pushing the global plan into the most recent context and mitigating the "lost in the middle" problem.
 
-The pattern is particularly effective because LLMs exhibit recency bias, paying more attention to information that appears later in the context. 
-By keeping the plan recent, the agent maintains alignment with its original goals even as it navigates complex, branching workflows with hundreds of steps.
+By continuously appending the updated plan to the end of the context, the pattern ensures that high-level objectives remain within the model's recent attention span. This manipulation of attention is deliberate and strategic—the plan is not just stored but actively recited into the context at each iteration, biasing the model's focus toward global objectives. The pattern is particularly effective because LLMs exhibit recency bias, paying more attention to information that appears later in the context. By keeping the plan recent, the agent maintains alignment with its original goals even as it navigates complex, branching workflows with hundreds of steps.
 
 > **"Good agents don't think more — they think *with better inputs*."** — Manus
 

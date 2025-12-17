@@ -13,18 +13,15 @@ The Tool Use pattern creates this interface between an agent's reasoning and the
 
 ## Pattern Overview
 
-**What it is:** Tool Use (also known as Function Calling) is the pattern that enables agents to interact with external systems, APIs, databases, and services. 
-It bridges the gap between an LLM's reasoning capabilities and the external world, allowing agents to perform actions, retrieve real-time data, execute code, and interact with other systems.
+### Problem
 
-**When to use:** Use this pattern whenever an agent needs to break out of the LLM's internal knowledge and interact with the outside world. 
-This is essential for tasks requiring real-time data, accessing private or proprietary information, performing precise calculations, executing code, or triggering actions in other systems.
+LLMs are powerful text generators, but they are fundamentally disconnected from the outside world. Their knowledge is static, limited to training data, and they lack the ability to perform actions or retrieve real-time information. When an agent needs to break out of the LLM's internal knowledge and interact with the outside world, it cannot perform tasks requiring real-time data, access private or proprietary information, perform precise calculations, execute code, or trigger actions in other systems. Without tools, LLMs remain text generators incapable of sensing, reasoning, and acting in the digital or physical world.
 
-**Why it matters:** LLMs are powerful text generators, but they are fundamentally disconnected from the outside world. Their knowledge is static, limited to training data, and they lack the ability to perform actions or retrieve real-time information.
+### Solution
 
-The Tool Use pattern transforms a language model from a text generator into an agent capable of sensing, reasoning, and acting in the digital or physical world.
-The success of tool use relies critically on the quality and robustness of the **Agent-Computer Interface (ACI)**. 
-The ACI is the tightly controlled, isolated execution runtime where the LLM's generated commands are translated into executable, verifiable code. 
-Just as a poor UI confuses a human user, poorly defined, ambiguous, or unreliable tools lead to agent hallucinations, costly loops, and ultimate failure.
+Tool Use (also known as Function Calling) is the pattern that enables agents to interact with external systems, APIs, databases, and services. It bridges the gap between an LLM's reasoning capabilities and the external world, allowing agents to perform actions, retrieve real-time data, execute code, and interact with other systems. The Tool Use pattern transforms a language model from a text generator into an agent capable of sensing, reasoning, and acting in the digital or physical world.
+
+The success of tool use relies critically on the quality and robustness of the **Agent-Computer Interface (ACI)**. The ACI is the tightly controlled, isolated execution runtime where the LLM's generated commands are translated into executable, verifiable code. Just as a poor UI confuses a human user, poorly defined, ambiguous, or unreliable tools lead to agent hallucinations, costly loops, and ultimate failure. Well-designed tools with clear descriptions, parameters, and constraints enable agents to reliably interact with external systems and extend their capabilities beyond their training data.
 
 > **"Tools turn an LLM from a speaker into a worker."** — LangChain / LangGraph
 

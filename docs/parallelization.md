@@ -11,24 +11,16 @@ Parallelization in agents mirrors this: executing independent operations concurr
 
 
 ## Pattern Overview
-**What it is:** Parallelization is a pattern for executing multiple independent tasks concurrently rather than sequentially, significantly reducing overall execution time for complex workflows.
 
-**When to use:** Use parallelization when your workflow contains multiple independent operations that don't depend on each other's outputs and can be executed simultaneously.
+### Problem
 
-**Why it matters:** Parallelization dramatically improves efficiency and responsiveness of agentic systems by leveraging concurrent execution. 
-Instead of waiting for one task to complete before starting the next, independent tasks run simultaneously, reducing total execution time from the sum of all task durations to approximately the duration of the longest task.
+While sequential processing via prompt chaining is foundational and routing enables dynamic decision-making, many complex agentic tasks involve multiple sub-tasks that can be executed simultaneously rather than one after another. Consider an agent designed to research a topic and summarize its findings. A sequential approach might search for Source A, summarize it, then search for Source B, summarize it, and finally synthesize. This sequential execution means total execution time equals the sum of all task durations, leading to inefficiency and poor responsiveness, especially when dealing with external services (like APIs or databases) that have latency.
 
-While sequential processing via prompt chaining is foundational and routing enables dynamic decision-making, many complex agentic tasks involve multiple sub-tasks that can be executed simultaneously rather than one after another. 
-Parallelization involves executing multiple components, such as LLM calls, tool usages, or even entire sub-agents, concurrently. 
-Instead of waiting for one step to complete before starting the next, parallel execution allows independent tasks to run at the same time.
-Consider an agent designed to research a topic and summarize its findings. 
-A sequential approach might search for Source A, summarize it, then search for Source B, summarize it, and finally synthesize. 
-A parallel approach could search for both sources simultaneously, then summarize both simultaneously, before synthesizing the final answer. 
-The core idea is to identify parts of the workflow that do not depend on the output of other parts and execute them in parallel.
+### Solution
 
-This pattern is particularly effective when dealing with external services (like APIs or databases) that have latency, as you can issue multiple requests concurrently. 
-Implementing parallelization often requires frameworks that support asynchronous execution or multi-threading/multi-processing. 
-Modern agentic frameworks are designed with asynchronous operations in mind, allowing you to easily define steps that can run in parallel.
+Parallelization is a pattern for executing multiple independent tasks concurrently rather than sequentially, significantly reducing overall execution time for complex workflows. Instead of waiting for one task to complete before starting the next, independent tasks run simultaneously, reducing total execution time from the sum of all task durations to approximately the duration of the longest task. The core idea is to identify parts of the workflow that do not depend on the output of other parts and execute them in parallel.
+
+A parallel approach could search for both sources simultaneously, then summarize both simultaneously, before synthesizing the final answer. Parallelization involves executing multiple components, such as LLM calls, tool usages, or even entire sub-agents, concurrently. This pattern is particularly effective when dealing with external services that have latency, as you can issue multiple requests concurrently. Modern agentic frameworks are designed with asynchronous operations in mind, allowing you to easily define steps that can run in parallel, dramatically improving efficiency and responsiveness of agentic systems.
 
 ### Key Concepts
 

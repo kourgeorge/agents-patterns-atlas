@@ -10,13 +10,15 @@ This pattern is essential when multiple perspectives are valuable, when errors n
 
 ## Pattern Overview
 
-**What it is:** A decentralized multi-agent architecture where autonomous LLM agents coordinate through natural language discussion, debate, voting mechanisms, or shared knowledge bases. Agents make decisions independently based on their reasoning, engage in dialogue with other agents, and reach collective decisions through consensus.
+### Problem
 
-**When to use:** When multiple perspectives improve solution quality, when cross-verification is needed to catch errors, when reasoning benefits from debate and discussion, or when collective intelligence can outperform individual agents. Also valuable when agents have different viewpoints that should be reconciled.
+When multiple perspectives improve solution quality, when cross-verification is needed to catch errors, when reasoning benefits from debate and discussion, or when collective intelligence can outperform individual agents, centralized orchestrator-worker patterns are insufficient. Unlike orchestrator-worker patterns that rely on central coordination, some problems require distributed decision-making where agents engage in peer-to-peer communication, enabling collaborative problem-solving, error detection, and collective reasoning that centralized systems cannot achieve. Agents with different viewpoints need mechanisms to reconcile their perspectives and reach collective decisions.
 
-**Why it matters:** Natural language consensus provides error correction (multiple agents catch mistakes), improved reasoning quality (debate surfaces hidden assumptions), diversity of perspectives (different agents explore different approaches), and collective intelligence (group performance exceeds individual capabilities). Research shows that when LLM agents debate and reconcile their reasoning, performance significantly improves on math problems and factual QA.
+### Solution
 
-Unlike orchestrator-worker patterns that rely on central coordination, swarm/consensus architectures distribute decision-making across agents. Agents engage in peer-to-peer communication, enabling collaborative problem-solving, error detection, and collective reasoning that centralized systems cannot achieve.
+A decentralized multi-agent architecture where autonomous LLM agents coordinate through natural language discussion, debate, voting mechanisms, or shared knowledge bases. Agents make decisions independently based on their reasoning, engage in dialogue with other agents, and reach collective decisions through consensus. Natural language consensus provides error correction (multiple agents catch mistakes), improved reasoning quality (debate surfaces hidden assumptions), diversity of perspectives (different agents explore different approaches), and collective intelligence (group performance exceeds individual capabilities).
+
+Research shows that when LLM agents debate and reconcile their reasoning, performance significantly improves on math problems and factual QA. This distributed approach enables collaborative problem-solving, error detection, and collective reasoning that centralized systems cannot achieve. The pattern is particularly valuable when agents have different viewpoints that should be reconciled, or when problems benefit from multiple independent evaluations and natural language negotiation.
 
 ### Key Concepts
 

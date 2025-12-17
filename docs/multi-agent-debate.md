@@ -14,18 +14,15 @@ This pattern is essential when reasoning quality is critical, when hidden assump
 
 ## Pattern Overview
 
-**What it is:** A multi-agent architecture where agents engage in structured debate by arguing different positions, critiquing each other's reasoning, and working toward improved solutions. 
-Debates can be adversarial (agents take opposing stances) or collaborative (agents explore different approaches), often with optional judge agents overseeing the discussion and determining outcomes.
+### Problem
 
-**When to use:** When reasoning quality is critical, when problems benefit from multiple perspectives, when initial solutions might be incorrect, or when errors need to be caught through adversarial critique. 
-Particularly valuable for counter-intuitive problems, complex reasoning tasks, or situations where a single model might fixate on incorrect approaches.
+Structured debate helps overcome "degeneration-of-thought" issues where a single model fixates on an initial incorrect guess. When reasoning quality is critical, when problems benefit from multiple perspectives, or when initial solutions might be incorrect, single-agent approaches can miss errors and logical flaws. Counter-intuitive problems, complex reasoning tasks, or situations where a single model might fixate on incorrect approaches require mechanisms to surface hidden assumptions and expose logical flaws that self-evaluation might miss.
 
-**Why it matters:** Structured debate helps overcome "degeneration-of-thought" issues where a single model fixates on an initial incorrect guess. 
-By forcing models to articulate and defend different viewpoints, the system reveals hidden assumptions, exposes logical flaws, and yields more creative, correct solutions. 
-Research shows that multi-agent debate significantly improves performance on math word problems and factual QA compared to single-model approaches.
+### Solution
 
-Unlike single-agent reflection or evaluator-optimizer patterns, multi-agent debate introduces adversarial or divergent viewpoints that challenge reasoning from different angles. 
-This adversarial process surfaces issues that self-evaluation might miss, leading to more robust solutions.
+Multi-Agent Debate introduces a multi-agent architecture where agents engage in structured debate by arguing different positions, critiquing each other's reasoning, and working toward improved solutions. Debates can be adversarial (agents take opposing stances) or collaborative (agents explore different approaches), often with optional judge agents overseeing the discussion and determining outcomes. Unlike single-agent reflection or evaluator-optimizer patterns, multi-agent debate introduces adversarial or divergent viewpoints that challenge reasoning from different angles.
+
+By forcing models to articulate and defend different viewpoints, the system reveals hidden assumptions, exposes logical flaws, and yields more creative, correct solutions. Research shows that multi-agent debate significantly improves performance on math word problems and factual QA compared to single-model approaches. This adversarial process surfaces issues that self-evaluation might miss, leading to more robust solutions. The pattern is particularly valuable for counter-intuitive problems, complex reasoning tasks, or situations where a single model might fixate on incorrect approaches.
 
 ### Key Concepts
 

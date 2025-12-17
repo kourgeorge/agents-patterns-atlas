@@ -7,19 +7,16 @@ A project manager breaks down a complex project, delegates specialized tasks to 
 The Orchestrator-Worker pattern mirrors this: a central coordinator breaks down complex goals, delegates to specialized workers, and integrates their outputs into a unified solution.
 
 ## Pattern Overview
-**What it is:** A central agent, often called the Coordinator or Lead Agent, dynamically breaks down a complex goal into smaller subtasks, delegates them to specialized worker agents, and synthesizes the workers' outputs to produce the final result.
 
-**When to use:** For complex tasks that cannot be handled by a single agent, especially when the required subtasks are unpredictable and dynamic, rather than fixed. It's the most common pattern for complex tasks.
+### Problem
 
-**Why it matters:** It enables **specialization** (assigning tasks to dedicated agents with specific skills), **parallelization** (often running subtasks concurrently for speed), and **resilience** (isolating failures to individual agents).
+Complex tasks often require diverse expertise or multiple distinct capabilities that no single agent can handle effectively. When subtasks are unpredictable and dynamic rather than fixed, rigid, predefined workflows are insufficient. A single generalist agent struggles to produce high-quality outputs across multiple domains, and tasks that span many steps require maintaining high-level context while executing specific details.
 
-The Orchestrator-Worker pattern, also known as the "Coordinator pattern", represents one of the most fundamental and widely-used multi-agent architectures. 
-Unlike rigid, predefined workflows, this pattern enables dynamic task decomposition where the orchestrator agent analyzes the high-level goal and determines the necessary subtasks at runtime. 
-This flexibility makes it particularly powerful for handling complex, unpredictable tasks that require diverse expertise.
-The pattern's strength lies in its ability to leverage specialization. 
-Each worker agent can be optimized for a specific domain—research, writing, coding, analysis, or review—resulting in higher quality outputs than a single generalist agent could produce. 
-The orchestrator acts as a strategic coordinator, managing the overall workflow, handling dependencies between subtasks, and synthesizing results into a coherent final output.
-This pattern is especially valuable for long-horizon tasks where the orchestrator can maintain high-level context and goals while workers focus on specific execution details. The separation of concerns also enables better context management, as the orchestrator can isolate context for specific agents, preventing information overload and improving efficiency.
+### Solution
+
+The Orchestrator-Worker pattern, also known as the "Coordinator pattern", addresses this by introducing a central orchestrator agent that dynamically breaks down complex goals into smaller subtasks, delegates them to specialized worker agents, and synthesizes the workers' outputs to produce the final result. Unlike rigid workflows, this pattern enables dynamic task decomposition where the orchestrator analyzes the high-level goal and determines necessary subtasks at runtime.
+
+The pattern's strength lies in its ability to leverage specialization. Each worker agent can be optimized for a specific domain—research, writing, coding, analysis, or review—resulting in higher quality outputs than a single generalist agent could produce. The orchestrator acts as a strategic coordinator, managing the overall workflow, handling dependencies between subtasks, and synthesizing results into a coherent final output. This pattern is especially valuable for long-horizon tasks where the orchestrator maintains high-level context and goals while workers focus on specific execution details. The separation of concerns also enables better context management, as the orchestrator can isolate context for specific agents, preventing information overload and improving efficiency.
 
 ### Key Concepts
 

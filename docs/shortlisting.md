@@ -18,16 +18,15 @@ The agent needs a way to intelligently filter and rank tools based on the specif
 
 ## Pattern Overview
 
-**What it is:** The Shortlisting Pattern enables agents to analyze a large set of available tools, APIs, or functions and select the most relevant subset based on a task description. 
-It uses LLM-based analysis to score and rank candidates, considering direct relevance, parameter matching, and potential for tool chaining in multi-step workflows.
+### Problem
 
-**When to use:** Use this pattern when agents have access to many tools/APIs but need to identify which ones are relevant for a specific task, especially when context window constraints make including all tools impractical.
+As agentic systems scale, they increasingly interact with large tool catalogs—OpenAPI specifications, MCP servers, codebases with many functions, or multi-agent systems with specialized capabilities. Agents often have access to hundreds or thousands of tools, APIs, or functions, but cannot include all of them in their context window. Without shortlisting, agents face a fundamental tension: include too many tools and waste tokens while confusing the model, or include too few and risk missing critical capabilities. When context window constraints make including all tools impractical, agents need a way to intelligently filter and rank tools based on the specific task at hand.
 
-**Why it matters:** As agentic systems scale, they increasingly interact with large tool catalogs—OpenAPI specifications, MCP servers, codebases with many functions, or multi-agent systems with specialized capabilities. 
-The Shortlisting Pattern reduces context window usage by filtering to relevant tools, improves decision-making by focusing the agent's attention, and enables discovery of tool chains that work together to accomplish complex goals.
+### Solution
 
-Without shortlisting, agents face a fundamental tension: include too many tools and waste tokens while confusing the model, or include too few and risk missing critical capabilities. 
-Shortlisting resolves this by providing an intelligent, task-aware filtering mechanism that identifies not just individual relevant tools, but also understands how tools can be chained together in workflows.
+The Shortlisting Pattern enables agents to analyze a large set of available tools, APIs, or functions and select the most relevant subset based on a task description. It uses LLM-based analysis to score and rank candidates, considering direct relevance, parameter matching, and potential for tool chaining in multi-step workflows. Shortlisting resolves the tension by providing an intelligent, task-aware filtering mechanism that identifies not just individual relevant tools, but also understands how tools can be chained together in workflows.
+
+The pattern reduces context window usage by filtering to relevant tools, improves decision-making by focusing the agent's attention, and enables discovery of tool chains that work together to accomplish complex goals. This approach ensures that agents can work with large tool catalogs efficiently, identifying the most relevant capabilities for each specific task without overwhelming the context window or missing critical capabilities.
 
 !!! note "What is MCP (Model Context Protocol)?"
     The **Model Context Protocol (MCP)** is an open standard developed by Anthropic for connecting AI applications to external tools and data sources. 

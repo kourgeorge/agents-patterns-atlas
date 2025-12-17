@@ -11,22 +11,16 @@ The Filesystem as Context pattern gives agents this capability: treating persist
 > **"Memory is not storage; it is context selection over time."** — LangChain
 
 ## Pattern Overview
-**What it is:** A mechanism to treat an external persistent memory (like a filesystem or database) as an unlimited extension of the agent's working memory (a.k.a **long term memory**).
 
-**When to use:** When the agent needs to handle large data or unstructured observations (like web pages or PDF text) that would exceed context length limits. 
-Also used for long-horizon tasks that require persistent, restorable information retention.
+### Problem
 
-**Why it matters:** It helps mitigate the fundamental constraint of the LLM's finite context window. 
-It reduces token costs and latency by allowing the agent to retrieve only the relevant information when needed.
+The Filesystem as Context pattern addresses one of the most fundamental constraints in LLM-based agent systems: the finite context window. As agents process complex tasks, they encounter large data sources—web search results, PDF documents, codebases, or extensive research findings—that would quickly exhaust the available context tokens. Simply truncating or summarizing this data risks losing critical information, while including everything inflates costs and can degrade performance due to attention dilution. Agents need to handle large data or unstructured observations that would exceed context length limits, and long-horizon tasks require persistent, restorable information retention.
 
-The Filesystem as Context pattern addresses one of the most fundamental constraints in LLM-based agent systems: the finite context window. 
-As agents process complex tasks, they encounter large data sources—web search results, PDF documents, codebases, or extensive research findings—that would quickly exhaust the available context tokens. 
-Simply truncating or summarizing this data risks losing critical information, while including everything inflates costs and can degrade performance due to attention dilution.
+### Solution
 
-Instead of keeping all data in the immediate context, the agent offloads large content to external storage and retains only lightweight references (file paths, URLs, or database keys). 
-When specific information is needed, the agent performs targeted retrieval, pulling only the relevant portions back into context.
-The pattern is particularly powerful because it enables restorable compression: the agent can drop large content from context while maintaining the ability to retrieve it precisely when needed. 
-This creates a "just-in-time" information architecture where context remains focused and efficient, while the agent retains access to an unlimited knowledge base.
+Instead of keeping all data in the immediate context, the agent offloads large content to external storage and retains only lightweight references (file paths, URLs, or database keys). When specific information is needed, the agent performs targeted retrieval, pulling only the relevant portions back into context. This mechanism treats an external persistent memory (like a filesystem or database) as an unlimited extension of the agent's working memory (a.k.a **long term memory**).
+
+The pattern is particularly powerful because it enables restorable compression: the agent can drop large content from context while maintaining the ability to retrieve it precisely when needed. This creates a "just-in-time" information architecture where context remains focused and efficient, while the agent retains access to an unlimited knowledge base. It helps mitigate the fundamental constraint of the LLM's finite context window and reduces token costs and latency by allowing the agent to retrieve only the relevant information when needed.
 
 ### Key Concepts
 

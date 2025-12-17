@@ -11,25 +11,16 @@ The Reflection pattern gives agents this same ability: to review, critique, and 
 ![The problem: first draft](reflection_problem.png)
 
 ## Pattern Overview
-**What it is:** Reflection is a pattern where an agent evaluates its own work, output, or internal state and uses that evaluation to improve its performance or refine its response through iterative feedback loops.
 
-**When to use:** Use reflection when output quality, accuracy, or adherence to complex constraints is critical, and you're willing to trade speed and cost for higher quality results.
+### Problem
 
-**Why it matters:** Reflection enables self-correction and iterative refinement, transforming agents from single-pass executors into systems capable of improving their own outputs. 
-This pattern is essential for producing high-quality, accurate results that meet complex requirements.
+Even with sophisticated workflows using chaining, routing, and parallelization, an agent's initial output might not be optimal, accurate, or complete. Tasks with complex requirements, multiple nuanced constraints, or high accuracy demands often cannot be met in a single pass. Without a mechanism for self-correction and iterative refinement, agents remain single-pass executors that cannot improve their own outputs, leading to suboptimal results that fail to meet complex requirements.
 
-Even with sophisticated workflows using chaining, routing, and parallelization, an agent's initial output might not be optimal, accurate, or complete. The Reflection pattern introduces a feedback loop where the agent doesn't just produce an output; it examines that output, identifies potential issues or areas for improvement, and uses those insights to generate a better version or modify its future actions.
+### Solution
 
-The process typically involves: 
+Reflection introduces a feedback loop where the agent doesn't just produce an output; it examines that output, identifies potential issues or areas for improvement, and uses those insights to generate a better version or modify its future actions. The process involves execution (generating initial output), evaluation/critique (analyzing for accuracy, coherence, completeness, or adherence to instructions), reflection/refinement (determining how to improve), and iteration (repeating until satisfactory or a stopping condition is met).
 
-1. **Execution**: the agent performs a task or generates an initial output.
-2. **Evaluation/Critique**: the agent analyzes the result checking for accuracy, coherence, completeness, or adherence to instructions.
-3. **Reflection/Refinement**: based on the critique, the agent determines how to improve
-4. **Iteration**: the refined output can be executed again, with the reflection process repeating until satisfactory or a stopping condition is met.
-
-A key and highly effective implementation separates the process into two distinct roles: a Producer and a Critic (Generator-Critic model). 
-While a single agent can perform self-reflection, using two specialized agents (or two separate LLM calls with distinct system prompts) often yields more robust and unbiased results. 
-The Producer focuses on generating content, while the Critic evaluates it with a fresh perspective, dedicated entirely to finding errors and areas for improvement.
+A key and highly effective implementation separates the process into two distinct roles: a Producer and a Critic (Generator-Critic model). While a single agent can perform self-reflection, using two specialized agents (or two separate LLM calls with distinct system prompts) often yields more robust and unbiased results. The Producer focuses on generating content, while the Critic evaluates it with a fresh perspective, dedicated entirely to finding errors and areas for improvement. This separation prevents cognitive bias and enables objective evaluation, transforming agents from single-pass executors into systems capable of iterative self-improvement.
 
 ![The solution: reflection](reflection_solution.png)
 

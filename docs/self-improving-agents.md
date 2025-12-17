@@ -10,15 +10,15 @@ Just as biological systems evolve through natural selection, self-improving agen
 
 ## Pattern Overview
 
-**What it is:** A pattern where agents engage in recursive self-improvement through self-exploration, simulation, self-evaluation, and iterative refinement. Agents analyze their own performance, identify weaknesses, generate improved versions of themselves (or sub-agents), test these improvements, and incorporate successful changes into their future behavior.
+### Problem
 
-**When to use:** For systems that need to adapt to evolving requirements, improve performance over time, or handle complex domains where optimal strategies emerge through exploration rather than being predefined. Particularly valuable for enterprise automation where requirements evolve and systems must scale their capabilities organically.
+Traditional agentic systems are static: once designed and deployed, their capabilities remain fixed. Systems that need to adapt to evolving requirements, improve performance over time, or handle complex domains where optimal strategies emerge through exploration rather than being predefined face limitations. Static agents cannot expand their problem-solving abilities, anticipate future needs, or build reusable components that improve over iterations. Particularly in enterprise automation where requirements evolve and systems must scale their capabilities organically, fixed agents become inadequate.
 
-**Why it matters:** It enables **continuous adaptation** (systems improve as they encounter new challenges), **emergent capabilities** (new skills emerge through self-exploration), **reduced human intervention** (systems become more autonomous over time), and **organic growth** (capabilities expand naturally to match evolving needs).
+### Solution
 
-The Self-Improving Agents pattern represents a frontier in agentic AI, where systems become not just tools but evolving intelligences. Unlike static agents with fixed capabilities, self-improving agents can expand their problem-solving abilities, anticipate future needs, and build reusable components that improve over iterations.
+The Self-Improving Agents pattern represents a frontier in agentic AI, where systems become not just tools but evolving intelligences. A pattern where agents engage in recursive self-improvement through self-exploration, simulation, self-evaluation, and iterative refinement. Agents analyze their own performance, identify weaknesses, generate improved versions of themselves (or sub-agents), test these improvements, and incorporate successful changes into their future behavior.
 
-This pattern is particularly powerful when combined with dynamic agent spawning: orchestrators can not only create agents for specific tasks but also improve the agents they create, learn from their performance, and build a library of increasingly capable agent components.
+Unlike static agents with fixed capabilities, self-improving agents can expand their problem-solving abilities, anticipate future needs, and build reusable components that improve over iterations. This pattern is particularly powerful when combined with dynamic agent spawning: orchestrators can not only create agents for specific tasks but also improve the agents they create, learn from their performance, and build a library of increasingly capable agent components. It enables continuous adaptation (systems improve as they encounter new challenges), emergent capabilities (new skills emerge through self-exploration), reduced human intervention (systems become more autonomous over time), and organic growth (capabilities expand naturally to match evolving needs).
 
 ### Key Concepts
 
@@ -88,12 +88,14 @@ However, be aware of trade-offs: self-improvement increases system complexity, i
 Agents actively explore their problem space, generating new tasks and challenges:
 
 **How it works:**
+
 - Starting from a seed task, agents identify related tasks that would be useful
 - Agents generate new challenges to test their capabilities
 - Exploration expands contextually, cascading into new problem areas
 - Agents build understanding of the problem domain through exploration
 
 **Example:** An orchestrator starts with "Identify chips with lowest yield" and expands to:
+
 - "What does yield variation look like across the wafer?"
 - "Which circuits are contributing to low yield?"
 - "What has lot-to-lot variation looked like historically?"
@@ -104,12 +106,14 @@ Agents actively explore their problem space, generating new tasks and challenges
 Agents simulate scenarios to learn faster and test approaches safely:
 
 **How it works:**
+
 - Agents create simulated environments or test cases
 - Approaches are tested in simulation before real-world deployment
 - Edge cases and rare scenarios are explored offline
 - Performance is validated without risking real-world consequences
 
 **Benefits:**
+
 - **Accelerated Learning:** Agents learn faster through simulation
 - **Broad Scenario Exploration:** Edge cases tested without risk
 - **Safe Experimentation:** Approaches validated before deployment
@@ -120,6 +124,7 @@ Agents simulate scenarios to learn faster and test approaches safely:
 Agents critique their own performance and identify improvement areas:
 
 **How it works:**
+
 - Agents analyze their outputs and decision-making processes
 - Multiple evaluation strategies are used (performance metrics, quality checks, correctness validation)
 - Agents compare current performance to previous iterations
