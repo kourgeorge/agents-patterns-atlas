@@ -7,18 +7,25 @@ As you complete tasks, you update the list, but the main objectives remain visib
 This prevents you from losing sight of the big picture amid daily details. 
 The Persistent Task List pattern does the same for agents: maintaining a running plan in context to prevent goal drift during long, complex tasks.
 
-
 ## Pattern Overview
 
 ### Problem
 
-The Persistent Task List (Recitation) pattern addresses a fundamental challenge in long-horizon agent design: maintaining focus on high-level objectives as the agent executes many intermediate steps. As agents process complex, multi-step tasks, the context window fills with detailed execution history, tool results, and intermediate reasoning. This accumulation can cause the agent's original goals and plan to become "lost in the middle" of the context, leading to goal drift and reduced effectiveness. Long-horizon AI agents that need to sustain goals and avoid forgetting high-level objectives over multiple steps face the "lost in the middle" problem that occurs in long contexts.
+The Persistent Task List (Recitation) pattern addresses a fundamental challenge in long-horizon agent design: maintaining focus on high-level objectives as the agent executes many intermediate steps. 
+As agents process complex, multi-step tasks, the context window fills with detailed execution history, tool results, and intermediate reasoning. 
+This accumulation can cause the agent's original goals and plan to become "lost in the middle" of the context, leading to goal drift and reduced effectiveness. 
+Long-horizon AI agents that need to sustain goals and avoid forgetting high-level objectives over multiple steps face the "lost in the middle" problem that occurs in long contexts.
 
 ### Solution
 
-Recitation is a context engineering strategy that actively manages the LLM's finite attention window. A mechanism where the agent maintains a running plan (like a todo.md file) and continuously appends the updated plan to the end of the context. This deliberate "recitation" manipulates the model's attention, pushing the global plan into the most recent context and mitigating the "lost in the middle" problem.
+Recitation is a context engineering strategy that actively manages the LLM's finite attention window. 
+A mechanism where the agent maintains a running plan (like a todo.md file) and continuously appends the updated plan to the end of the context. 
+This deliberate "recitation" manipulates the model's attention, pushing the global plan into the most recent context and mitigating the "lost in the middle" problem.
 
-By continuously appending the updated plan to the end of the context, the pattern ensures that high-level objectives remain within the model's recent attention span. This manipulation of attention is deliberate and strategic—the plan is not just stored but actively recited into the context at each iteration, biasing the model's focus toward global objectives. The pattern is particularly effective because LLMs exhibit recency bias, paying more attention to information that appears later in the context. By keeping the plan recent, the agent maintains alignment with its original goals even as it navigates complex, branching workflows with hundreds of steps.
+By continuously appending the updated plan to the end of the context, the pattern ensures that high-level objectives remain within the model's recent attention span. 
+This manipulation of attention is deliberate and strategic—the plan is not just stored but actively recited into the context at each iteration, biasing the model's focus toward global objectives. 
+The pattern is particularly effective because LLMs exhibit recency bias, paying more attention to information that appears later in the context. 
+By keeping the plan recent, the agent maintains alignment with its original goals even as it navigates complex, branching workflows with hundreds of steps.
 
 > **"Good agents don't think more — they think *with better inputs*."** — Manus
 
@@ -50,7 +57,9 @@ By continuously appending the updated plan to the end of the context, the patter
 - The context window is short and cannot accommodate the additional plan recitation overhead.
 
 ### Decision Guidelines
-Use this pattern as a critical context engineering strategy to ensure the agent remains focused on its high-level goals throughout a complex or long-running workflow. It is especially effective in open-ended problems where the agent generates and manages its own steps. Consider the trade-off: recitation adds token cost but prevents costly goal drift and rework. For tasks requiring sustained focus over 10+ steps, the benefits typically outweigh the costs.
+Use this pattern as a critical context engineering strategy to ensure the agent remains focused on its high-level goals throughout a complex or long-running workflow. 
+It is especially effective in open-ended problems where the agent generates and manages its own steps. 
+Consider the trade-off: recitation adds token cost but prevents costly goal drift and rework. For tasks requiring sustained focus over 10+ steps, the benefits typically outweigh the costs.
 
 ## Practical Applications & Use Cases
 
@@ -177,7 +186,9 @@ Its detailed description provided to the LLM guides the agent on how to manage t
     ```
 
 **Explanation:**
-This example demonstrates the Recitation pattern with filesystem persistence. The agent maintains a todo.md file that is read at each step and appended to the context. This ensures the plan remains in the model's recent attention span, preventing goal drift during long-horizon tasks.
+This example demonstrates the Recitation pattern with filesystem persistence. 
+The agent maintains a todo.md file that is read at each step and appended to the context. 
+This ensures the plan remains in the model's recent attention span, preventing goal drift during long-horizon tasks.
 
 ### Framework-Specific Examples
 
@@ -313,7 +324,7 @@ This follows the **Agent-as-Tool** pattern, where planning becomes a determinist
 - Planning logic should be modular and swappable
 - You're following the Agent-as-Tool pattern for consistency
 
-??? "Implementation Example:"
+??? "Implementation Example"
 
     ```python
     from typing import List, Dict, Any
@@ -356,7 +367,8 @@ This follows the **Agent-as-Tool** pattern, where planning becomes a determinist
 
 **Key Insight:**
 
-Both approaches are valid. The choice depends on your system's priorities: traditional Recitation emphasizes simplicity and human-readability, while the Planner sub-agent approach prioritizes token efficiency and modularity. Many production systems evolve from the traditional approach to the Planner sub-agent pattern as they optimize for scale.
+Both approaches are valid. The choice depends on your system's priorities: traditional Recitation emphasizes simplicity and human-readability, while the Planner sub-agent approach prioritizes token efficiency and modularity. 
+Many production systems evolve from the traditional approach to the Planner sub-agent pattern as they optimize for scale.
 
 ## Key Takeaways
 
