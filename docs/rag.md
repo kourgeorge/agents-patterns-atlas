@@ -16,10 +16,7 @@ For AI agents, this is crucial as it allows them to ground their actions and res
 This capability enables them to perform complex tasks accurately, such as accessing the latest company policies to answer a specific question or checking current inventory before placing an order. 
 By integrating external knowledge, RAG transforms agents from simple conversationalists into effective, data-driven tools capable of executing meaningful work.
 
-!!! note "Historical Context and Pattern Classification"
-    RAG represents one of the earliest AI agent implementations that gained widespread adoption. In fact, RAG can be viewed as a specific agent implementation rather than a design pattern by itself—it's a concrete system where the agent's tools help access relevant data in a knowledge base, retrieve it, and augment the LLM's context with that information. However, we have selected to present RAG as a design pattern in this book due to the fundamental mechanisms it employs—such as embeddings, semantic similarity, and relevance-based retrieval—that represent reusable solutions to the broader problem of knowledge access and grounding. These mechanisms are relevant to other agents in a general sense, providing a template for how agents can extend their capabilities through external knowledge retrieval, making RAG both a specific implementation and a pattern that can be adapted and applied across different agent architectures.
-
-    In addition, it's important to note that basic RAG is more like a **workflow** than a true agentic solution—it follows a predetermined sequence: query → retrieve → augment → generate. The LLM doesn't autonomously decide when or how to retrieve information; the retrieval step is hardcoded into the pipeline. However, RAG can be viewed as a **reusable skill** for accessing information from corpora that can be integrated into agent architectures. This is especially valuable for agents that primarily work with large document corpora or are required to abide by certain corporate rules and policies of an organization. In such contexts, RAG serves as a specialized capability that agents can invoke when they need to ground their responses in specific documentation or knowledge bases, making it a composable building block for more sophisticated agentic systems.
+---
 
 ## Pattern Overview
 
@@ -43,6 +40,13 @@ The RAG framework provides several significant benefits. It allows LLMs to acces
 - **Vector Databases:** Specialized databases designed to store and query embeddings efficiently, enabling rapid semantic search through millions of vectors.
 - **Retrieval-Augmentation:** The process of retrieving relevant information from external knowledge bases and augmenting it into the LLM's context before generation.
 - **Hybrid Search:** Combining keyword-based methods (BM25) with semantic search to leverage both exact matches and conceptual relevance.
+
+
+!!! note "Historical Context and Pattern Classification"
+    RAG represents one of the earliest AI agent implementations that gained widespread adoption. In fact, RAG can be viewed as a specific agent implementation rather than a design pattern by itself—it's a concrete system where the agent's tools help access relevant data in a knowledge base, retrieve it, and augment the LLM's context with that information. However, we have selected to present RAG as a design pattern in this book due to the fundamental mechanisms it employs—such as embeddings, semantic similarity, and relevance-based retrieval—that represent reusable solutions to the broader problem of knowledge access and grounding. These mechanisms are relevant to other agents in a general sense, providing a template for how agents can extend their capabilities through external knowledge retrieval, making RAG both a specific implementation and a pattern that can be adapted and applied across different agent architectures.
+
+    In addition, it's important to note that basic RAG is more like a **workflow** than a true agentic solution—it follows a predetermined sequence: query → retrieve → augment → generate. The LLM doesn't autonomously decide when or how to retrieve information; the retrieval step is hardcoded into the pipeline. However, RAG can be viewed as a **reusable skill** for accessing information from corpora that can be integrated into agent architectures. This is especially valuable for agents that primarily work with large document corpora or are required to abide by certain corporate rules and policies of an organization. In such contexts, RAG serves as a specialized capability that agents can invoke when they need to ground their responses in specific documentation or knowledge bases, making it a composable building block for more sophisticated agentic systems.
+
 
 ## How It Works
 

@@ -1,7 +1,5 @@
 # Preface
 
-> **Building intelligent agents requires more than technical skills; it requires a deeper understanding of how intelligence works**.
-
 We stand at an inflection point that demands a fundamental shift in how we think about software.
 The last few years have witnessed an unprecedented transformation—from simple, reactive programs to sophisticated, autonomous entities capable of understanding context, making decisions, and interacting dynamically with their environment and other systems. 
 
@@ -53,8 +51,5 @@ This book was created using the same principles it teaches: intelligent agents p
 The creation process follows an iterative cycle: the human defines direction and collects materials, AI generates and organizes content, the human validates and refines, and the cycle repeats. 
 This approach enables rapid exploration of ideas, comprehensive coverage, and efficient incorporation of diverse sources, allowing the human to focus on vision, judgment, and creative direction.
 
-**The content has been carefully reviewed and validated by the author to ensure accuracy, quality, and alignment with the intended vision.** 
-
-
-
-
+!!! note 
+    The content has been carefully reviewed and validated by the author to ensure accuracy, quality, and alignment with the intended vision. 
