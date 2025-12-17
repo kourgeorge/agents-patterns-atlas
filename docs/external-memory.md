@@ -133,339 +133,332 @@ pip install google-adk
 pip install deepagents
 ```
 
-### Basic Example: Offloading and Retrieval
+??? "Basic Example: Offloading and Retrieval"
 
-This example demonstrates the scratchpad memory pattern, where a large web search observation is offloaded to a file, and only relevant parts are retrieved later:
+    This example demonstrates the scratchpad memory pattern, where a large web search observation is offloaded to a file, and only relevant parts are retrieved later:
 
-```python
-from pathlib import Path
-from typing import Dict, List
-import json
+    ```python
+    from pathlib import Path
+    from typing import Dict, List
+    import json
 
-class ExternalMemoryAgent:
-    def __init__(self, workspace_dir: str = "./workspace"):
-        self.workspace = Path(workspace_dir)
-        self.workspace.mkdir(exist_ok=True)
-        self.memory_index = {}  # Maps keys to file paths
-    
-    def offload_to_memory(self, content: str, key: str, metadata: Dict = None) -> str:
-        """Offload large content to external memory and return reference."""
-        filepath = self.workspace / f"{key}.txt"
-        filepath.write_text(content)
+    class ExternalMemoryAgent:
+        def __init__(self, workspace_dir: str = "./workspace"):
+            self.workspace = Path(workspace_dir)
+            self.workspace.mkdir(exist_ok=True)
+            self.memory_index = {}  # Maps keys to file paths
         
-        # Store metadata for retrieval
-        self.memory_index[key] = {
-            "path": str(filepath),
-            "metadata": metadata or {},
-            "size": len(content)
-        }
+        def offload_to_memory(self, content: str, key: str, metadata: Dict = None) -> str:
+            """Offload large content to external memory and return reference."""
+            filepath = self.workspace / f"{key}.txt"
+            filepath.write_text(content)
+            
+            # Store metadata for retrieval
+            self.memory_index[key] = {
+                "path": str(filepath),
+                "metadata": metadata or {},
+                "size": len(content)
+            }
+            
+            # Return lightweight reference
+            return f"Content stored in memory: {key} ({len(content)} chars). Use retrieve_memory('{key}') to access."
         
-        # Return lightweight reference
-        return f"Content stored in memory: {key} ({len(content)} chars). Use retrieve_memory('{key}') to access."
-    
-    def retrieve_memory(self, key: str, query: str = None, max_lines: int = 50) -> str:
-        """Retrieve from external memory, optionally with targeted search."""
-        if key not in self.memory_index:
-            return f"Memory key '{key}' not found."
+        def retrieve_memory(self, key: str, query: str = None, max_lines: int = 50) -> str:
+            """Retrieve from external memory, optionally with targeted search."""
+            if key not in self.memory_index:
+                return f"Memory key '{key}' not found."
+            
+            filepath = Path(self.memory_index[key]["path"])
+            if not filepath.exists():
+                return f"Memory file for '{key}' not found."
+            
+            content = filepath.read_text()
+            
+            # If query provided, search for relevant lines
+            if query:
+                lines = content.split('\n')
+                relevant_lines = [
+                    line for line in lines 
+                    if query.lower() in line.lower()
+                ][:max_lines]
+                return '\n'.join(relevant_lines)
+            
+            # Return first portion if no query
+            return content[:2000]  # First 2000 chars
         
-        filepath = Path(self.memory_index[key]["path"])
-        if not filepath.exists():
-            return f"Memory file for '{key}' not found."
-        
-        content = filepath.read_text()
-        
-        # If query provided, search for relevant lines
-        if query:
-            lines = content.split('\n')
-            relevant_lines = [
-                line for line in lines 
-                if query.lower() in line.lower()
-            ][:max_lines]
-            return '\n'.join(relevant_lines)
-        
-        # Return first portion if no query
-        return content[:2000]  # First 2000 chars
-    
-    def list_memory(self) -> List[str]:
-        """List all available memory keys."""
-        return list(self.memory_index.keys())
+        def list_memory(self) -> List[str]:
+            """List all available memory keys."""
+            return list(self.memory_index.keys())
 
-# Usage
-agent = ExternalMemoryAgent()
+    # Usage
+    agent = ExternalMemoryAgent()
 
-# Offload large web search result
-large_result = "..." # 10K token web search result
-reference = agent.offload_to_memory(
-    large_result, 
-    key="web_search_agentic_patterns",
-    metadata={"source": "web_search", "query": "agentic AI design patterns"}
-)
+    # Offload large web search result
+    large_result = "..." # 10K token web search result
+    reference = agent.offload_to_memory(
+        large_result, 
+        key="web_search_agentic_patterns",
+        metadata={"source": "web_search", "query": "agentic AI design patterns"}
+    )
 
-# Later, retrieve only relevant parts
-relevant = agent.retrieve_memory(
-    "web_search_agentic_patterns",
-    query="recitation pattern",
-    max_lines=20
-)
-# Inject 'relevant' into next prompt instead of full 10K token result
-```
+    # Later, retrieve only relevant parts
+    relevant = agent.retrieve_memory(
+        "web_search_agentic_patterns",
+        query="recitation pattern",
+        max_lines=20
+    )
+    # Inject 'relevant' into next prompt instead of full 10K token result
+    ```
 
 **Explanation:**
 This example demonstrates the core pattern: offloading large content to external storage, maintaining a reference, and performing targeted retrieval. The agent can store unlimited data externally while keeping context focused and efficient.
 
-### Advanced Example: Filesystem Tools with Targeted Reading
+??? "Advanced Example: Filesystem Tools with Targeted Reading"
 
-```python
-from pathlib import Path
-from typing import Optional, List
-import re
+    ```python
+    from pathlib import Path
+    from typing import Optional, List
+    import re
 
-class FilesystemMemoryTools:
-    def __init__(self, workspace: Path):
-        self.workspace = workspace
-        self.workspace.mkdir(exist_ok=True)
-    
-    def write_file(self, filepath: str, content: str) -> str:
-        """Write content to file in workspace."""
-        full_path = self.workspace / filepath
-        full_path.parent.mkdir(parents=True, exist_ok=True)
-        full_path.write_text(content)
-        return f"Written {len(content)} characters to {filepath}"
-    
-    def read_file(self, filepath: str, start_line: int = 1, end_line: Optional[int] = None) -> str:
-        """Read file with optional line range for targeted retrieval."""
-        full_path = self.workspace / filepath
-        if not full_path.exists():
-            return f"File {filepath} not found."
+    class FilesystemMemoryTools:
+        def __init__(self, workspace: Path):
+            self.workspace = workspace
+            self.workspace.mkdir(exist_ok=True)
         
-        lines = full_path.read_text().split('\n')
+        def write_file(self, filepath: str, content: str) -> str:
+            """Write content to file in workspace."""
+            full_path = self.workspace / filepath
+            full_path.parent.mkdir(parents=True, exist_ok=True)
+            full_path.write_text(content)
+            return f"Written {len(content)} characters to {filepath}"
         
-        # Adjust for 0-based indexing
-        start_idx = max(0, start_line - 1)
-        end_idx = end_line if end_line else len(lines)
+        def read_file(self, filepath: str, start_line: int = 1, end_line: Optional[int] = None) -> str:
+            """Read file with optional line range for targeted retrieval."""
+            full_path = self.workspace / filepath
+            if not full_path.exists():
+                return f"File {filepath} not found."
+            
+            lines = full_path.read_text().split('\n')
+            
+            # Adjust for 0-based indexing
+            start_idx = max(0, start_line - 1)
+            end_idx = end_line if end_line else len(lines)
+            
+            selected_lines = lines[start_idx:end_idx]
+            return '\n'.join(selected_lines)
         
-        selected_lines = lines[start_idx:end_idx]
-        return '\n'.join(selected_lines)
-    
-    def grep_file(self, filepath: str, pattern: str, max_matches: int = 10) -> str:
-        """Search file for pattern and return matching lines with context."""
-        full_path = self.workspace / filepath
-        if not full_path.exists():
-            return f"File {filepath} not found."
+        def grep_file(self, filepath: str, pattern: str, max_matches: int = 10) -> str:
+            """Search file for pattern and return matching lines with context."""
+            full_path = self.workspace / filepath
+            if not full_path.exists():
+                return f"File {filepath} not found."
+            
+            content = full_path.read_text()
+            lines = content.split('\n')
+            
+            matches = []
+            for i, line in enumerate(lines):
+                if re.search(pattern, line, re.IGNORECASE):
+                    # Include line number and context
+                    context_start = max(0, i - 1)
+                    context_end = min(len(lines), i + 2)
+                    context = '\n'.join(lines[context_start:context_end])
+                    matches.append(f"Line {i+1}:\n{context}")
+                    if len(matches) >= max_matches:
+                        break
+            
+            return '\n'.join(matches) if matches else f"No matches found for pattern: {pattern}"
         
-        content = full_path.read_text()
-        lines = content.split('\n')
-        
-        matches = []
-        for i, line in enumerate(lines):
-            if re.search(pattern, line, re.IGNORECASE):
-                # Include line number and context
-                context_start = max(0, i - 1)
-                context_end = min(len(lines), i + 2)
-                context = '\n'.join(lines[context_start:context_end])
-                matches.append(f"Line {i+1}:\n{context}")
-                if len(matches) >= max_matches:
-                    break
-        
-        return '\n'.join(matches) if matches else f"No matches found for pattern: {pattern}"
-    
-    def list_files(self, directory: str = ".") -> str:
-        """List files in directory."""
-        dir_path = self.workspace / directory
-        if not dir_path.exists():
-            return f"Directory {directory} not found."
-        
-        files = [f.name for f in dir_path.iterdir() if f.is_file()]
-        dirs = [f.name + "/" for f in dir_path.iterdir() if f.is_dir()]
-        return '\n'.join(sorted(dirs + files))
+        def list_files(self, directory: str = ".") -> str:
+            """List files in directory."""
+            dir_path = self.workspace / directory
+            if not dir_path.exists():
+                return f"Directory {directory} not found."
+            
+            files = [f.name for f in dir_path.iterdir() if f.is_file()]
+            dirs = [f.name + "/" for f in dir_path.iterdir() if f.is_dir()]
+            return '\n'.join(sorted(dirs + files))
 
-# Usage with agent
-workspace = Path("./agent_workspace")
-fs_tools = FilesystemMemoryTools(workspace)
+    # Usage with agent
+    workspace = Path("./agent_workspace")
+    fs_tools = FilesystemMemoryTools(workspace)
 
-# Agent offloads large PDF text
-pdf_content = "..." # Large extracted PDF text
-fs_tools.write_file("research_paper.pdf.txt", pdf_content)
+    # Agent offloads large PDF text
+    pdf_content = "..." # Large extracted PDF text
+    fs_tools.write_file("research_paper.pdf.txt", pdf_content)
 
-# Later, agent searches for specific information
-relevant_section = fs_tools.grep_file(
-    "research_paper.pdf.txt",
-    pattern="recitation|external memory",
-    max_matches=5
-)
+    # Later, agent searches for specific information
+    relevant_section = fs_tools.grep_file(
+        "research_paper.pdf.txt",
+        pattern="recitation|external memory",
+        max_matches=5
+    )
 
-# Agent uses only the relevant section in context
-```
+    # Agent uses only the relevant section in context
+    ```
 
 **Explanation:**
 This advanced example provides filesystem tools with targeted reading capabilities. The `read_file` tool supports line ranges, and `grep_file` enables semantic search within stored files. This allows agents to retrieve precisely what they need without loading entire files into context.
 
 ### Framework-Specific Examples
 
-#### Deep Agents: Built-in Filesystem Tools
-```python
-# Deep Agents includes built-in filesystem tools with detailed specifications
+??? "Deep Agents: Built-in Filesystem Tools"
 
-def read_file_tool(filepath: str, start_line: int = 1, num_lines: int = 2000) -> str:
-    """
-    Read a file from the workspace.
-    
-    Args:
-        filepath: Path to file relative to workspace
-        start_line: Line number to start reading from (1-indexed)
-        num_lines: Maximum number of lines to read (default: 2000)
-    
-    Returns:
-        File content within specified line range
-    """
-    # Implementation reads up to 2000 lines by default
-    # but allows specifying line offsets and limits
-    pass
+    ```python
+    # Deep Agents includes built-in filesystem tools with detailed specifications
 
-def write_file_tool(filepath: str, content: str) -> str:
-    """Write content to file in workspace."""
-    pass
+    def read_file_tool(filepath: str, start_line: int = 1, num_lines: int = 2000) -> str:
+        """
+        Read a file from the workspace.
+        
+        Args:
+            filepath: Path to file relative to workspace
+            start_line: Line number to start reading from (1-indexed)
+            num_lines: Maximum number of lines to read (default: 2000)
+        
+        Returns:
+            File content within specified line range
+        """
+        # Implementation reads up to 2000 lines by default
+        # but allows specifying line offsets and limits
+        pass
 
-def list_files_tool(directory: str = ".") -> str:
-    """List files and directories in workspace."""
-    pass
+    def write_file_tool(filepath: str, content: str) -> str:
+        """Write content to file in workspace."""
+        pass
 
-# Agent uses these tools to manage external memory
-# Large observations are written to files, then read selectively
-```
+    def list_files_tool(directory: str = ".") -> str:
+        """List files and directories in workspace."""
+        pass
 
-#### LangGraph: Filesystem State Management
-```python
-from langgraph.graph import StateGraph
-from typing import TypedDict, Annotated
-import operator
-from pathlib import Path
+    # Agent uses these tools to manage external memory
+    # Large observations are written to files, then read selectively
+    ```
 
-class AgentState(TypedDict):
-    messages: Annotated[list, operator.add]
-    scratchpad_files: dict  # Maps keys to file paths
-    workspace: str
+    #### LangGraph: Filesystem State Management
+    ```python
+    from langgraph.graph import StateGraph
+    from typing import TypedDict, Annotated
+    import operator
+    from pathlib import Path
 
-def offload_to_scratchpad(state: AgentState, content: str, key: str) -> AgentState:
-    """Offload content to scratchpad file."""
-    workspace = Path(state["workspace"])
-    workspace.mkdir(exist_ok=True)
-    
-    filepath = workspace / f"{key}.txt"
-    filepath.write_text(content)
-    
-    state["scratchpad_files"][key] = str(filepath)
-    return state
+    class AgentState(TypedDict):
+        messages: Annotated[list, operator.add]
+        scratchpad_files: dict  # Maps keys to file paths
+        workspace: str
 
-def retrieve_from_scratchpad(state: AgentState, key: str, query: str = None) -> AgentState:
-    """Retrieve from scratchpad with optional filtering."""
-    if key not in state["scratchpad_files"]:
+    def offload_to_scratchpad(state: AgentState, content: str, key: str) -> AgentState:
+        """Offload content to scratchpad file."""
+        workspace = Path(state["workspace"])
+        workspace.mkdir(exist_ok=True)
+        
+        filepath = workspace / f"{key}.txt"
+        filepath.write_text(content)
+        
+        state["scratchpad_files"][key] = str(filepath)
         return state
-    
-    filepath = Path(state["scratchpad_files"][key])
-    content = filepath.read_text()
-    
-    # If query, filter content
-    if query:
-        lines = [line for line in content.split('\n') if query.lower() in line.lower()]
-        content = '\n'.join(lines[:50])  # Top 50 matches
-    
-    # Inject into messages
-    state["messages"].append({
-        "role": "system",
-        "content": f"Retrieved from {key}:\n\n{content[:2000]}"
-    })
-    
-    return state
 
-# Graph with external memory management
-workflow = StateGraph(AgentState)
-workflow.add_node("offload", offload_to_scratchpad)
-workflow.add_node("retrieve", retrieve_from_scratchpad)
-# ... rest of workflow
-```
+    def retrieve_from_scratchpad(state: AgentState, key: str, query: str = None) -> AgentState:
+        """Retrieve from scratchpad with optional filtering."""
+        if key not in state["scratchpad_files"]:
+            return state
+        
+        filepath = Path(state["scratchpad_files"][key])
+        content = filepath.read_text()
+        
+        # If query, filter content
+        if query:
+            lines = [line for line in content.split('\n') if query.lower() in line.lower()]
+            content = '\n'.join(lines[:50])  # Top 50 matches
+        
+        # Inject into messages
+        state["messages"].append({
+            "role": "system",
+            "content": f"Retrieved from {key}:\n\n{content[:2000]}"
+        })
+        
+        return state
 
-#### Google ADK: External Storage Integration
-```python
-from google.adk.agents import LlmAgent
-from google.adk.tools import Tool
-from pathlib import Path
+    # Graph with external memory management
+    workflow = StateGraph(AgentState)
+    workflow.add_node("offload", offload_to_scratchpad)
+    workflow.add_node("retrieve", retrieve_from_scratchpad)
+    # ... rest of workflow
+    ```
 
-def read_file_tool(filepath: str, start_line: int = 1, end_line: int = None) -> str:
-    """Read file with line range support."""
-    path = Path(filepath)
-    if not path.exists():
-        return f"File {filepath} not found."
-    
-    lines = path.read_text().split('\n')
-    start_idx = max(0, start_line - 1)
-    end_idx = end_line if end_line else len(lines)
-    
-    return '\n'.join(lines[start_idx:end_idx])
+??? "Google ADK: External Storage Integration"
 
-def write_file_tool(filepath: str, content: str) -> str:
-    """Write content to file."""
-    path = Path(filepath)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content)
-    return f"Written {len(content)} characters to {filepath}"
+    ```python
+    from google.adk.agents import LlmAgent
+    from google.adk.tools import Tool
+    from pathlib import Path
 
-# Agent with filesystem tools
-agent = LlmAgent(
-    name="ExternalMemoryAgent",
-    model="gemini-2.0-flash",
-    instruction="""You have access to filesystem tools for managing external memory.
-    
-    When you receive large data (web search results, documents, etc.):
-    1. Use write_file to save it to external storage
-    2. Keep only a reference in your response
-    3. Use read_file with line ranges to retrieve specific parts when needed
-    
-    This keeps your context focused and efficient.""",
-    tools=[read_file_tool, write_file_tool]
-)
-```
+    def read_file_tool(filepath: str, start_line: int = 1, end_line: int = None) -> str:
+        """Read file with line range support."""
+        path = Path(filepath)
+        if not path.exists():
+            return f"File {filepath} not found."
+        
+        lines = path.read_text().split('\n')
+        start_idx = max(0, start_line - 1)
+        end_idx = end_line if end_line else len(lines)
+        
+        return '\n'.join(lines[start_idx:end_idx])
+
+    def write_file_tool(filepath: str, content: str) -> str:
+        """Write content to file."""
+        path = Path(filepath)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+        return f"Written {len(content)} characters to {filepath}"
+
+    # Agent with filesystem tools
+    agent = LlmAgent(
+        name="ExternalMemoryAgent",
+        model="gemini-2.0-flash",
+        instruction="""You have access to filesystem tools for managing external memory.
+        
+        When you receive large data (web search results, documents, etc.):
+        1. Use write_file to save it to external storage
+        2. Keep only a reference in your response
+        3. Use read_file with line ranges to retrieve specific parts when needed
+        
+        This keeps your context focused and efficient.""",
+        tools=[read_file_tool, write_file_tool]
+    )
+    ```
 
 ## Key Takeaways
 
 - **Core Function:** External memory provides persistent, unlimited storage, preventing context window limits from being hit by offloading large data.
-
 - **Efficiency Principle:** Retrieval should be focused (Just-in-Time Retrieval), ensuring the agent injects only necessary snippets into the prompt to reduce token costs and latency.
-
 - **Persistence Requirement:** The agent must maintain a reference (like a file path or URL) to ensure the dropped information remains restorable.
-
 - **Context Quality:** Context engineering, which includes leveraging external memory, is essential because an agent's ability to reason is entirely dependent on the quality of its context.
-
 - **Best Practice:** Design tools with targeted retrieval capabilities (line ranges, search functions) to enable precise information extraction without loading entire files.
-
 - **Common Pitfall:** Failing to maintain references to offloaded data makes it irretrievable, defeating the purpose of external memory. Always ensure references are preserved in agent state or context.
 
 ## Related Patterns
 
 This pattern works well with:
+
 - **Context Compression:** Filesystem as Context is the primary externalization technique within Context Compression. **Combination workflow:** First externalize large data (Filesystem as Context), then compress what remains in context (Context Compression summarization/pruning).
-
 - **Context Editing:** Externalize large tool results first using Filesystem as Context, then let Context Editing automatically clear old tool result references. The cleared references point to externalized files, maintaining restorable compression.
-
 - **Persistent Task List (Recitation):** The persistent plan is often stored in the external filesystem (`todo.md`) to enable its continuous recitation into the context.
-
 - **Stable, Append-Only Context:** Offloading large data helps maintain a stable context prefix, which is crucial for maximizing KV-cache reuse and reducing cost.
-
 - **Memory Management:** Filesystem as Context is a key component of comprehensive memory management strategies, specifically for implementing long-term memory (persistent storage). It complements context window management (Context Compression/Editing) and other memory techniques.
 
 This pattern is often combined with:
+
 - **Tool Result Management (Retrieve-then-Read):** This structure is implemented by using filesystem tools that allow targeted reading (e.g., specifying a line range) after the initial large data has been stored.
-
 - **Knowledge Retrieval (RAG):** Filesystem as Context stores documents for targeted retrieval, while RAG provides semantic search capabilities over the stored content. Use Filesystem as Context for exact file/line access, RAG for semantic search.
-
 - **Multi-Agent Architectures:** Subagents write findings to shared external memory, and the orchestrator retrieves only relevant portions when synthesizing results.
 
 ??? "References"
 
-- Agentic AI System Design Patterns
-- Context Engineering for AI Agents: Lessons from Building Manus
-- Deep Agents: Filesystem Tools Documentation
-- LangGraph State Management: https://langchain-ai.github.io/langgraph/
-- Google ADK Tools: https://google.github.io/adk-docs/tools/
-- How agents can use filesystems for context engineering
+    - Agentic AI System Design Patterns
+    - Context Engineering for AI Agents: Lessons from Building Manus
+    - Deep Agents: Filesystem Tools Documentation
+    - LangGraph State Management: https://langchain-ai.github.io/langgraph/
+    - Google ADK Tools: https://google.github.io/adk-docs/tools/
+    - How agents can use filesystems for context engineering
 
